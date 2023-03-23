@@ -1,0 +1,29 @@
+:root {
+  /** Header 区域 = NavigationBar 组件 + TagsView 组件 */
+  --v3-tagsview-height: 48px;
+  --v3-header-height: var(--v3-tagsview-height);
+  /** NavigationBar 组件 */
+  --v3-navigationbar-height: 50px;
+  --v3-navigationbar-background: var(--q-primary);
+  /** Sidebar 组件 */
+  --v3-sidebar-width: 220px;
+  --v3-sidebar-hide-width: 58px;
+  --v3-sidebar-menu-item-height: 48px;
+  --v3-sidebar-menu-tip-line-bg-color: var(--q-primary);
+  --v3-sidebar-menu-active-text-color: var(--q-primary);
+  /** TagsView 组件 */
+  --v3-tagsview-tag-active-bg-color: var(--q-primary);
+  --v3-tagsview-tag-border-radius: 8px;
+  --v3-tagsview-tag-active-border-color: var(--q-primary);
+  /** RightPanel 组件  */
+  --v3-rightpanel-button-bg-color: var(--q-primary);
+  /* 强制修改el css变量 */
+  --el-color-primary: var(--q-primary) !important;
+  --el-menu-active-color: var(--q-primary) !important;
+  .body--light {
+    --el-color-text-base: var(--q-dark) !important;
+    --el-color-black: var(--q-dark) !important;
+    --el-text-color-primary: var(--q-dark) !important;
+    --el-menu-text-color: var(--q-dark) !important;
+  }
+}
