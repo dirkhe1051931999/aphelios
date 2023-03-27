@@ -1,2 +1,2 @@
 # aphelios
-init
+service
