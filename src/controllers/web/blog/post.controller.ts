@@ -1,6 +1,5 @@
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  console.log(123)
   let page = ctx.query.page || 1,
     pageNum = ctx.query.pageNum || 10;
   let pageIndex = (page - 1) * pageNum < 0 ? 0 : (page - 1) * pageNum;

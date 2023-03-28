@@ -8,10 +8,7 @@ export const login = async (ctx: Context): Promise<void> => {
   const userName = (ctx.request.body as { userName?: string }).userName || "";
   const password = (ctx.request.body as { password?: string }).password || "";
   if (!userName || !password) {
-    ctx.body = {
-      success: 0,
-      message: "用户名或密码不能为空",
-    };
+    ctx.error(ctx, 100);
     return;
   }
   try {
@@ -34,37 +31,28 @@ export const login = async (ctx: Context): Promise<void> => {
         const token = jwt.sign(userToken, CONFIG.tokenSecret, {
           expiresIn: "24h",
         });
-        ctx.body = {
-          success: 1,
-          token: token,
-          message: "",
-        };
+        ctx.success(ctx, {
+          token,
+          id: results[0].id,
+          pagePermissionId: [
+            "dashboard",
+            "account",
+          ],
+        });
       } else {
-        ctx.body = {
-          success: 0,
-          message: "用户名或密码错误",
-        };
+        ctx.error(ctx, 101);
       }
     } else {
-      ctx.body = {
-        success: 0,
-        message: "用户名或密码错误",
-      };
+      ctx.error(ctx, 101);
     }
   } catch (error) {
     console.log(error);
-    ctx.body = {
-      success: 0,
-      message: "查询数据出错",
-    };
+    ctx.error(ctx, 102);
   }
 };
 
 // 登出
 export const signOut = async (ctx: Context): Promise<void> => {
   ctx.session.user = null;
-  ctx.body = {
-    success: 1,
-    message: "",
-  };
+  ctx.success(ctx, null);
 };

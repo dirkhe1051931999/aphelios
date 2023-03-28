@@ -65,7 +65,7 @@ const config: Config = {
     },
   },
   root: path.normalize(__dirname + "/.."),
-  appPath: "src",
+  appPath: "src/static",
   tempUploads: "tempUploads",
   uploads: "uploads",
   port: 3000,
