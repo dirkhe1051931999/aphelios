@@ -1,14 +1,7 @@
 /**
  * countModule
  */
-import { getUserInfo } from 'src/api/user';
-import {
-  getModule,
-  VuexModule,
-  Mutation,
-  Action,
-  Module,
-} from 'vuex-module-decorators';
+import { getModule, VuexModule, Mutation, Action, Module } from 'vuex-module-decorators';
 import store from '../index';
 
 @Module({ dynamic: true, namespaced: true, store, name: 'Count' })
@@ -26,10 +19,7 @@ class Count extends VuexModule {
   }
 
   @Action
-  public async incrementAfterTime(payload: any) {
-    const result = await getUserInfo({});
-    console.log(result);
-  }
+  public async incrementAfterTime(payload: any) {}
 }
 
 export const countModule = getModule(Count);

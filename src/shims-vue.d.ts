@@ -18,3 +18,4 @@ declare module 'uuid';
 declare module 'sha256';
 declare module 'jsencrypt';
 declare module 'vue-shepherd';
+declare module 'crypto-js/md5';

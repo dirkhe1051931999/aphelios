@@ -3,7 +3,8 @@ import { VuexModule, Module, Action, Mutation, getModule } from 'vuex-module-dec
 import { getToken, setToken, removeToken, setUsername, removeUsername, getUsername, setPagePermissionID, getPagePermissionID, removePagePermissionID, removeDynamicRoutes } from 'src/utils/cookie';
 import { resetRouter } from 'src/router';
 import store from 'src/store';
-import { getUserInfo, login } from 'src/api/user';
+import { login, signOut } from 'src/api/user';
+import md5crypto from 'crypto-js/md5';
 import { uid } from 'quasar';
 import { TagsViewModule } from './tags';
 import { sleep } from 'src/utils/tools';
@@ -45,10 +46,11 @@ class User extends VuexModule implements IUserState {
   @Action({ rawError: true })
   public async Login(data: any) {
     const { username, password } = data;
-    // await login({ username, password });
-    await sleep(1000);
-    const token = uid();
-    const pagePermissionId = setting.pagePermissionId;
+    function enCrypty(psw: string) {
+      let sugar = '!@A#$Q%W^E&R*T()_+a_1';
+      return md5crypto(sugar + psw).toString();
+    }
+    const { token, pagePermissionId } = await login({ userName: username, password: enCrypty(password) });
     const userinfo = {
       token,
       username,

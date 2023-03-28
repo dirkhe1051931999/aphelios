@@ -37,30 +37,9 @@ axios.interceptors.request.use(
       delete config.params.getResHeader;
       config.getResHeader = true;
     }
-    let Timestamp = new Date().getTime();
-    //时间戳
-    config.headers['accept-language'] =
-      AppModule.language === 'en-US' ? 'en' : 'zh-cn';
-    config.headers['Timestamp'] = Timestamp;
+    config.headers['Language'] = 'zh_CN';
     if (UserModule.token) {
-      let requetId = 'uuidv4()'; //uuid
-      let sk = 'UserModule.otherLoginData.sk'; //获取SK
-      let SKEnc = 'CryptoJS.MD5(Timestamp + sk)'; // SKEnc = MD5(Timestamp + SK)
-      let SKEnc1 = 'CryptoJS.enc.Hex.stringify(SKEnc)';
-      let body =
-        config.method === 'get'
-          ? ''
-          : JSON.stringify(config.data) === '{}'
-          ? '{}'
-          : JSON.stringify(config.data);
-      let data = UserModule.token + Timestamp + requetId + body;
-      let sign = 'CryptoJS.HmacSHA256(data, SKEnc1)'; // Signature = HMAC-SHA256(Authorization + Timestamp + Request_Id + Request_Body, SKEnc).toLowerCase()
-      let sign1 = 'CryptoJS.enc.Hex.stringify(sign)';
-      config.headers['Authorization'] = UserModule.token;
-      config.headers.Signature = sign1;
-      config.headers['Request-ID'] = requetId;
-      config.headers.Version = '1.0';
-      config.headers['Sign-Method'] = 'HMAC-SHA256';
+      config.headers['Authorization'] = `Bearer ${UserModule.token}`;
     }
     return config;
   },
@@ -75,22 +54,22 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response) => {
     const errorFuc = (response: any) => {
-      const { status, success, msg } = response.data;
-      if (['88003', '88016'].includes(String(status))) {
+      const { code, message } = response.data;
+      if (['103'].includes(String(code))) {
         /* token无效 */
         UserModule.ResetToken();
         router.push(`/login?redirect=${router.currentRoute.value.path}`);
         globalMessage.show({
           type: 'error',
-          content: msg || setting.defaultErrorMsg,
+          content: message || setting.defaultErrorMsg,
         });
         Loading.hide();
-        return Promise.reject(status);
+        return Promise.reject(code);
       } else {
         /* 错误提示 */
         globalMessage.show({
           type: 'error',
-          content: msg || setting.defaultErrorMsg,
+          content: message || setting.defaultErrorMsg,
         });
         Loading.hide();
         return Promise.reject('error');
@@ -106,17 +85,13 @@ axios.interceptors.response.use(
               { blob: response.data },
               {
                 ...response.headers,
-                'content-disposition': window.decodeURIComponent(
-                  response.headers['content-disposition'] || ''
-                ),
+                'content-disposition': window.decodeURIComponent(response.headers['content-disposition'] || ''),
               }
             )
             // Object.assign({ blob: response.data }, response.headers)
           );
         } else {
-          return Promise.resolve(
-            Object.assign(response.data.data, response.headers)
-          );
+          return Promise.resolve(Object.assign(response.data.data, response.headers));
         }
       } else {
         return Promise.resolve(response.data.data || {});
@@ -129,11 +104,7 @@ axios.interceptors.response.use(
         var reader: any = new FileReader();
         reader.readAsBinaryString(response.data);
         reader.addEventListener('loadend', () => {
-          if (
-            reader.result.indexOf('status') !== -1 &&
-            reader.result.indexOf('message') !== -1 &&
-            reader.result.indexOf('pdf') === -1
-          ) {
+          if (reader.result.indexOf('code') !== -1 && reader.result.indexOf('message') !== -1 && reader.result.indexOf('pdf') === -1) {
             response.data = JSON.parse(reader.result);
             resolve(errorFuc(response));
           } else {
@@ -143,8 +114,8 @@ axios.interceptors.response.use(
       });
     } else {
       /* 不是blob */
-      const { status, success } = response.data;
-      if (!status || !success || !setting.succCode.includes(String(status))) {
+      const { code, success } = response.data;
+      if (!code || !success || !setting.succCode.includes(String(code))) {
         return errorFuc(response);
       } else {
         return successFuc(response);

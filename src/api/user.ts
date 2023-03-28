@@ -1,24 +1,18 @@
 import { request } from 'src/boot/axios';
 
 const api = {
-  login: '/api/mock-api/v1/user/login',
-  getUserInfo: '/api/mock-api/v1/user/info',
-  getAllUser: '/api/mock-api/v1/table',
+  login: '/management/blog/auth/login',
+  signOut: '/management/blog/auth/signOut',
 };
-export const login = (data: any) =>
+export const login = (data: any): any =>
   request({
     url: api.login,
     method: 'post',
     data,
   });
-export const getUserInfo = (data: any) =>
+export const signOut = (data: any): any =>
   request({
-    url: api.getUserInfo,
-    method: 'post',
-    data,
-  });
-export const getAllUser = (data: any) =>
-  request({
-    url: api.getAllUser,
+    url: api.signOut,
     method: 'get',
+    params: data,
   });
