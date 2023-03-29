@@ -1,21 +1,21 @@
 import schedule from "node-schedule";
 import moment from "moment";
 import sqlQuery from "./mysql-async";
-import DraftRedis from "./draft-redis";
+import RedisDB from "./redis-db";
 import CONFIG from "src/config";
 
 const draftPostRedisKey = CONFIG.draftPostRedisKey;
 
 // redis向mysql中写入数据定时任务
 export function redisToMysqlTask(): void {
-  const draftRedis = new DraftRedis(CONFIG.db.redis);
+  const redisDB = new RedisDB(CONFIG.db.redis);
   // 每天凌晨3点执行任务
   const rule = new schedule.RecurrenceRule();
   rule.hour = 3;
   rule.minute = 0;
   schedule.scheduleJob(rule, async function () {
     console.log("定时任务开始执行!", moment().format("YYYY-MM-DD HH:mm:ss"));
-    const redisPost: any = await draftRedis.get(draftPostRedisKey);
+    const redisPost: any = await redisDB.get(draftPostRedisKey);
     if (redisPost) {
       const redisPostData = JSON.parse(redisPost);
       const sqlPost = {

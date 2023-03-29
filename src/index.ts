@@ -8,14 +8,17 @@ import koaJson from "koa-json";
 import jwt from "koa-jwt";
 import cors from "koa2-cors";
 import session from "koa-session2";
-import Store from "koa-session2/libs/store";
+// import cookie from "koa-cookie";
 import CONFIG from "src/config";
 import query from "./util/mysql-async";
 import { registerRoutes } from "./routes/index";
 import { success, error } from "src/util/ctx-response";
 import tokenError from "./middlreware/tokenError";
+import RedisStore from "./util/redis-store";
+import RedisDB from "./util/redis-db";
 const router = new Router();
 const app = new Koa();
+
 // 扩展 Context 接口
 declare module "koa" {
   interface Context {
@@ -23,12 +26,11 @@ declare module "koa" {
     error(ctx: Context, code: number): void;
   }
 }
-// session
+// session token
 app.use(
   session({
-    store: new Store(),
-    key: "HJ_SERVICE_SESSION_ID", // cookie 中存储会话 ID 的键名
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 会话过期时间，单位为毫秒
+    store: new RedisStore(CONFIG.db.redis),
+    maxAge: 24 * 60 * 60 * 1000, // 默认会话过期时间，单位为毫秒
   })
 );
 /* 配置模板引擎 */
@@ -57,8 +59,10 @@ app.use(bodyParser());
 app.use(koaJson());
 /* 静态资源文件 */
 app.use(resource(path.join(CONFIG.root, CONFIG.appPath)));
-/* ctx.execSql 来执行SQL操作 */
+
 app.use(async (ctx, next) => {
+  ctx.redisDB = new RedisDB(CONFIG.db.redis);
+  /* ctx.execSql 来执行SQL操作 */
   ctx.execSql = query;
   ctx.set("Access-Control-Allow-Origin", CONFIG.accessControlAllowOrigin);
   await next();
@@ -77,15 +81,6 @@ app.use(
     allowHeaders: ["Content-Type", "Authorization", "Accept", "Language"],
   })
 );
-// app.use(async (ctx, next) => {
-//   ctx.set("Access-Control-Allow-Origin", "*");
-//   ctx.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//   ctx.set(
-//     "Access-Control-Allow-Headers",
-//     "Origin, X-Requested-With, Content-Type, Accept"
-//   );
-//   await next();
-// });
 app.use(router.routes());
 registerRoutes(app, path.join(__dirname, "./api"));
 /* token 拦截 */

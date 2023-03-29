@@ -17,6 +17,7 @@ interface Config {
         auth_pass: string;
       };
     };
+    db_salt: string;
   };
   oAuth: {
     github: {
@@ -57,6 +58,7 @@ const config: Config = {
         auth_pass: "",
       },
     },
+    db_salt: "LGGKqbCrRKRnywHv3uqFZw==",
   },
   oAuth: {
     github: {
