@@ -3,7 +3,7 @@ import { VuexModule, Module, Action, Mutation, getModule } from 'vuex-module-dec
 import { getToken, setToken, removeToken, setUsername, removeUsername, getUsername, setPagePermissionID, getPagePermissionID, removePagePermissionID, removeDynamicRoutes } from 'src/utils/cookie';
 import { resetRouter } from 'src/router';
 import store from 'src/store';
-import { login, signOut } from 'src/api/user';
+import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld } from 'src/api/user';
 import md5crypto from 'crypto-js/md5';
 import { uid } from 'quasar';
 import { TagsViewModule } from './tags';
@@ -11,7 +11,10 @@ import { sleep } from 'src/utils/tools';
 import setting from 'src/setting.json';
 import { getUserinfo, removeUserinfo, setUserinfo } from 'src/utils/localStorage';
 import { PermissionModule } from './permission';
-
+function enCrypty(psw: string) {
+  let sugar = '!@A#$Q%W^E&R*T()_+a_1';
+  return md5crypto(sugar + psw).toString();
+}
 export interface IUserState {}
 
 @Module({ dynamic: true, store, name: 'User', namespaced: true })
@@ -45,16 +48,14 @@ class User extends VuexModule implements IUserState {
   // 登录
   @Action({ rawError: true })
   public async Login(data: any) {
-    const { username, password } = data;
-    function enCrypty(psw: string) {
-      let sugar = '!@A#$Q%W^E&R*T()_+a_1';
-      return md5crypto(sugar + psw).toString();
-    }
-    const { token, pagePermissionId } = await login({ userName: username, password: enCrypty(password) });
+    const { username, password, code } = data;
+    const { token, pagePermissionId, email, id } = await login({ userName: username, password: enCrypty(password), code });
     const userinfo = {
       token,
       username,
+      email,
       pagePermissionId,
+      id,
     };
     setToken(token);
     setUsername(username);
@@ -68,17 +69,57 @@ class User extends VuexModule implements IUserState {
   }
   // 获取用户信息
   @Action({ rawError: true })
-  public async getUserInfo() {
-    await sleep(300);
+  public async getUserIntroduction() {
+    sleep(2000);
+    this.SET_INTRODUCTION('introduction');
+    return Promise.resolve();
+  }
+  @Action({ rawError: true })
+  public async getUserInfo(data: any) {
+    const { id } = data;
+    const result = await getUserInfo({ id });
+    console.log(result);
     this.SET_INTRODUCTION('introduction');
     return Promise.resolve();
   }
   // 退出
   @Action({ rawError: true })
   public async LogOut() {
-    await sleep(1000);
+    await signOut({
+      email: UserModule.userInfo.email,
+      userName: UserModule.username,
+      userId: UserModule.userInfo.id,
+    });
     this.ResetToken();
     return Promise.resolve();
+  }
+  @Action({ rawError: true })
+  public async changePassword(data: any) {
+    const { username, oldPassword, newPassword } = data;
+    await changePassword({ userName: username, oldPassword: enCrypty(oldPassword), newPassword: enCrypty(newPassword) });
+    return Promise.resolve();
+  }
+  @Action({ rawError: true })
+  public async getVerifyCode(data: any) {
+    const { mobile, email } = await getVerifyCode(data);
+    return Promise.resolve({ email, mobile });
+  }
+  @Action({ rawError: true })
+  public async forgotPassword(data: any) {
+    const { email, username } = data;
+    await forgotPassword({ email, username });
+    return Promise.resolve();
+  }
+  @Action({ rawError: true })
+  public async checkToken(data: any) {
+    const { token } = data;
+    const { code } = await checkToken({ token });
+    return Promise.resolve(code);
+  }
+  @Action({ rawError: true })
+  public async changePasswordWithOutOld(data: any) {
+    const result = await changePasswordWithOutOld({ token: data.token, password: enCrypty(data.password) });
+    return Promise.resolve(result);
   }
   // 重置cookie
   @Action({ rawError: true })

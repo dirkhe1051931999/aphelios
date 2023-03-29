@@ -392,16 +392,18 @@ export default class LoginPage2 extends Vue {
   get token() {
     return this.$route.query.token;
   }
-  created() {}
+  async created() {
+    // await UserModule.getUserInfo({ id: '42' });
+  }
   async mounted() {
     if (this.token) {
       this.pageType = 'resetPassword';
       // token生成时间超过30分钟
       try {
-        // const { code } = await UserModule.checkToken({
-        //   token: this.token,
-        // });
-        if (['123'].includes('code')) {
+        const code = await UserModule.checkToken({
+          token: this.token,
+        });
+        if (['112'].includes(String(code))) {
           this.$q
             .dialog({
               title: '提示',
@@ -415,7 +417,7 @@ export default class LoginPage2 extends Vue {
                 this.$router.push(`${routes[1].path}${routes[1] && routes[1].children && routes[1].children![0].path ? `/${routes[1].children![0].path}` : ''}`);
               } else {
                 this.pageType = 'signIn';
-                this.$router.push('/login2');
+                this.$router.push('/login');
               }
             });
         }
@@ -429,7 +431,7 @@ export default class LoginPage2 extends Vue {
           })
           .onOk(() => {
             this.pageType = 'signIn';
-            this.$router.push('/login2');
+            this.$router.push('/login');
           });
         console.log(error);
       }
@@ -454,10 +456,10 @@ export default class LoginPage2 extends Vue {
     rePassword: '',
   };
   public signInParams = {
-    username: '',
-    password: '',
-    code: '',
-    method: 'ALI_SMS_VERIFY',
+    username: 'admin',
+    password: '123456',
+    code: '123',
+    method: 'EMAIL',
     methodSelectOption: [
       { label: 'SMS', value: 'ALI_SMS_VERIFY' },
       { label: 'EMAIL', value: 'EMAIL' },
@@ -562,14 +564,14 @@ export default class LoginPage2 extends Vue {
       if (result) {
         UserModule.ResetToken();
         this.pageType = 'signIn';
-        this.$router.push('/login2');
+        this.$router.push('/login');
       } else {
         const routes = PermissionModule.routes;
         this.$router.push(`${routes[1].path}${routes[1] && routes[1].children && routes[1].children![0].path ? `/${routes[1].children![0].path}` : ''}`);
       }
     }
     this.pageType = 'signIn';
-    this.$router.push('/login2');
+    this.$router.push('/login');
   }
   /* http */
   private async handlerSignIn() {
@@ -610,15 +612,15 @@ export default class LoginPage2 extends Vue {
     }
     try {
       this.signInParams.getCodeConfig.getVerifyCodeLoading = true;
-      // const { email, mobile } = await UserModule.sendCode({
-      //   username: this.signInParams.username,
-      //   sendMethod: this.signInParams.method,
-      // });
+      const { email, mobile } = await UserModule.getVerifyCode({
+        userName: this.signInParams.username,
+        sendMethod: this.signInParams.method,
+      });
       this.signInParams.getCodeConfig.getVerifyCodeLoading = false;
       this.signInParams.getCodeConfig.toGetVerifyCode = true;
       this.$globalMessage.show({
         type: 'success',
-        content: this.signInParams.method === 'EMAIL' ? `验证码已经发送到您的邮箱（${'email'}）` : `短信验证码已发送到您的手机（${'mobile'}）`,
+        content: this.signInParams.method === 'EMAIL' ? `验证码已经发送到您的邮箱（${email}）` : `短信验证码已发送到您的手机（${mobile}）`,
       });
       var start = +new Date();
       let count = this.signInParams.getCodeConfig.verifyCodeCount;
@@ -641,11 +643,11 @@ export default class LoginPage2 extends Vue {
   private handlerChangePassword() {
     this.$refs.changePasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
-        // await UserModule.modifyPassWithOld({
-        //   username: this.changePasswordForm.username,
-        //   oldPassword: this.changePasswordForm.oldPassword,
-        //   newPassword: this.changePasswordForm.password,
-        // });
+        await UserModule.changePassword({
+          username: this.changePasswordForm.username,
+          oldPassword: this.changePasswordForm.oldPassword,
+          newPassword: this.changePasswordForm.password,
+        });
         this.$globalMessage.show({
           type: 'success',
           content: '修改成功',
@@ -664,10 +666,10 @@ export default class LoginPage2 extends Vue {
   private handlerForgetPassword() {
     this.$refs.forgotPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
-        // await UserModule.findPassword({
-        //   username: this.forgotPasswordForm.username,
-        //   email: this.forgotPasswordForm.email,
-        // });
+        await UserModule.forgotPassword({
+          username: this.forgotPasswordForm.username,
+          email: this.forgotPasswordForm.email,
+        });
         this.$globalMessage.show({
           type: 'success',
           content: '操作成功，请检查您的电子邮件以重置您的密码',
@@ -684,22 +686,29 @@ export default class LoginPage2 extends Vue {
   private handlerResetPassword() {
     this.$refs.resetPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
-        // await UserModule.modifyPassWithoutOld({
-        //   token: this.token,
-        //   newPassword: this.resetPasswordForm.password,
-        // });
-        if (!getToken()) {
+        const { code, message } = await UserModule.changePasswordWithOutOld({
+          token: this.token,
+          password: this.resetPasswordForm.password,
+        });
+        if (String(code) === '200') {
+          if (!getToken()) {
+            this.$globalMessage.show({
+              type: 'success',
+              content: '修改成功，请重新登录',
+            });
+          }
+          this.resetPasswordForm.password = '';
+          this.resetPasswordForm.rePassword = '';
+          this.$nextTick(() => {
+            this.$refs.resetPasswordForm && this.$refs.resetPasswordForm.resetValidation();
+          });
+          this.resetPasswordToSignIn();
+        } else {
           this.$globalMessage.show({
-            type: 'success',
-            content: '修改成功，请重新登录',
+            type: 'error',
+            content: message,
           });
         }
-        this.resetPasswordForm.password = '';
-        this.resetPasswordForm.rePassword = '';
-        this.$nextTick(() => {
-          this.$refs.resetPasswordForm && this.$refs.resetPasswordForm.resetValidation();
-        });
-        this.resetPasswordToSignIn();
       }
     });
   }

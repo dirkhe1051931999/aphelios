@@ -38,9 +38,12 @@ axios.interceptors.request.use(
       config.getResHeader = true;
     }
     config.headers['Language'] = 'zh_CN';
-    if (UserModule.token) {
+    if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(config.url)) {
+      config.headers['Authorization'] = `Bearer ${config.data.token}`;
+    } else if (UserModule.token) {
       config.headers['Authorization'] = `Bearer ${UserModule.token}`;
     }
+
     return config;
   },
   (error) => {
@@ -52,7 +55,7 @@ axios.interceptors.request.use(
 
 // Response interceptors
 axios.interceptors.response.use(
-  (response) => {
+  (response: any) => {
     const errorFuc = (response: any) => {
       const { code, message } = response.data;
       if (['103'].includes(String(code))) {
@@ -115,7 +118,9 @@ axios.interceptors.response.use(
     } else {
       /* 不是blob */
       const { code, success } = response.data;
-      if (!code || !success || !setting.succCode.includes(String(code))) {
+      if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(response.config.url)) {
+        return Promise.resolve(response.data);
+      } else if (!code || !success || !setting.succCode.includes(String(code))) {
         return errorFuc(response);
       } else {
         return successFuc(response);

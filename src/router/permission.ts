@@ -8,7 +8,7 @@ import { AppModule } from 'src/store/modules/app';
 import i18n from 'src/i18n';
 import store from 'src/store';
 import { getUserinfo } from 'src/utils/localStorage';
-const whiteList = ['/login', '/login2'];
+const whiteList = ['/login'];
 const getPageTitle = (to: any) => {
   if (whiteList.indexOf(to.path) !== -1) {
     return `${setting.title}`;
@@ -17,13 +17,9 @@ const getPageTitle = (to: any) => {
     return `${setting.title}`;
   }
   if (to.matched[0].name === to.matched[1].name) {
-    return `${setting.title} ${
-      (i18n as any)[AppModule.language]['routes'][to.meta.title]
-    }`;
+    return `${setting.title} ${(i18n as any)[AppModule.language]['routes'][to.meta.title]}`;
   } else {
-    return `${setting.title} ${
-      (i18n as any)[AppModule.language]['routes'][to.meta.title]
-    }`;
+    return `${setting.title} ${(i18n as any)[AppModule.language]['routes'][to.meta.title]}`;
   }
 };
 
@@ -42,7 +38,7 @@ router.beforeEach(async (to, _from, next) => {
       // 检查用户是否已获得其权限角色
       if (!UserModule.introduction) {
         try {
-          await UserModule.getUserInfo();
+          await UserModule.getUserIntroduction();
           // 根据角色生成可访问的 Routes（可访问路由 = 常驻路由 + 有访问权限的动态路由）
           PermissionModule.GenerateRoutes();
           // 将'有访问权限的动态路由' 添加到 Router 中
@@ -85,7 +81,6 @@ store.watch(
   (state: any, getters) => state.App.language,
   // 第二参数也是箭头函数，是数据改变后的回调监听
   (newVal: string, oldVal: string) => {
-    if (router.currentRoute.value)
-      document.title = getPageTitle(router.currentRoute.value);
+    if (router.currentRoute.value) document.title = getPageTitle(router.currentRoute.value);
   }
 );
