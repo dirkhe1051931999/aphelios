@@ -5,39 +5,49 @@ import util from "util";
 /**
  * 判断token是否可用
  */
-export default function (tokenType: string) {
+export default function () {
   return async (ctx, next) => {
-    let token = ctx.headers.authorization;
-    if (!token) {
-      ctx.status = 401;
-      ctx.body = { message: "Authorization token is missing" };
-      return;
-    }
-    token = token.split(" ")[1];
-    try {
-      const decoded = jwt.verify(
-        token,
-        process.env[`JWT_SECRET_${tokenType.toUpperCase()}`]
-      );
-      ctx.state.user = decoded;
-      // 检查 token 是否快过期了
-      const now = Math.floor(Date.now() / 1000);
-      const exp = decoded.exp;
-      const timeToExpire = exp - now;
-      const refreshTokenThreshold = 60 * 60; // 1 小时
-      if (timeToExpire < refreshTokenThreshold) {
-        // 如果 token 快过期了，则刷新 token
-        const newToken = jwt.sign(
-          { userId: decoded.userId },
-          process.env[`JWT_SECRET_${tokenType.toUpperCase()}`],
-          { expiresIn: "1h" }
-        );
-        ctx.set("Authorization", newToken);
+    let token = ctx.request.headers.authorization;
+    let no_verify_token = false;
+    /* 这些接口不校验token */
+    var unless_reg = [
+      /^\/management\/blog\/auth*/,
+      /^\/web\/blog*/,
+      /^\/Oauth*/,
+    ];
+    unless_reg.forEach((reg) => {
+      if (reg.test(ctx.request.url)) {
+        no_verify_token = true;
       }
+    });
+    if (no_verify_token) {
+      // url不需要校验token的，直接放行
       await next();
-    } catch (err) {
-      ctx.status = 401;
-      ctx.body = { message: `Invalid ${tokenType} authorization token` };
+    } else {
+      if (!token) {
+        // 如果没有token，直接返回401
+        ctx.error(ctx, 401);
+        return;
+      }
+      try {
+        // 如果有token，进行校验
+        token = token.split(" ")[1];
+        const decoded = jwt.verify(token, CONFIG.tokenSecret);
+        // 检查 token 是否过期了
+        const now = Math.floor(Date.now() / 1000);
+        const exp = decoded.exp;
+        if (exp < now) {
+          await ctx.redisDB.destroy(
+            `${decoded.email}-${decoded.name}-${decoded.id}`
+          );
+          throw new Error("Token expired");
+        } else {
+          await next();
+        }
+      } catch (err) {
+        console.log(err);
+        ctx.error(ctx, 401);
+      }
     }
   };
 }

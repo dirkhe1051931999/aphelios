@@ -34,9 +34,19 @@ export const success = (ctx: Context, header, data) => {
  * @param code 错误码
  */
 export const error = (ctx: Context, heaadr, code: string | number) => {
-  let message =
-    ctx.request.headers["language"] == "zh_CN"
-      ? errorCode[code][0]
-      : errorCode[code][1];
+  let message = "";
+  if (typeof code === "string") {
+    let extra = code.split("#")[1];
+    code = Number(code.split("#")[0]);
+    message =
+      ctx.request.headers["language"] == "zh_CN"
+        ? extra + " " + errorCode[code][0]
+        : extra + " " + errorCode[code][1];
+  } else {
+    message =
+      ctx.request.headers["language"] == "zh_CN"
+        ? errorCode[code][0]
+        : errorCode[code][1];
+  }
   response(ctx, null, code, message);
 };

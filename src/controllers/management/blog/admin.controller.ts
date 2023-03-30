@@ -6,7 +6,7 @@ import { sendMail } from "src/util/send-email";
 import fs from "fs";
 import path from "path";
 
-// 登录
+/* 登录 */
 export const login = async (ctx: Context): Promise<void> => {
   const userName = (ctx.request.body as { userName?: string }).userName || "";
   const code = (ctx.request.body as { code?: string }).code || "";
@@ -185,7 +185,7 @@ export const forgotPassword = async (ctx: Context): Promise<void> => {
     const results = await ctx.execSql(
       `SELECT userName, id, avatar FROM user WHERE email = '${email}' and userName = '${username}'`
     );
-    const url = "http://localhost:9002/index.html#/login?token=";
+    const url = CONFIG.resetPasswordUrl;
     if (results.length > 0) {
       const userToken = {
         name: results[0].userName,
@@ -250,6 +250,7 @@ export const checkToken = async (ctx: Context): Promise<void> => {
     ctx.error(ctx, 112);
   }
 };
+/* 重置密码，不需要老密码 */
 export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
   const password = (ctx.request.body as { password?: string }).password || "";
   const token = (ctx.request.body as { token?: string }).token || "";
@@ -283,7 +284,7 @@ export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
     ctx.error(ctx, 114);
   }
 };
-// 登出
+/* 退出登录 */
 export const signOut = async (ctx: Context): Promise<void> => {
   const email = (ctx.request.body as { email?: string }).email || "";
   const userName = (ctx.request.body as { userName?: string }).userName || "";

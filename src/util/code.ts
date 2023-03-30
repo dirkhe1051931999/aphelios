@@ -1,5 +1,9 @@
 export const errorCode = {
   500: ["服务器内部错误", "Internal server error"],
+  401: ["Token 失效", "Token invalid"],
+  402: ["查询异常", "Query exception"],
+  404: ["不能为空", "cannot be empty"],
+  405: ["操作异常", "Operation exception"],
   100: [
     "用户名，密码，验证码不能为空",
     "User name or password cannot be empty",
@@ -29,4 +33,7 @@ export const errorCode = {
     "邮箱，用户名，userId不能为空",
     "Email, username, userId cannot be empty",
   ],
+  301: ["用户已存在", "User already exists"],
+  302: ["邮箱已存在", "Email already exists"],
+  303: ["邮箱或用户已存在", "Email already exists"],
 };

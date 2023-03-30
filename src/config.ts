@@ -27,6 +27,8 @@ interface Config {
   };
   root: string;
   appPath: string;
+  resetPasswordUrl: string;
+  defaultCdnUrl: string;
   tempUploads: string;
   uploads: string;
   port: number;
@@ -68,6 +70,8 @@ const config: Config = {
   },
   root: path.normalize(__dirname + "/.."),
   appPath: "src/static",
+  resetPasswordUrl: "http://127.0.0.1:9002/index.html#/login?token=",
+  defaultCdnUrl: "http://127.0.0.1:3000/cdn",
   tempUploads: "tempUploads",
   uploads: "uploads",
   port: 3000,

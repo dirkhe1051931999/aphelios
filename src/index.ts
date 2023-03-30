@@ -8,7 +8,7 @@ import koaJson from "koa-json";
 import jwt from "koa-jwt";
 import cors from "koa2-cors";
 import session from "koa-session2";
-// import cookie from "koa-cookie";
+import requestIP from "request-ip";
 import CONFIG from "src/config";
 import query from "./util/mysql-async";
 import { registerRoutes } from "./routes/index";
@@ -16,6 +16,7 @@ import { success, error } from "src/util/ctx-response";
 import tokenError from "./middlreware/tokenError";
 import RedisStore from "./util/redis-store";
 import RedisDB from "./util/redis-db";
+import { hasEmptyValue } from "./util/helper";
 const router = new Router();
 const app = new Koa();
 
@@ -23,9 +24,24 @@ const app = new Koa();
 declare module "koa" {
   interface Context {
     success(ctx: Context, data: any): void;
-    error(ctx: Context, code: number): void;
+    error(ctx: Context, code: number | string): void;
+    isFalsy(data: any[]): boolean;
   }
 }
+/* 跨域配置 */
+app.use(
+  cors({
+    origin: "*",
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization", "Accept", "Language"],
+  })
+);
+/* Koa 应用程序中间件，用于解析 HTTP 请求正文并将其放入 ctx.request.body 中 */
+app.use(bodyParser());
+/* 将 JavaScript 对象转换为 JSON 格式的响应。它的作用是简化 Koa 应用程序中的 JSON 响应的处理过程 */
+app.use(koaJson());
+/* 静态资源文件 */
+app.use(resource(path.join(CONFIG.root, CONFIG.appPath)));
 // session token
 app.use(
   session({
@@ -39,55 +55,28 @@ app.use(
     extension: "ejs",
   })
 );
-/* jwt */
-app.use(
-  jwt({
-    secret: CONFIG.tokenSecret,
-    passthrough: true,
-  }).unless({
-    path: [
-      /^\/management\/blog\/auth*/,
-      /^\/web\/blog*/,
-      /favicon.ico/,
-      /^\/Oauth*/,
-    ],
-  })
-);
-/* Koa 应用程序中间件，用于解析 HTTP 请求正文并将其放入 ctx.request.body 中 */
-app.use(bodyParser());
-/* 将 JavaScript 对象转换为 JSON 格式的响应。它的作用是简化 Koa 应用程序中的 JSON 响应的处理过程 */
-app.use(koaJson());
-/* 静态资源文件 */
-app.use(resource(path.join(CONFIG.root, CONFIG.appPath)));
-
-app.use(async (ctx, next) => {
-  ctx.redisDB = new RedisDB(CONFIG.db.redis);
-  /* ctx.execSql 来执行SQL操作 */
-  ctx.execSql = query;
-  ctx.set("Access-Control-Allow-Origin", CONFIG.accessControlAllowOrigin);
-  await next();
-});
 /* response 封装 */
 app.use(async (ctx, next) => {
   ctx.success = success.bind(null, ctx);
   ctx.error = error.bind(null, ctx);
   await next();
 });
-/* 跨域配置 */
-app.use(
-  cors({
-    origin: "*",
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "Accept", "Language"],
-  })
-);
-app.use(router.routes());
-registerRoutes(app, path.join(__dirname, "./api"));
+/* 注册一下全局函数 */
+app.use(async (ctx, next) => {
+  /* redis缓存初始化 */
+  ctx.redisDB = new RedisDB(CONFIG.db.redis);
+  /* ctx.execSql 来执行SQL操作 */
+  ctx.execSql = query;
+  /* 是否是假值 */
+  ctx.isFalsy = hasEmptyValue;
+  await next();
+});
 /* token 拦截 */
-app.use(tokenError("type1"));
-app.use(tokenError("type2"));
+app.use(tokenError());
+/* 注册路由 */
+registerRoutes(app, path.join(__dirname, "./api"));
 /* 一个中间件函数，用于处理未匹配到的请求，通常情况下，应该将 router.allowedMethods() 放在所有的路由定义之后，以便处理所有未匹配到的请求。 */
-app.use(router.allowedMethods());
+// app.use(router.allowedMethods());
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });

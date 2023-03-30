@@ -14,7 +14,23 @@ import moment from "moment";
 export const makeSalt = (): string => {
   return crypto.randomBytes(16).toString("base64");
 };
+/**
+ * 判断是否是假值,0不是假值
+ * @param data
+ * @returns false or true
+ */
 
+export const hasEmptyValue = (data: any[]): boolean => {
+  return data.some((value) => {
+    return (
+      value === undefined ||
+      value === "" ||
+      value === false ||
+      value === "false" ||
+      value === null
+    );
+  });
+};
 /**
  * Encrypt password
  *
