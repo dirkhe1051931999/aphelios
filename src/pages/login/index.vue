@@ -392,9 +392,7 @@ export default class LoginPage2 extends Vue {
   get token() {
     return this.$route.query.token;
   }
-  async created() {
-    // await UserModule.getUserInfo({ id: '42' });
-  }
+  async created() {}
   async mounted() {
     if (this.token) {
       this.pageType = 'resetPassword';

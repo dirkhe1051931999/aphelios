@@ -117,7 +117,7 @@ export default class MyDialogComponent extends Vue {
   private handlerClickDialogConfirmButton() {
     if (!this.option.customComfirm) {
       this.$refs[this.myDialogParams.id].validate().then(async (valid: boolean) => {
-        if (!valid) {
+        if (valid) {
           const result = await this.$globalConfirm.show({
             title: this.$t('messages.tishi'),
             color: 'primary',

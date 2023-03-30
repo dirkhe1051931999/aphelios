@@ -70,19 +70,31 @@ export const asyncRoutes: RouteRecordRaw[] = [
   {
     path: '/account',
     component: shallowRef(Layout),
-    name: 'Account0',
+    name: 'Account',
     meta: {
-      pagePermissionId: ['account'],
+      title: 'account',
+      icon: 'people',
+      pagePermissionId: ['account', 'account-role', 'account-user'],
     },
     children: [
       {
-        path: '',
-        name: 'Account',
+        path: 'role',
+        name: 'AccountRole',
         meta: {
-          title: 'account',
-          icon: 'people',
+          title: 'account-role',
+          pagePermissionId: ['account', 'account-role'],
         },
-        component: () => import(/* webpackChunkName: "account" */ 'pages/account/index.vue'),
+        component: () => import(/* webpackChunkName: "account-role" */ 'src/pages/account/role.vue'),
+      },
+      {
+        path: 'user',
+        name: 'AccountUser',
+        meta: {
+          title: 'account-user',
+          icon: 'people',
+          pagePermissionId: ['account', 'account-user'],
+        },
+        component: () => import(/* webpackChunkName: "account-user" */ 'src/pages/account/user.vue'),
       },
     ],
   },

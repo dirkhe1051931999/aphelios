@@ -58,7 +58,7 @@ axios.interceptors.response.use(
   (response: any) => {
     const errorFuc = (response: any) => {
       const { code, message } = response.data;
-      if (['103'].includes(String(code))) {
+      if (['401'].includes(String(code))) {
         /* token无效 */
         UserModule.ResetToken();
         router.push(`/login?redirect=${router.currentRoute.value.path}`);
