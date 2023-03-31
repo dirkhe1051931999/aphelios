@@ -28,7 +28,7 @@ router.beforeEach(async (to, _from, next) => {
   if (getToken() && getUserinfo() && getUsername()) {
     if (whiteList.indexOf(to.path) !== -1) {
       // 如果已经登录，并且没有带query token 参数，并准备进入 Login 页面，则重定向到主页
-      if (to.query.token && to.query.creationId) {
+      if (to.query.token) {
         next();
       } else {
         next({ path: '/dashboard' });

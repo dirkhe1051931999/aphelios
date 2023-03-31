@@ -49,7 +49,10 @@ class User extends VuexModule implements IUserState {
   @Action({ rawError: true })
   public async Login(data: any) {
     const { username, password, code } = data;
-    const { token, pagePermissionId, email, id } = await login({ userName: username, password: enCrypty(password), code });
+    const { token, pagePermissionId, email, id, errorCode } = await login({ userName: username, password: enCrypty(password), code });
+    if (errorCode && errorCode === '119') {
+      return Promise.resolve(errorCode);
+    }
     const userinfo = {
       token,
       username,

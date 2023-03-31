@@ -455,8 +455,8 @@ export default class LoginPage2 extends Vue {
   };
   public signInParams = {
     username: 'admin',
-    password: '123456',
-    code: '123',
+    password: '',
+    code: '',
     method: 'EMAIL',
     methodSelectOption: [
       { label: 'SMS', value: 'ALI_SMS_VERIFY' },
@@ -588,17 +588,24 @@ export default class LoginPage2 extends Vue {
       return;
     }
     this.$q.loading.show();
-    await UserModule.Login({
+    const result = await UserModule.Login({
       username: this.signInParams.username,
       password: this.signInParams.password,
       code: this.signInParams.code,
     });
     this.$q.loading.hide();
-    this.$globalMessage.show({
-      type: 'success',
-      content: '登录成功',
-    });
-    location.reload();
+    if (result && result === '119') {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '初始化用户，请先设置密码',
+      });
+    } else {
+      this.$globalMessage.show({
+        type: 'success',
+        content: '登录成功',
+      });
+      location.reload();
+    }
   }
   private async handleClickSendCode() {
     if (!this.signInParams.username) {

@@ -122,6 +122,8 @@ axios.interceptors.response.use(
         return Promise.resolve(response.data);
       } else if (!code || !success || !setting.succCode.includes(String(code))) {
         return errorFuc(response);
+      } else if (code && !success && ['119'].includes(String(code))) {
+        return Promise.resolve({ errorCode: code });
       } else {
         return successFuc(response);
       }

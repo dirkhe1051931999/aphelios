@@ -88,6 +88,15 @@
                   <span class="link-type" @click="handlerClickDetail(props.row)" v-if="props.row.userName">{{ props.row.userName }}</span>
                   <span v-else>--</span>
                 </div>
+                <!-- userStatus -->
+                <div v-if="col.name === 'userStatus'">
+                  <span v-if="props.row.userStatus === 0" class="my-status blue">初始化</span>
+                  <span v-else-if="props.row.userStatus === 1" class="my-status green">正常</span>
+                  <span v-else-if="props.row.userStatus === 2" class="my-status grey">停用</span>
+                  <span v-else-if="props.row.userStatus === 3" class="my-status red">已锁</span>
+                  <span v-else-if="props.row.userStatus === 4" class="my-status yellow">设置密码链接过期</span>
+                  <span v-else>--</span>
+                </div>
                 <!-- avatar -->
                 <div v-if="col.name === 'avatar'">
                   <q-img :src="props.row.avatar" style="height: 32px; width: 32px; border-radius: 50%" v-if="props.row.avatar">
@@ -107,14 +116,20 @@
                       <q-icon name="o_expand_more"></q-icon>
                       <q-popup-proxy style="min-width: 100px">
                         <q-list>
-                          <q-item clickable dense v-close-popup>
+                          <q-item clickable dense v-close-popup v-if="canUnlock(props.row)">
                             <q-item-section class="text-center"> 解锁 </q-item-section>
                           </q-item>
-                          <q-item clickable dense v-close-popup>
+                          <q-item clickable dense v-close-popup v-if="canChangePassword(props.row)">
                             <q-item-section class="text-center"> 修改密码 </q-item-section>
                           </q-item>
-                          <q-item clickable dense v-close-popup>
-                            <q-item-section class="text-center"> 禁用/启用 </q-item-section>
+                          <q-item clickable dense v-close-popup v-if="canEnable(props.row)" @click="updateUserStatus(props.row, 1)">
+                            <q-item-section class="text-center"> 启用 </q-item-section>
+                          </q-item>
+                          <q-item clickable dense v-close-popup v-if="canDisable(props.row)" @click="updateUserStatus(props.row, 2)">
+                            <q-item-section class="text-center"> 禁用 </q-item-section>
+                          </q-item>
+                          <q-item clickable dense v-close-popup v-if="canReSendUrl(props.row)" @click="reSendUrl(props.row)">
+                            <q-item-section class="text-center"> 重发链接 </q-item-section>
                           </q-item>
                         </q-list>
                       </q-popup-proxy>
@@ -248,6 +263,31 @@ export default class AccountUserComponent extends Vue {
       return row.userType === 1;
     };
   }
+  get canDisable() {
+    return (row: any) => {
+      return (row.userStatus === 1 || row.userStatus === 0) && row.userType !== 0;
+    };
+  }
+  get canEnable() {
+    return (row: any) => {
+      return row.userStatus === 2;
+    };
+  }
+  get canChangePassword() {
+    return (row: any) => {
+      return row.userType === 1 || row.userType === 0;
+    };
+  }
+  get canUnlock() {
+    return (row: any) => {
+      return row.userStatus === 3;
+    };
+  }
+  get canReSendUrl() {
+    return (row: any) => {
+      return row.userStatus === 4 && row.userType === 1;
+    };
+  }
   /**params */
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
   private avatarParams = {
@@ -289,6 +329,11 @@ export default class AccountUserComponent extends Vue {
       {
         name: 'avatar',
         label: '头像',
+        inSlot: true,
+      },
+      {
+        name: 'userStatus',
+        label: '用户状态',
         inSlot: true,
       },
       {
@@ -595,6 +640,10 @@ export default class AccountUserComponent extends Vue {
           ip: '127.0.0.1',
           userType: 1, //0:默认用户，1:创建用户，2:第三方用户
         });
+        this.$globalMessage.show({
+          type: 'success',
+          content: `添加成功，请检查您的邮件设置密码，邮件已发送至 ${this.dialogAddUpdateParams.params.email}`,
+        });
       }
       if (this.dialogAddUpdateParams.dialogType === 'update') {
         await AccountModule.updateUser({
@@ -605,17 +654,66 @@ export default class AccountUserComponent extends Vue {
           avatar: this.dialogAddUpdateParams.params.avatar,
           ip: '127.0.0.1',
         });
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
       }
       this.dialogAddUpdateParams.clickLoading = false;
       this.dialogAddUpdateParams.visiable = false;
+      this.getData();
+    } catch (error) {
+      console.log(error);
+      this.dialogAddUpdateParams.clickLoading = false;
+    }
+  }
+  private async updateUserStatus(row: any, userStatus: number) {
+    try {
+      this.tableParams.loading = true;
+      await AccountModule.updateUserStatus({
+        id: row.id,
+        userStatus: userStatus,
+      });
+      this.tableParams.loading = false;
       this.$globalMessage.show({
         type: 'success',
         content: this.$t('messages.success'),
       });
       this.getData();
     } catch (error) {
-      console.log(error);
-      this.dialogAddUpdateParams.clickLoading = false;
+      this.tableParams.loading = false;
+    }
+  }
+  private async unLockUser(row: any, userStatus: number) {
+    try {
+      this.tableParams.loading = true;
+      await AccountModule.unLockUser({
+        id: row.id,
+      });
+      this.tableParams.loading = false;
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.getData();
+    } catch (error) {
+      this.tableParams.loading = false;
+    }
+  }
+  private async reSendUrl(row: any) {
+    try {
+      this.tableParams.loading = true;
+      await AccountModule.reSendUrl({
+        id: row.id,
+      });
+      this.tableParams.loading = false;
+      this.$globalMessage.show({
+        type: 'success',
+        content: `发送成功，请检查您的邮件设置密码，邮件已发送至 ${row.email}`,
+      });
+      this.getData();
+    } catch (error) {
+      this.tableParams.loading = false;
     }
   }
   private async handlerClickDelete(row: any) {
