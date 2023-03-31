@@ -5,7 +5,10 @@ import {
   deleteUser,
   getAllAvatar,
   getAllUser,
+  reSendUrl,
+  unLockUser,
   updateUser,
+  updateUserStatus,
 } from "src/controllers/management/blog/user";
 
 export class ManagementBlogUserAPIController {
@@ -28,5 +31,17 @@ export class ManagementBlogUserAPIController {
   @Route("/deleteUser", HTTP_METHODS.POST)
   async deleteUser(ctx: Koa.Context, next: Koa.Next) {
     return deleteUser(ctx);
+  }
+  @Route("/updateUserStatus", HTTP_METHODS.POST)
+  async updateUserStatus(ctx: Koa.Context, next: Koa.Next) {
+    return updateUserStatus(ctx);
+  }
+  @Route("/unLockUser", HTTP_METHODS.POST)
+  async unLockUser(ctx: Koa.Context, next: Koa.Next) {
+    return unLockUser(ctx);
+  }
+  @Route("/reSendUrl", HTTP_METHODS.POST)
+  async reSendUrl(ctx: Koa.Context, next: Koa.Next) {
+    return reSendUrl(ctx);
   }
 }

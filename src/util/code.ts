@@ -30,9 +30,18 @@ export const errorCode = {
   114: ["修改密码异常", "Modify password exception"],
   115: ["验证码无效", "Verification code is invalid"],
   116: [
-    "邮箱，用户名，userId不能为空",
-    "Email, username, userId cannot be empty",
+    "用户已锁，请联系管理员解锁",
+    "User is locked, please contact the administrator",
   ],
+  117: [
+    "用户已停用，请联系管理员启用",
+    "User is disabled, please contact the administrator",
+  ],
+  118: [
+    "用户设置密码链接过期，请联系管理员",
+    "User status exception, please contact the administrator",
+  ],
+  119: ["初始化用户，请设置密码", "Initialize user, please set password"],
   301: ["用户已存在", "User already exists"],
   302: ["邮箱已存在", "Email already exists"],
   303: ["邮箱或用户已存在", "Email already exists"],

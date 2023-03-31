@@ -17,10 +17,13 @@ export const login = async (ctx: Context): Promise<void> => {
   }
   try {
     const results = await ctx.execSql(
-      `SELECT id, hashedPassword, salt,email FROM user WHERE role='ADMIN' and userName = ?`,
+      `SELECT id, hashedPassword, salt,email,userStatus FROM user WHERE userName = ?`,
       userName
     );
     if (results.length > 0) {
+      if (results[0].userStatus === 0) {
+        ctx.error(ctx, 119);
+      }
       const hashedPassword = results[0].hashedPassword;
       const salt = results[0].salt;
       const email = results[0].email;
@@ -34,6 +37,18 @@ export const login = async (ctx: Context): Promise<void> => {
       ) {
         ctx.error(ctx, 115);
       } else {
+        if (results[0].userStatus === 4) {
+          ctx.error(ctx, 118);
+          return;
+        }
+        if (results[0].userStatus === 2) {
+          ctx.error(ctx, 117);
+          return;
+        }
+        if (results[0].userStatus === 3) {
+          ctx.error(ctx, 116);
+          return;
+        }
         const hashPassword = encryptInputPassword(password, salt);
         if (hashedPassword === hashPassword) {
           // 用户token
@@ -52,6 +67,10 @@ export const login = async (ctx: Context): Promise<void> => {
           const token = jwt.sign(userToken, CONFIG.tokenSecret, {
             expiresIn: "24h",
           });
+          // 删除错误次数
+          await ctx.execSql(
+            `DELETE FROM user_login WHERE id = ${results[0].id};`
+          );
           ctx.success(ctx, {
             token,
             email: email,
@@ -59,6 +78,25 @@ export const login = async (ctx: Context): Promise<void> => {
             pagePermissionId: ["dashboard", "account"],
           });
         } else {
+          // 记录错误次数
+          await ctx.execSql([
+            `
+            INSERT INTO user_login (userName, errorLoginCount, id)
+            VALUES ('${userName}', 1, ${results[0].id})
+            ON DUPLICATE KEY UPDATE
+            errorLoginCount = CASE
+              WHEN errorLoginCount >= 4 THEN 5
+              ELSE errorLoginCount + 1
+            END;
+            `,
+            `
+            UPDATE user
+            SET userStatus = 3
+            WHERE id = (
+              SELECT id FROM user_login WHERE userName = '${userName}' AND errorLoginCount = 5
+            );
+            `,
+          ]);
           ctx.error(ctx, 101);
         }
       }
@@ -155,7 +193,7 @@ export const getVerifyCode = async (ctx: Context): Promise<void> => {
         "您的验证码是：" + "<b>" + code + "</b>" + "，有效时间5分钟。";
       const html = fs
         .readFileSync(
-          path.resolve(__dirname, "../../../util/email.template.html"),
+          path.resolve(__dirname, "../../../templates/email.template.html"),
           "utf-8"
         )
         .replace("{{username}}", email)
@@ -216,7 +254,7 @@ export const forgotPassword = async (ctx: Context): Promise<void> => {
         "，有效时间10分钟。";
       const html = fs
         .readFileSync(
-          path.resolve(__dirname, "../../../util/email.template.html"),
+          path.resolve(__dirname, "../../../templates/email.template.html"),
           "utf-8"
         )
         .replace("{{username}}", email)
@@ -268,12 +306,13 @@ export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
       );
       if (results.length > 0) {
         const salt = results[0].salt;
-        console.log(password);
         const hashNewPassword = encryptInputPassword(password, salt);
         await ctx.execSql(
-          `UPDATE user SET hashedPassword = ? WHERE id = ${results[0].id}`,
+          `UPDATE user SET hashedPassword = ? , userStatus = 1  WHERE id = ${results[0].id}`,
           hashNewPassword
         );
+        // 删除重置密码链接
+        await ctx.redisDB.destroy(token);
         ctx.success(ctx, null);
       } else {
         ctx.error(ctx, 102);
@@ -289,8 +328,8 @@ export const signOut = async (ctx: Context): Promise<void> => {
   const email = (ctx.request.body as { email?: string }).email || "";
   const userName = (ctx.request.body as { userName?: string }).userName || "";
   const userId = (ctx.request.body as { userId?: string }).userId || "";
-  if (!email || !userName || !userId) {
-    ctx.error(ctx, 116);
+  if (ctx.isFalsy([email, userName, userId])) {
+    ctx.error(ctx, "404#email, userName, userId");
     return;
   }
   await ctx.redisDB.destroy(`${email}-${userName}-${userId}`);

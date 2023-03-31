@@ -33,6 +33,12 @@ export default function () {
         // 如果有token，进行校验
         token = token.split(" ")[1];
         const decoded = jwt.verify(token, CONFIG.tokenSecret);
+        const redis_db_token = await ctx.redisDB.get(
+          `${decoded.email}-${decoded.name}-${decoded.id}`
+        );
+        if (!redis_db_token) {
+          throw new Error("Token expired");
+        }
         // 检查 token 是否过期了
         const now = Math.floor(Date.now() / 1000);
         const exp = decoded.exp;

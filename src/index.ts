@@ -1,14 +1,12 @@
 import Koa from "koa";
-import Router from "koa-router";
 import views from "koa-views";
 import path from "path";
 import bodyParser from "koa-bodyparser";
 import resource from "koa-static";
 import koaJson from "koa-json";
-import jwt from "koa-jwt";
 import cors from "koa2-cors";
 import session from "koa-session2";
-import requestIP from "request-ip";
+import staticCache from "koa-static-cache";
 import CONFIG from "src/config";
 import query from "./util/mysql-async";
 import { registerRoutes } from "./routes/index";
@@ -17,7 +15,6 @@ import tokenError from "./middlreware/tokenError";
 import RedisStore from "./util/redis-store";
 import RedisDB from "./util/redis-db";
 import { hasEmptyValue } from "./util/helper";
-const router = new Router();
 const app = new Koa();
 
 // 扩展 Context 接口
@@ -42,6 +39,12 @@ app.use(bodyParser());
 app.use(koaJson());
 /* 静态资源文件 */
 app.use(resource(path.join(CONFIG.root, CONFIG.appPath)));
+/* 缓存邮件模板 */
+app.use(
+  staticCache(path.join(__dirname, "templates"), {
+    maxAge: 365 * 24 * 60 * 60,
+  })
+);
 // session token
 app.use(
   session({

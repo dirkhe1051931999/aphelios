@@ -11,7 +11,8 @@ const saltBuffer = Buffer.from(salt, "base64");
  * @api public
  */
 class RedisDB {
-  private redis: any;
+  public redis: any;
+  private redis2: any;
 
   constructor(redisConfig: any) {
     this.redis = new Redis(redisConfig);
@@ -36,6 +37,7 @@ class RedisDB {
         .toString("base64");
       // Use redis set EX to automatically drop expired sessions
       await this.redis.set(md5_key, JSON.stringify(data), "EX", maxAge / 1000);
+      return Promise.resolve(md5_key);
     } catch (e) {}
     return "success";
   }
