@@ -17,7 +17,7 @@ export const login = async (ctx: Context): Promise<void> => {
   }
   try {
     const results = await ctx.execSql(
-      `SELECT id, hashedPassword, salt,email,userStatus FROM user WHERE userName = ?`,
+      `SELECT id, hashedPassword,salt,email,userStatus,role FROM user WHERE userName = ?`,
       userName
     );
     if (results.length > 0) {
@@ -71,11 +71,14 @@ export const login = async (ctx: Context): Promise<void> => {
           await ctx.execSql(
             `DELETE FROM user_login WHERE id = ${results[0].id};`
           );
+          const roleResult = await ctx.execSql(
+            `SELECT permissionList FROM role WHERE name = '${results[0].role}'`
+          );
           ctx.success(ctx, {
             token,
             email: email,
             id: results[0].id,
-            pagePermissionId: ["dashboard", "account"],
+            pagePermissionId: roleResult[0].permissionList,
           });
         } else {
           // 记录错误次数
@@ -121,7 +124,7 @@ export const changePassword = async (ctx: Context): Promise<void> => {
   }
   try {
     const results = await ctx.execSql(
-      `SELECT id, hashedPassword, salt FROM user WHERE role='ADMIN' and userName = ?`,
+      `SELECT id, hashedPassword, email, salt FROM user WHERE userName = ?`,
       userName
     );
     if (results.length > 0) {
@@ -134,6 +137,16 @@ export const changePassword = async (ctx: Context): Promise<void> => {
           `UPDATE user SET hashedPassword = ? WHERE id = ${results[0].id}`,
           hashNewPassword
         );
+        if (ctx.request.headers.authorization) {
+          // 修改已经登录的用户密码，删除redis中的token
+          if (
+            ctx.redisDB.get(`${results[0].email}-${userName}-${results[0].id}`)
+          ) {
+            ctx.redisDB.destroy(
+              `${results[0].email}-${userName}-${results[0].id}`
+            );
+          }
+        }
         ctx.success(ctx, null);
       } else {
         ctx.error(ctx, 105);
@@ -276,16 +289,21 @@ export const checkToken = async (ctx: Context): Promise<void> => {
     ctx.error(ctx, 111);
     return;
   }
-  try {
-    const result = await ctx.redisDB.get(token);
-    if (result) {
-      ctx.success(ctx, null);
-    } else {
-      ctx.error(ctx, 112);
-    }
-  } catch (error) {
-    console.log(error);
+  const decoded = jwt.verify(token, CONFIG.tokenSecret, {
+    ignoreExpiration: true,
+  });
+  const updateTime = new Date().getTime();
+  if (updateTime > decoded.exp * 1000) {
+    // 过期了
+    // 如果是初始化用户，修改状态是4，需要重新发送链接
+    await ctx.execSql([
+      `UPDATE user 
+        SET userStatus = 4, oldUserStatus = 0, updateTime = ${updateTime}
+        WHERE id = ${decoded.id} AND userStatus = 0;`,
+    ]);
     ctx.error(ctx, 112);
+  } else {
+    ctx.success(ctx, null);
   }
 };
 /* 重置密码，不需要老密码 */
@@ -302,7 +320,7 @@ export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
     } else {
       const { username, email } = await ctx.redisDB.get(token);
       const results = await ctx.execSql(
-        `SELECT id, hashedPassword, salt FROM user WHERE role='ADMIN' and userName = '${username}' and email = '${email}'`
+        `SELECT id, hashedPassword, salt FROM user WHERE userName = '${username}' and email = '${email}'`
       );
       if (results.length > 0) {
         const salt = results[0].salt;

@@ -45,4 +45,5 @@ export const errorCode = {
   301: ["用户已存在", "User already exists"],
   302: ["邮箱已存在", "Email already exists"],
   303: ["邮箱或用户已存在", "Email already exists"],
+  304: ["角色已存在", "Role already exists"],
 };

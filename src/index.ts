@@ -23,6 +23,7 @@ declare module "koa" {
     success(ctx: Context, data: any): void;
     error(ctx: Context, code: number | string): void;
     isFalsy(data: any[]): boolean;
+    serializeObject(data: any): any;
   }
 }
 /* 跨域配置 */

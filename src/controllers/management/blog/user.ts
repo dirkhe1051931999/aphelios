@@ -10,6 +10,8 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
   const page = (ctx.request.body as { page?: number }).page || 1;
   const rowsPerPage =
     (ctx.request.body as { rowsPerPage?: number }).rowsPerPage || 20;
+  const token = ctx.request.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, CONFIG.tokenSecret);
   /* 默认page 1， rowsNumber 20 */
   try {
     const results = await ctx.execSql([
@@ -18,7 +20,9 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
         SELECT id,userName,avatar,role,createTime,email,updateTime,province,city,ip,description,userType,userStatus
         FROM user 
         WHERE userName LIKE CONCAT('%', '${userName}', '%') OR NULLIF('${userName}', '') IS NULL 
-        ORDER BY id 
+        ORDER BY 
+          CASE WHEN id = ${decoded.id} THEN 0 ELSE 1 END, 
+          id
         LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}
       ;`,
     ]);
@@ -81,10 +85,11 @@ export const addUser = async (ctx: Context): Promise<void> => {
   }
   let createTime = new Date().getTime();
   let updateTime = createTime;
+  let salt = "LGGKqbCrRKRnywHv3uqFZw==";
   try {
     const results = await ctx.execSql([
-      `INSERT INTO user (userName, avatar, role, createTime, email, updateTime, province, city, ip, description,userType,oldUserStatus,userStatus) 
-      SELECT '${userName}', '${avatar}', '${role}', ${createTime}, '${email}', ${updateTime}, '${province}', '${city}', '${ip}', '${description}',${userType},0,0 FROM DUAL WHERE NOT EXISTS (
+      `INSERT INTO user (userName, avatar, role, createTime, email, updateTime, province, city, ip, description,userType,oldUserStatus,userStatus,salt) 
+      SELECT '${userName}', '${avatar}', '${role}', ${createTime}, '${email}', ${updateTime}, '${province}', '${city}', '${ip}', '${description}',${userType},0,0,'${salt}' FROM DUAL WHERE NOT EXISTS (
         SELECT 1 FROM user WHERE userName = '${userName}' OR email = '${email}'
       );`,
     ]);
