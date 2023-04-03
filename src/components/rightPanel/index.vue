@@ -33,17 +33,13 @@ export default class RightPanelComponent extends Vue {
 </script>
 <style lang="scss">
 .body--dark {
-}
-.body--light {
-}
-.body--dark {
   .VueSidePanel {
-    box-shadow: -12px 0px 16px -8px rgba($color: #ffffff, $alpha: 0);
+    box-shadow: 0px 6px 16px -1px rgba($color: #ffffff, $alpha: 0.05);
   }
 }
 .body--light {
   .VueSidePanel {
-    box-shadow: -12px 0px 16px -8px rgba($color: #000000, $alpha: 0);
+    box-shadow: 0px 6px 16px -1px rgba($color: #000000, $alpha: 0.05);
   }
 }
 </style>
@@ -70,7 +66,5 @@ export default class RightPanelComponent extends Vue {
       }
     }
   }
-  // .content {
-  // }
 }
 </style>

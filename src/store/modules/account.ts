@@ -1,6 +1,6 @@
 import { VuexModule, Module, Mutation, Action, getModule } from 'vuex-module-decorators';
 import store from '../index';
-import { getAllAvatar, getAllUser, addUser, updateUser, deleteUser, updateUserStatus, unLockUser, reSendUrl } from 'src/api/account';
+import { getAllAvatar, getAllUser, addUser, updateUser, deleteUser, updateUserStatus, unLockUser, reSendUrl, getAllRole, getAllPermission, addRole, updateRole, deleteRole } from 'src/api/account';
 
 interface IAccount {}
 @Module({ dynamic: true, namespaced: true, store, name: 'Account' })
@@ -43,6 +43,31 @@ class Account extends VuexModule implements IAccount {
   @Action({ rawError: true })
   public async reSendUrl(data: any) {
     const result = await reSendUrl(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getAllPermission(data: any) {
+    const result = await getAllPermission(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getAllRole(data: any) {
+    const result = await getAllRole(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async addRole(data: any) {
+    const result = await addRole(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updateRole(data: any) {
+    const result = await updateRole(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async deleteRole(data: any) {
+    const result = await deleteRole(data);
     return Promise.resolve(result);
   }
 }

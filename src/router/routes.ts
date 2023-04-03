@@ -52,7 +52,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: shallowRef(Layout),
     name: 'Dashboard0',
     meta: {
-      pagePermissionId: ['dashboard'],
+      pagePermissionId: ['Dashboard'],
     },
     children: [
       {
@@ -74,7 +74,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
     meta: {
       title: 'account',
       icon: 'people',
-      pagePermissionId: ['account', 'account-role', 'account-user'],
+      pagePermissionId: ['Account', 'AccountRole', 'AccountUser'],
     },
     children: [
       {
@@ -82,7 +82,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         name: 'AccountRole',
         meta: {
           title: 'account-role',
-          pagePermissionId: ['account', 'account-role'],
+          pagePermissionId: ['AccountRole'],
         },
         component: () => import(/* webpackChunkName: "account-role" */ 'src/pages/account/role.vue'),
       },
@@ -92,7 +92,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           title: 'account-user',
           icon: 'people',
-          pagePermissionId: ['account', 'account-user'],
+          pagePermissionId: ['AccountUser'],
         },
         component: () => import(/* webpackChunkName: "account-user" */ 'src/pages/account/user.vue'),
       },

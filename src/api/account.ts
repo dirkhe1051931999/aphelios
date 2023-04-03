@@ -9,6 +9,11 @@ const api = {
   updateUserStatus: '/management/blog/user/updateUserStatus',
   unLockUser: '/management/blog/user/unLockUser',
   reSendUrl: '/management/blog/user/reSendUrl',
+  getAllPermission: '/management/blog/role/getAllPermission',
+  getAllRole: '/management/blog/role/getAllRole',
+  addRole: '/management/blog/role/addRole',
+  updateRole: '/management/blog/role/updateRole',
+  deleteRole: '/management/blog/role/deleteRole',
 };
 
 export const getAllUser = (data: any): any =>
@@ -56,6 +61,36 @@ export const unLockUser = (data: any): any =>
 export const reSendUrl = (data: any): any =>
   request({
     url: api.reSendUrl,
+    method: 'post',
+    data,
+  });
+export const getAllPermission = (data: any): any =>
+  request({
+    url: api.getAllPermission,
+    method: 'post',
+    data,
+  });
+export const getAllRole = (data: any): any =>
+  request({
+    url: api.getAllRole,
+    method: 'post',
+    data,
+  });
+export const addRole = (data: any): any =>
+  request({
+    url: api.addRole,
+    method: 'post',
+    data,
+  });
+export const updateRole = (data: any): any =>
+  request({
+    url: api.updateRole,
+    method: 'post',
+    data,
+  });
+export const deleteRole = (data: any): any =>
+  request({
+    url: api.deleteRole,
     method: 'post',
     data,
   });

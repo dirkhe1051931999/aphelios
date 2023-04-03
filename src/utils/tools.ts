@@ -1,21 +1,16 @@
+import md5crypto from 'crypto-js/md5';
 export const getCssVariableValue = (cssVariableName: string) => {
   let cssVariableValue = '';
   try {
     // 没有拿到值时，会返回空串
-    cssVariableValue = getComputedStyle(
-      document.documentElement
-    ).getPropertyValue(cssVariableName);
+    cssVariableValue = getComputedStyle(document.documentElement).getPropertyValue(cssVariableName);
   } catch (error) {
     console.error(error);
   }
   return cssVariableValue;
 };
 // loadBdScript
-export function loadBdScript(
-  scriptId: string,
-  url: string,
-  callback: () => void
-) {
+export function loadBdScript(scriptId: string, url: string, callback: () => void) {
   const script: any = document.createElement('script');
   script.type = 'text/javascript';
   if (script.readyState) {
@@ -43,4 +38,8 @@ export function defaultFill(val: any) {
 }
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+export function enCrypty(psw: string) {
+  let sugar = '!@A#$Q%W^E&R*T()_+a_1';
+  return md5crypto(sugar + psw).toString();
 }

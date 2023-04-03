@@ -4,17 +4,13 @@ import { getToken, setToken, removeToken, setUsername, removeUsername, getUserna
 import { resetRouter } from 'src/router';
 import store from 'src/store';
 import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld } from 'src/api/user';
-import md5crypto from 'crypto-js/md5';
 import { uid } from 'quasar';
 import { TagsViewModule } from './tags';
-import { sleep } from 'src/utils/tools';
+import { enCrypty, sleep } from 'src/utils/tools';
 import setting from 'src/setting.json';
 import { getUserinfo, removeUserinfo, setUserinfo } from 'src/utils/localStorage';
 import { PermissionModule } from './permission';
-function enCrypty(psw: string) {
-  let sugar = '!@A#$Q%W^E&R*T()_+a_1';
-  return md5crypto(sugar + psw).toString();
-}
+
 export interface IUserState {}
 
 @Module({ dynamic: true, store, name: 'User', namespaced: true })
@@ -49,10 +45,11 @@ class User extends VuexModule implements IUserState {
   @Action({ rawError: true })
   public async Login(data: any) {
     const { username, password, code } = data;
-    const { token, pagePermissionId, email, id, errorCode } = await login({ userName: username, password: enCrypty(password), code });
+    let { token, pagePermissionId, email, id, errorCode } = await login({ userName: username, password: enCrypty(password), code });
     if (errorCode && errorCode === '119') {
       return Promise.resolve(errorCode);
     }
+    pagePermissionId = JSON.parse(pagePermissionId);
     const userinfo = {
       token,
       username,
@@ -131,6 +128,8 @@ class User extends VuexModule implements IUserState {
     removeToken();
     resetRouter();
     removeUserinfo();
+    removeDynamicRoutes();
+    removePagePermissionID();
     TagsViewModule.delAllViews();
     this.SET_USERNAME('');
     this.SET_USERINFO({});

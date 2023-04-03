@@ -108,10 +108,14 @@
                 </div>
                 <!-- action -->
                 <div v-if="col.name === 'action'">
-                  <div v-if="props.row.userName && props.row.id">
+                  <div>
                     <span class="in-table-link-button" @click="handlerClickUpdate(props.row)" v-if="canUpdate(props.row)" :class="{ 'm-r-8': canUpdate(props.row) }">{{ $t(`action.update`) }} </span>
                     <span class="in-table-delete-button" @click="handlerClickDelete(props.row)" v-if="canDelete(props.row)" :class="{ 'm-r-8': canDelete(props.row) }">{{ $t(`action.delete`) }} </span>
-                    <span class="in-table-link-button" style="min-width: 100px">
+                    <span
+                      class="in-table-link-button"
+                      style="min-width: 100px"
+                      v-if="canUnlock(props.row) || canChangePassword(props.row) || canEnable(props.row) || canDisable(props.row) || canReSendUrl(props.row)"
+                    >
                       {{ $t(`action.more`) }}
                       <q-icon name="o_expand_more"></q-icon>
                       <q-popup-proxy style="min-width: 100px">
@@ -120,7 +124,7 @@
                             <q-item-section class="text-center"> 解锁 </q-item-section>
                           </q-item>
                           <q-item clickable dense v-close-popup v-if="canChangePassword(props.row)">
-                            <q-item-section class="text-center"> 修改密码 </q-item-section>
+                            <q-item-section class="text-center" @click="handlerClickChangePassword(props.row)"> 修改密码 </q-item-section>
                           </q-item>
                           <q-item clickable dense v-close-popup v-if="canEnable(props.row)" @click="updateUserStatus(props.row, 1)">
                             <q-item-section class="text-center"> 启用 </q-item-section>
@@ -129,13 +133,12 @@
                             <q-item-section class="text-center"> 禁用 </q-item-section>
                           </q-item>
                           <q-item clickable dense v-close-popup v-if="canReSendUrl(props.row)" @click="reSendUrl(props.row)">
-                            <q-item-section class="text-center"> 重发链接 </q-item-section>
+                            <q-item-section class="text-center"> 重发设置密码链接（仅限于初始化用户） </q-item-section>
                           </q-item>
                         </q-list>
                       </q-popup-proxy>
                     </span>
                   </div>
-                  <span v-else>--</span>
                 </div>
               </div>
             </q-td>
@@ -210,6 +213,46 @@
     </MyDialog>
     <MyDialog
       :option="{
+        id: dialogChangePasswordParams.id,
+        dialogType: dialogChangePasswordParams.dialogType,
+        clickLoading: dialogChangePasswordParams.clickLoading,
+        getDataLoading: dialogChangePasswordParams.getDataLoading,
+        visiable: dialogChangePasswordParams.visiable,
+        title: dialogChangePasswordParams.title,
+        params: dialogChangePasswordParams.params,
+      }"
+      width="20vw"
+      @close="dialogChangePasswordCloseEvent"
+      @confirm="dialogChangePasswordConfirmEvent"
+      @before-hide="dialogChangePasswordBeforeHideEvent"
+    >
+      <div class="row q-col-gutter-x-md">
+        <div v-for="(item, index) in dialogChangePasswordParams.input" :key="index" class="col-12">
+          <MyFormInput
+            :option="{
+              model: dialogChangePasswordParams.params[item.model],
+              rules: item.rules,
+              classes: item.classes,
+              label: item.label,
+              readonly: item.readonly || false,
+            }"
+            @input="(data) => (dialogChangePasswordParams.params[item.model] = data)"
+            :ref="`${dialogChangePasswordParams.id}-input-${item.model}`"
+          >
+            <template #subTitle v-if="item.model === 'password'">
+              <el-popover placement="top" title="Password rules" :width="320" popper-style="z-index:9999" trigger="hover">
+                <p v-for="(item, index) in dialogChangePasswordParams.passwordRules" :key="index">{{ index + 1 }}. {{ item }}</p>
+                <template #reference>
+                  <q-icon name="o_info" class="text-grey-4 cursor-pointer" />
+                </template>
+              </el-popover>
+            </template>
+          </MyFormInput>
+        </div>
+      </div>
+    </MyDialog>
+    <MyDialog
+      :option="{
         id: dialogDetailParams.id,
         dialogType: 'detail',
         clickLoading: dialogDetailParams.clickLoading,
@@ -219,11 +262,12 @@
         params: dialogDetailParams.params,
         showAction: false,
       }"
+      width="20vw"
       @close="dialogDetailCloseEvent"
       @before-hide="dialogDetailBeforeHideEvent"
     >
       <q-list class="row q-col-gutter-x-md">
-        <q-item v-for="(item, index) in dialogDetailParams.params" :key="index" :clickable="false" class="col-6">
+        <q-item v-for="(item, index) in dialogDetailParams.params" :key="index" :clickable="false" class="col-12">
           <q-item-section>
             <q-item-label caption>{{ item.label }}：</q-item-label>
             <q-item-label :class="item.class">{{ item.value }}</q-item-label>
@@ -235,17 +279,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-facing-decorator';
-import { UserModule } from '../../store/modules/user';
+import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { UserModule } from 'src/store/modules/user';
 import setting from 'src/setting.json';
 import { cloneDeep } from 'lodash';
 import { defaultFill } from 'src/utils/tools';
 import { AccountModule } from 'src/store/modules/account';
 import { getCurrentInstance } from 'vue';
-import { isValidEmail } from 'src/utils/validate';
+import { isValidEmail, isValidPassword } from 'src/utils/validate';
 const CONST_PARAMS: any = {
   query: { userName: '' },
   dialog_add_update: { id: '', userName: '', avatar: '', role: '', email: '', province: '', city: '', description: '' },
+  change_password: { userName: '', oldPassword: '', password: '', rePassword: '' },
 };
 @Component({
   name: 'AccountUserComponent',
@@ -275,7 +320,7 @@ export default class AccountUserComponent extends Vue {
   }
   get canChangePassword() {
     return (row: any) => {
-      return row.userType === 1 || row.userType === 0;
+      return (row.userType === 1 || row.userType === 0) && row.userName !== UserModule.username;
     };
   }
   get canUnlock() {
@@ -287,6 +332,14 @@ export default class AccountUserComponent extends Vue {
     return (row: any) => {
       return row.userStatus === 4 && row.userType === 1;
     };
+  }
+  @Watch('dialogChangePasswordParams.params.password', { deep: true })
+  onChangePasswordChange() {
+    this.$refs[`${this.dialogChangePasswordParams.id}-input-rePassword`][0].validForm();
+  }
+  @Watch('dialogChangePasswordParams.params.rePassword', { deep: true })
+  onChangeRePasswordChange() {
+    this.$refs[`${this.dialogChangePasswordParams.id}-input-password`][0].validForm();
   }
   /**params */
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
@@ -395,15 +448,11 @@ export default class AccountUserComponent extends Vue {
     visiable: false,
     title: 'Detail',
     params: [
-      { label: 'Name', value: '', id: 'name', class: '' },
-      { label: 'Sex', value: '', id: 'sex', class: '' },
-      { label: 'C', value: '', id: 'c', class: '' },
-      { label: 'D', value: '', id: 'd', class: '' },
-      { label: 'E', value: '', id: 'e', class: '' },
-      { label: 'F', value: '', id: 'f', class: '' },
-      { label: 'g', value: '', id: 'g', class: '' },
-      { label: 'h', value: '', id: 'h', class: '' },
-      { label: 'I', value: '', id: 'i', class: '' },
+      { label: '用户名', value: '', id: 'userName', class: '' },
+      { label: '省份', value: '', id: 'province', class: '' },
+      { label: '城市', value: '', id: 'city', class: '' },
+      { label: 'IP', value: '', id: 'ip', class: '' },
+      { label: '描述', value: '', id: 'description', class: '' },
     ],
   };
   private dialogAddUpdateParams = {
@@ -493,6 +542,77 @@ export default class AccountUserComponent extends Vue {
       },
     ],
   };
+  private dialogChangePasswordParams = {
+    id: 'change_password',
+    dialogType: 'change',
+    clickLoading: false,
+    getDataLoading: false,
+    visiable: false,
+    passwordRules: setting.passwordRules,
+    title: '',
+    params: cloneDeep(CONST_PARAMS.change_password),
+    input: [
+      {
+        model: 'userName',
+        type: 'text',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+        ],
+        readonly: true,
+        label: '用户名',
+      },
+      {
+        model: 'oldPassword',
+        type: 'text',
+        classes: 'input-password',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+        ],
+        readonly: false,
+        label: '旧密码',
+      },
+      {
+        model: 'password',
+        type: 'text',
+        classes: 'input-password',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+          (val: string) => {
+            return isValidPassword(val) || '无效密码';
+          },
+          (val: any): any => {
+            return this.dialogChangePasswordParams.params.rePassword === val || '两次密码不一致';
+          },
+        ],
+        readonly: false,
+        label: '新密码',
+      },
+      {
+        model: 'rePassword',
+        type: 'text',
+        classes: 'input-password',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+          (val: string) => {
+            return isValidPassword(val) || '无效密码';
+          },
+          (val: any): any => {
+            return this.dialogChangePasswordParams.params.password === val || '两次密码不一致';
+          },
+        ],
+        readonly: false,
+        label: '确认密码',
+      },
+    ],
+  };
   /**event */
   private paginationInput(data: any) {
     this.tableParams.pagination = data;
@@ -532,6 +652,11 @@ export default class AccountUserComponent extends Vue {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'update';
     this.dialogAddUpdateParams.title = 'Update';
+  }
+  private async handlerClickChangePassword(row: any) {
+    this.dialogChangePasswordParams.visiable = true;
+    this.dialogChangePasswordParams.params.userName = row.userName;
+    this.dialogChangePasswordParams.title = '修改密码';
   }
   private handlerClickDetail(row: any) {
     const getValue = (row: any, key: string): string => {
@@ -581,6 +706,14 @@ export default class AccountUserComponent extends Vue {
   private dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
+    }
+  }
+  private dialogChangePasswordCloseEvent(data: { type: string }) {
+    this.dialogChangePasswordParams.visiable = false;
+  }
+  private dialogChangePasswordBeforeHideEvent(data: { type: string; params: any }) {
+    if (data.params) {
+      this.dialogChangePasswordParams.params = data.params;
     }
   }
   /* http */
@@ -665,6 +798,26 @@ export default class AccountUserComponent extends Vue {
     } catch (error) {
       console.log(error);
       this.dialogAddUpdateParams.clickLoading = false;
+    }
+  }
+  private async dialogChangePasswordConfirmEvent() {
+    try {
+      this.dialogChangePasswordParams.clickLoading = true;
+      await UserModule.changePassword({
+        username: this.dialogChangePasswordParams.params.userName,
+        oldPassword: this.dialogChangePasswordParams.params.oldPassword,
+        newPassword: this.dialogChangePasswordParams.params.password,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.dialogChangePasswordParams.clickLoading = false;
+      this.dialogChangePasswordParams.visiable = false;
+      this.getData();
+    } catch (error) {
+      console.log(error);
+      this.dialogChangePasswordParams.clickLoading = false;
     }
   }
   private async updateUserStatus(row: any, userStatus: number) {

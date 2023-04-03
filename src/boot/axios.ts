@@ -43,7 +43,6 @@ axios.interceptors.request.use(
     } else if (UserModule.token) {
       config.headers['Authorization'] = `Bearer ${UserModule.token}`;
     }
-
     return config;
   },
   (error) => {
