@@ -213,6 +213,68 @@ export const updateUser = async (ctx: Context): Promise<void> => {
     ctx.error(ctx, 405);
   }
 };
+/* 更新用户邮箱 */
+export const updateUserEmail = async (ctx: Context): Promise<void> => {
+  const { id, email, } = ctx.request.body as {
+    id: number;
+    email: string;
+  };
+  if (ctx.isFalsy([id, email])) {
+    ctx.error(ctx, "404#id, email");
+    return;
+  }
+  let updateTime = new Date().getTime();
+  try {
+    const result = await ctx.execSql([
+      `SELECT COUNT(*) AS count FROM user WHERE email = '${email}';`,
+    ]);
+    if (result[0][0].count === 1) {
+      return ctx.error(ctx, 302);
+    } else {
+      await ctx.execSql([
+        `UPDATE user 
+              SET email = '${email}', 
+              updateTime = ${updateTime}
+              WHERE id = ${id};`,
+      ]);
+      return ctx.success(ctx, null);
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+/* 更新用户手机号 */
+export const updateUserMobile = async (ctx: Context): Promise<void> => {
+  const { id, mobile, } = ctx.request.body as {
+    id: number;
+    mobile: string;
+  };
+  if (ctx.isFalsy([id, mobile])) {
+    ctx.error(ctx, "404#id, mobile");
+    return;
+  }
+  let updateTime = new Date().getTime();
+  try {
+    const result = await ctx.execSql([
+      `SELECT COUNT(*) AS count FROM user WHERE mobile = ${mobile};`,
+    ]);
+    if (result[0][0].count === 1) {
+      return ctx.error(ctx, 305);
+    } else {
+      await ctx.execSql([
+        `UPDATE user 
+            SET mobile = ${mobile}, 
+            updateTime = ${updateTime}
+            WHERE id = ${id};`,
+      ]);
+      return ctx.success(ctx, null);
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
 /* 删除用户 */
 export const deleteUser = async (ctx: Context): Promise<void> => {
   const { id } = ctx.request.body as {
@@ -239,7 +301,7 @@ export const deleteUser = async (ctx: Context): Promise<void> => {
     ctx.error(ctx, 405);
   }
 };
-/* 更新用户 */
+/* 更新用户状态 */
 export const updateUserStatus = async (ctx: Context): Promise<void> => {
   let { id, userStatus } = ctx.request.body as {
     id: number;

@@ -13,7 +13,7 @@ export default function () {
     var unless_reg = [
       /^\/management\/blog\/auth*/,
       /^\/web\/blog*/,
-      /^\/Oauth*/,
+      /^\/oauth*/,
     ];
     unless_reg.forEach((reg) => {
       if (reg.test(ctx.request.url)) {

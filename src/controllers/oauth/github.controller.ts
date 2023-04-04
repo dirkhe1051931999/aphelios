@@ -1,12 +1,14 @@
 import CONFIG from "src/config";
-import sqlQuery from "../../util/mysql-async";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import moment from "moment";
 import jwt from "jsonwebtoken";
 
 // 吊起github登录
 export const githubOAuth = async (ctx) => {
   const code = ctx.query.code;
+  if (!code) {
+    ctx.error(ctx, '404#code')
+    return
+  }
   // 接口
   let path = "https://github.com/login/oauth/access_token";
   // 参数
@@ -23,73 +25,72 @@ export const githubOAuth = async (ctx) => {
     },
     data: JSON.stringify(params),
   })
-    .then((res: any) => {
-      const args = res.split("&");
-      let arg = args[0].split("=");
-      return arg[1];
-    })
-    .then(async (token) => {
-      const url = " https://api.github.com/user?access_token=" + token;
-      await axios(url).then(async (res: any) => {
+    .then(async (res: any) => {
+      const args = res.data.split('&');
+      let arg = args[0].split('=');
+      const url = "https://api.github.com/user?access_token=" + arg[1];
+      await axios(url, {
+        method: "get",
+        headers: {
+          Authorization: "token " + arg[1],
+          "Content-Type": "application/json",
+        },
+      }).then(async (result: any) => {
+        let { login, avatar_url, email } = result.data;
         let userId = 0;
-        let selectGuest = await sqlQuery(
-          `SELECT * FROM user WHERE role = 'GUEST' AND userName = ?`,
-          [res.login]
-        );
-        if (selectGuest.length > 0) {
-          userId = selectGuest[0].id;
-          await sqlQuery(`UPDATE user SET avatar = ?, email = ? WHERE id = ?`, [
-            res.avatar_url,
-            res.email,
-            userId,
+        let isRegisterUser = await ctx.execSql([
+          `SELECT COUNT(*) as count, MAX(id) as id FROM user WHERE userName = '${login}'`,
+        ]);
+        console.log(isRegisterUser)
+        if (isRegisterUser.length > 0 && isRegisterUser[0][0].count > 0) {
+          userId = isRegisterUser[0][0].id
+          await ctx.execSql([
+            `UPDATE user SET avatar = '${avatar_url}', email = '${email}' WHERE id = ${userId}`,
           ]);
         } else {
-          let newGuest = {
-            userName: res.login,
-            avatar: res.avatar_url,
-            email: res.email,
-            role: "GUEST",
-            createTime: moment().format("YYYY-MM-DD HH:mm:ss"),
-          };
-          let insertGuest = await sqlQuery(`INSERT INTO user SET ?`, newGuest);
-          if (insertGuest.affectedRows > 0) {
-            userId = insertGuest.insertId;
+          const result = await ctx.execSql([
+            `INSERT INTO user (userName, avatar, email,role,createTime,userType)
+            VALUES ('${login}', '${avatar_url}', '${email}', 'GUEST', ${new Date().getTime()}, 2)`,
+          ]);
+          if (result[0].affectedRows > 0) {
+            userId = result[0].insertId;
           }
         }
         if (userId > 0) {
           ctx.session.user = res.login;
           // 用户token
           const userToken = {
-            name: res.login,
+            name: login,
+            email,
+            mobile: null,
             id: userId,
           };
+          ctx.redisDB.set(
+            `${email}-${login}-${userId}`,
+            userToken,
+            1000 * 60 * 60 * 24
+          );
           // 签发token
           const token = jwt.sign(userToken, CONFIG.tokenSecret, {
-            expiresIn: "2h",
+            expiresIn: "24h",
           });
-          ctx.body = {
-            success: 1,
-            token: token,
+          const roleResult = await ctx.execSql(
+            `SELECT permissionList FROM role WHERE name = 'GUEST'`
+          );
+          ctx.success(ctx, {
+            token,
+            email: email,
+            mobile: null,
             id: userId,
-            userName: res.login,
-            avatar: res.avatar_url,
-            message: "",
-          };
+            pagePermissionId: roleResult[0].permissionList,
+          });
         } else {
-          ctx.body = {
-            success: 0,
-            token: "",
-            message: "GitHub授权登录失败",
-          };
+          ctx.error(ctx, 120)
         }
       });
     })
     .catch((e) => {
       console.log(e);
-      ctx.body = {
-        success: 0,
-        token: "",
-        message: "GitHub授权登录失败",
-      };
+      ctx.error(ctx, 120)
     });
 };

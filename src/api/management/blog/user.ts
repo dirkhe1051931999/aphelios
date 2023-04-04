@@ -8,6 +8,8 @@ import {
   reSendUrl,
   unLockUser,
   updateUser,
+  updateUserEmail,
+  updateUserMobile,
   updateUserStatus,
 } from "src/controllers/management/blog/user";
 
@@ -43,5 +45,13 @@ export class ManagementBlogUserAPIController {
   @Route("/reSendUrl", HTTP_METHODS.POST)
   async reSendUrl(ctx: Koa.Context, next: Koa.Next) {
     return reSendUrl(ctx);
+  }
+  @Route("/updateUserEmail", HTTP_METHODS.POST)
+  async test(ctx: Koa.Context, next: Koa.Next) {
+    return updateUserEmail(ctx);
+  }
+  @Route("/updateUserMobile", HTTP_METHODS.POST)
+  async updateUserMobile(ctx: Koa.Context, next: Koa.Next) {
+    return updateUserMobile(ctx);
   }
 }

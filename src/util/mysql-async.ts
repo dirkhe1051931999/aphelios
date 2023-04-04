@@ -44,6 +44,7 @@ const query = function (sqls: string | string[], values?: any): Promise<any> {
                     // 如果执行出错，回滚事务并释放连接
                     connection.rollback(() => {
                       connection.release();
+                      console.log(err.sqlMessage, err.sql)
                       reject(err);
                     });
                   } else {

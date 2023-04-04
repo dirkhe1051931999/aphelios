@@ -42,8 +42,10 @@ export const errorCode = {
     "User status exception, please contact the administrator",
   ],
   119: ["初始化用户，请设置密码", "Initialize user, please set password"],
+  120: ['GitHub授权登录失败', 'GitHub authorization login failed'],
   301: ["用户已存在", "User already exists"],
   302: ["邮箱已存在", "Email already exists"],
   303: ["邮箱或用户已存在", "Email already exists"],
   304: ["角色已存在", "Role already exists"],
+  305: ['手机号已存在', 'Phone number already exists'],
 };
