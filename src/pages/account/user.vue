@@ -364,6 +364,7 @@ export default class AccountUserComponent extends Vue {
   async created() {
     this.getData();
     this.getAllAvatar();
+    this.getAllRole();
   }
   private tableParams = {
     loading: false,
@@ -483,16 +484,7 @@ export default class AccountUserComponent extends Vue {
       {
         model: 'role',
         type: 'select',
-        inputSelectOption: [
-          {
-            label: 'ADMIN',
-            value: 'ADMIN',
-          },
-          {
-            label: 'GUEST',
-            value: 'GUEST',
-          },
-        ],
+        inputSelectOption: [],
         rules: [
           (val: string | number | undefined | null) => {
             return (val && String(val).length > 0) || this.globals.$t('messages.required');
@@ -739,6 +731,24 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
+  private async getAllRole() {
+    try {
+      const { pageData } = await AccountModule.getAllRole({});
+      if (pageData && pageData.length > 0) {
+        const roleList = pageData.map((item: any) => {
+          return {
+            label: item.name,
+            value: item.name,
+            description: item.description,
+          };
+        });
+        const index = this.dialogAddUpdateParams.input.findIndex((item) => item.model === 'role');
+        this.dialogAddUpdateParams.input[index].inputSelectOption = roleList;
+      }
+    } finally {
+      return Promise.resolve();
+    }
+  }
   private async getAllAvatar() {
     try {
       const { pageData } = await AccountModule.getAllAvatar({});
@@ -892,7 +902,7 @@ export default class AccountUserComponent extends Vue {
 }
 </script>
 
-<style scoped lang='scss'>
+<style scoped lang="scss">
 .avatar-list {
   display: flex;
   flex-wrap: wrap;

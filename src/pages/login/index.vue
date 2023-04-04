@@ -316,6 +316,13 @@
               <div class="text-center">
                 <span class="detail-link-type" @click="pageType = 'changePassword'">Change password? </span>
               </div>
+              <div class="split-line h-1 q-my-md"></div>
+              <div class="q-mb-md text-center">选择以下方式登录</div>
+              <div class="text-center">
+                <q-img src="~assets/oauth/github.png" width="36px" class="q-mr-md cursor-pointer" @click="clickGithubLogin"></q-img>
+                <q-img src="~assets/oauth/qq.png" width="28px" class="cursor-pointer"></q-img>
+                <q-img src="~assets/oauth/wechat.png" width="72px" class="cursor-pointer"></q-img>
+              </div>
             </q-form>
           </div>
         </div>
@@ -332,6 +339,7 @@
         </div>
       </div>
     </div>
+    <!-- <iframe id="my-iframe" style="width: 400px; height: 400px" src="http://localhost:9002/index.html#/login"></iframe> -->
   </div>
 </template>
 
@@ -570,6 +578,10 @@ export default class LoginPage2 extends Vue {
     }
     this.pageType = 'signIn';
     this.$router.push('/login');
+  }
+  private clickGithubLogin() {
+    // window.open(setting.github_oauth_url, '__blank');
+    window.open(setting.github_oauth_url, 'myWindow', 'width=400,height=300');
   }
   /* http */
   private async handlerSignIn() {

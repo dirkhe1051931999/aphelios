@@ -14,6 +14,8 @@ const api = {
   addRole: '/management/blog/role/addRole',
   updateRole: '/management/blog/role/updateRole',
   deleteRole: '/management/blog/role/deleteRole',
+  updateUserEmail: '/management/blog/user/updateUserEmail',
+  updateUserMobile: '/management/blog/user/updateUserMobile'
 };
 
 export const getAllUser = (data: any): any =>
@@ -91,6 +93,18 @@ export const updateRole = (data: any): any =>
 export const deleteRole = (data: any): any =>
   request({
     url: api.deleteRole,
+    method: 'post',
+    data,
+  });
+export const updateUserEmail = (data: any): any =>
+  request({
+    url: api.updateUserEmail,
+    method: 'post',
+    data,
+  });
+export const updateUserMobile = (data: any): any =>
+  request({
+    url: api.updateUserMobile,
     method: 'post',
     data,
   });

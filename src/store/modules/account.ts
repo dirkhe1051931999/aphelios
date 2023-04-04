@@ -1,8 +1,8 @@
 import { VuexModule, Module, Mutation, Action, getModule } from 'vuex-module-decorators';
 import store from '../index';
-import { getAllAvatar, getAllUser, addUser, updateUser, deleteUser, updateUserStatus, unLockUser, reSendUrl, getAllRole, getAllPermission, addRole, updateRole, deleteRole } from 'src/api/account';
+import { getAllAvatar, getAllUser, addUser, updateUser, deleteUser, updateUserStatus, unLockUser, reSendUrl, getAllRole, getAllPermission, addRole, updateRole, deleteRole, updateUserEmail, updateUserMobile } from 'src/api/account';
 
-interface IAccount {}
+interface IAccount { }
 @Module({ dynamic: true, namespaced: true, store, name: 'Account' })
 class Account extends VuexModule implements IAccount {
   @Action({ rawError: true })
@@ -68,6 +68,16 @@ class Account extends VuexModule implements IAccount {
   @Action({ rawError: true })
   public async deleteRole(data: any) {
     const result = await deleteRole(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updateUserEmail(data: any) {
+    const result = await updateUserEmail(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updateUserMobile(data: any) {
+    const result = await updateUserMobile(data);
     return Promise.resolve(result);
   }
 }

@@ -48,30 +48,21 @@
         </template>
         <div class="row no-wrap q-pa-md">
           <div class="column w-200">
-            <div class="text-h6 q-mb-md">Settings</div>
-            <div class="row justify-between items-center">
-              <span class="fs-12"> Tab Bar?</span>
-              <el-switch v-model="showTagsView" class="drawer-switch" />
+            <div class="text-h6 q-mb-md">项目信息</div>
+            <div class="row items-center q-mb-sm">
+              <span class="q-mr-md">Author：</span>
+              <a href="https://www.github.com/dirkhe1051931999" target="__blank" class="link-type">dirkhe1051931999</a>
             </div>
-            <div class="row justify-between items-center">
-              <span class="fs-12">Sidebar Logo?</span>
-              <el-switch v-model="showSidebarLogo" class="drawer-switch" />
+            <div class="row items-center q-mb-sm">
+              <span class="q-mr-md">Version：</span>
+              V0.0.1
             </div>
-            <div class="row justify-between items-center">
-              <span class="fs-12">Fixed Header</span>
-              <el-switch v-model="fixedHeader" class="drawer-switch" />
+            <div class="row items-center q-mb-sm">
+              <span class="q-mr-md">项目地址：</span>
+              <a href="https://github.com/dirkhe1051931999/aphelios" target="__blank" class="link-type">aphelios</a>
             </div>
-            <div class="row justify-between items-center">
-              <span class="fs-12">Notify?</span>
-              <el-switch v-model="showNotify" class="drawer-switch" />
-            </div>
-            <div class="row justify-between items-center">
-              <span class="fs-12">Switch Theme Button?</span>
-              <el-switch v-model="showThemeSwitch" class="drawer-switch" />
-            </div>
-            <div class="row justify-between items-center">
-              <span class="fs-12">Full Screen Button?</span>
-              <el-switch v-model="showScreenfull" class="drawer-switch" />
+            <div class="q-my-sm text-center">
+              <q-btn color="primary" label="用户中心" push v-close-popup outline @click="$router.push('/profile')" />
             </div>
           </div>
           <q-separator vertical inset class="q-mx-md" />
@@ -79,7 +70,7 @@
             <q-avatar size="72px">
               <img src="~assets/logo.png" />
             </q-avatar>
-            <div class="text-subtitle1 q-mt-md q-mb-xs">{{ username }}</div>
+            <div class="text-subtitle1 q-my-md fs-18">{{ username }}</div>
             <q-btn color="primary" :label="$t('layouts.logout')" push @click="logout" v-close-popup />
           </div>
         </div>
@@ -121,25 +112,6 @@ export default class NavigationBarComponent extends Vue {
   }
   get darkIsActive() {
     return this.$q.dark.isActive;
-  }
-  /* setting */
-  get showNotify() {
-    return SettingModule.showNotify;
-  }
-  get showThemeSwitch() {
-    return SettingModule.showThemeSwitch;
-  }
-  get showScreenfull() {
-    return SettingModule.showScreenfull;
-  }
-  get showTagsView() {
-    return SettingModule.showTagsView;
-  }
-  get showSidebarLogo() {
-    return SettingModule.showSidebarLogo;
-  }
-  get fixedHeader() {
-    return SettingModule.fixedHeader;
   }
   mounted() {
     this.initStep();
@@ -345,8 +317,6 @@ export default class NavigationBarComponent extends Vue {
   }
 }
 </script>
-
-
 
 <style lang="scss" scoped>
 .navigation-bar {

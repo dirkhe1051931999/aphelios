@@ -9,6 +9,7 @@ const api = {
   forgotPassword: '/management/blog/auth/forgotPassword',
   checkToken: '/management/blog/auth/checkToken',
   changePasswordWithOutOld: '/management/blog/auth/changePasswordWithOutOld',
+  oauth_github: '/oauth/github/?code=',
 };
 export const login = (data: any): any =>
   request({
@@ -57,4 +58,9 @@ export const checkToken = (data: any): any =>
     url: api.checkToken,
     method: 'post',
     data,
+  });
+export const oauthGithub = (code: any): any =>
+  request({
+    url: api.oauth_github + code,
+    method: 'get',
   });

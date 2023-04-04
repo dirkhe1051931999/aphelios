@@ -8,6 +8,7 @@ export default {
     'account-role': '角色',
     'account-user': '用户',
     link: '外链',
+    profile: '个人中心',
     largeDisplay: '大屏展示',
   },
   layouts: {

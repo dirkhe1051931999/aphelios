@@ -3,7 +3,7 @@ import { VuexModule, Module, Action, Mutation, getModule } from 'vuex-module-dec
 import { getToken, setToken, removeToken, setUsername, removeUsername, getUsername, setPagePermissionID, getPagePermissionID, removePagePermissionID, removeDynamicRoutes } from 'src/utils/cookie';
 import { resetRouter } from 'src/router';
 import store from 'src/store';
-import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld } from 'src/api/user';
+import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld, oauthGithub } from 'src/api/user';
 import { uid } from 'quasar';
 import { TagsViewModule } from './tags';
 import { enCrypty, sleep } from 'src/utils/tools';
@@ -11,7 +11,7 @@ import setting from 'src/setting.json';
 import { getUserinfo, removeUserinfo, setUserinfo } from 'src/utils/localStorage';
 import { PermissionModule } from './permission';
 
-export interface IUserState {}
+export interface IUserState { }
 
 @Module({ dynamic: true, store, name: 'User', namespaced: true })
 class User extends VuexModule implements IUserState {
@@ -38,14 +38,14 @@ class User extends VuexModule implements IUserState {
     this.introduction = introduction;
   }
   @Mutation
-  private SET_USERINFO(userinfo: any) {
+  public SET_USERINFO(userinfo: any) {
     this.userInfo = userinfo;
   }
   // 登录
   @Action({ rawError: true })
   public async Login(data: any) {
     const { username, password, code } = data;
-    let { token, pagePermissionId, email, id, errorCode } = await login({ userName: username, password: enCrypty(password), code });
+    let { token, pagePermissionId, email, id, errorCode, mobile } = await login({ userName: username, password: enCrypty(password), code });
     if (errorCode && errorCode === '119') {
       return Promise.resolve(errorCode);
     }
@@ -53,6 +53,7 @@ class User extends VuexModule implements IUserState {
     const userinfo = {
       token,
       username,
+      mobile,
       email,
       pagePermissionId,
       id,
@@ -63,9 +64,14 @@ class User extends VuexModule implements IUserState {
     setPagePermissionID(pagePermissionId);
     this.SET_TOKEN(token);
     this.SET_USERNAME(username);
-    this.SET_USERINFO(JSON.stringify(userinfo));
+    this.SET_USERINFO(userinfo);
     this.SET_PAGE_PERMISION_ID(pagePermissionId);
     return Promise.resolve();
+  }
+  @Action({ rawError: true })
+  public async oauthGithub(code: any) {
+    const { data } = await oauthGithub(code || '');
+    return Promise.resolve(data);
   }
   // 获取用户信息
   @Action({ rawError: true })

@@ -138,7 +138,9 @@ axios.interceptors.response.use(
   }
 );
 
-const api = axios.create({ baseURL: 'https://api.example.com' });
+const api = axios.create({
+  baseURL: isPro ? setting.pro : setting.ip,
+});
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api

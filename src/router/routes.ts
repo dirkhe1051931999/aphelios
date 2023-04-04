@@ -40,6 +40,14 @@ export const constantRoutes: RouteRecordRaw[] = [
     component: () => import(/* webpackChunkName: "login" */ 'src/pages/login/index.vue'),
     meta: { hidden: true },
   },
+  {
+    path: '/oauthGithub',
+    name: 'OauthGithub',
+    component: () => import(/* webpackChunkName: "oauth_github" */ 'src/pages/Oauth/github.vue'),
+    meta: {
+      hidden: true,
+    },
+  },
 ];
 /**
  * 动态路由
@@ -97,6 +105,25 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "account-user" */ 'src/pages/account/user.vue'),
       },
     ],
+  },
+  {
+    path: '/profile',
+    name: 'Profile0',
+    component: shallowRef(Layout),
+    meta: {
+      hidden: true,
+      pagePermissionId: ['Dashboard'],
+    },
+    children: [
+      {
+        path: '',
+        name: 'Profile',
+        component: () => import(/* webpackChunkName: "profile" */ 'src/pages/profile/index.vue'),
+        meta: {
+          title: 'profile',
+        },
+      }
+    ]
   },
   // Always leave this as last one,
   // but you can also remove it

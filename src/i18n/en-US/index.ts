@@ -8,6 +8,7 @@ export default {
     'account-role': 'Role',
     'account-user': 'User',
     link: 'Link',
+    profile: 'Profile',
     largeDisplay: 'Big data display',
   },
   layouts: {
