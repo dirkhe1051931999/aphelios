@@ -4,6 +4,7 @@ import CONFIG from "src/config";
 const pool = mysql.createPool({
   host: CONFIG.db.mysql.host,
   user: CONFIG.db.mysql.user,
+  port: CONFIG.db.mysql.port,
   password: CONFIG.db.mysql.password,
   database: CONFIG.db.mysql.database,
   connectionLimit: CONFIG.db.mysql.connectionLimit,
