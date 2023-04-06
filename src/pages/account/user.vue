@@ -342,11 +342,11 @@ export default class AccountUserComponent extends Vue {
     this.$refs[`${this.dialogChangePasswordParams.id}-input-password`][0].validForm();
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private avatarParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public avatarParams = {
     data: [],
   };
-  private queryParams: any = {
+  public queryParams: any = {
     id: 'query',
     queryLoading: false,
     resetLoading: false,
@@ -366,7 +366,7 @@ export default class AccountUserComponent extends Vue {
     this.getAllAvatar();
     this.getAllRole();
   }
-  private tableParams = {
+  public tableParams = {
     loading: false,
     data: [],
     pagination: {
@@ -442,7 +442,7 @@ export default class AccountUserComponent extends Vue {
       },
     ],
   };
-  private dialogDetailParams = {
+  public dialogDetailParams = {
     id: 'dialog-upload-file',
     getDataLoading: false,
     clickLoading: false,
@@ -456,7 +456,7 @@ export default class AccountUserComponent extends Vue {
       { label: '描述', value: '', id: 'description', class: '' },
     ],
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -534,7 +534,7 @@ export default class AccountUserComponent extends Vue {
       },
     ],
   };
-  private dialogChangePasswordParams = {
+  public dialogChangePasswordParams = {
     id: 'change_password',
     dialogType: 'change',
     clickLoading: false,
@@ -606,29 +606,29 @@ export default class AccountUserComponent extends Vue {
     ],
   };
   /**event */
-  private paginationInput(data: any) {
+  public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
-  private async handleQuery() {
+  public async handleQuery() {
     this.queryParams.queryLoading = true;
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.queryLoading = false;
   }
-  private async handleResetQuery() {
+  public async handleResetQuery() {
     this.queryParams.resetLoading = true;
     this.queryParams.params = cloneDeep(CONST_PARAMS.query);
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.resetLoading = false;
   }
-  private handleClickAdd() {
+  public handleClickAdd() {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.params.id = row.id;
     this.dialogAddUpdateParams.params.userName = row.userName;
     this.dialogAddUpdateParams.params.avatar = row.avatarPath;
@@ -645,12 +645,12 @@ export default class AccountUserComponent extends Vue {
     this.dialogAddUpdateParams.dialogType = 'update';
     this.dialogAddUpdateParams.title = 'Update';
   }
-  private async handlerClickChangePassword(row: any) {
+  public async handlerClickChangePassword(row: any) {
     this.dialogChangePasswordParams.visiable = true;
     this.dialogChangePasswordParams.params.userName = row.userName;
     this.dialogChangePasswordParams.title = '修改密码';
   }
-  private handlerClickDetail(row: any) {
+  public handlerClickDetail(row: any) {
     const getValue = (row: any, key: string): string => {
       switch (key) {
         case 'name':
@@ -679,10 +679,10 @@ export default class AccountUserComponent extends Vue {
     this.dialogDetailParams.params = arr;
     this.dialogDetailParams.visiable = true;
   }
-  private dialogAddUpdateCloseEvent(data: { type: string }) {
+  public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
-  private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
       this.dialogAddUpdateParams.params.avatar = (this.avatarParams.data[0] as any).path;
@@ -692,24 +692,24 @@ export default class AccountUserComponent extends Vue {
       this.dialogAddUpdateParams.input[userNameIndex].readonly = false;
     }
   }
-  private dialogDetailCloseEvent(data: { type: string }) {
+  public dialogDetailCloseEvent(data: { type: string }) {
     this.dialogDetailParams.visiable = false;
   }
-  private dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
-  private dialogChangePasswordCloseEvent(data: { type: string }) {
+  public dialogChangePasswordCloseEvent(data: { type: string }) {
     this.dialogChangePasswordParams.visiable = false;
   }
-  private dialogChangePasswordBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogChangePasswordBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogChangePasswordParams.params = data.params;
     }
   }
   /* http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       const { pageData, total } = await AccountModule.getAllUser({
@@ -731,7 +731,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getAllRole() {
+  public async getAllRole() {
     try {
       const { pageData } = await AccountModule.getAllRole({});
       if (pageData && pageData.length > 0) {
@@ -749,7 +749,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getAllAvatar() {
+  public async getAllAvatar() {
     try {
       const { pageData } = await AccountModule.getAllAvatar({});
       if (pageData && pageData.length > 0) {
@@ -768,7 +768,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     try {
       this.dialogAddUpdateParams.clickLoading = true;
       if (this.dialogAddUpdateParams.dialogType === 'add') {
@@ -810,7 +810,7 @@ export default class AccountUserComponent extends Vue {
       this.dialogAddUpdateParams.clickLoading = false;
     }
   }
-  private async dialogChangePasswordConfirmEvent() {
+  public async dialogChangePasswordConfirmEvent() {
     try {
       this.dialogChangePasswordParams.clickLoading = true;
       await UserModule.changePassword({
@@ -830,7 +830,7 @@ export default class AccountUserComponent extends Vue {
       this.dialogChangePasswordParams.clickLoading = false;
     }
   }
-  private async updateUserStatus(row: any, userStatus: number) {
+  public async updateUserStatus(row: any, userStatus: number) {
     try {
       this.tableParams.loading = true;
       await AccountModule.updateUserStatus({
@@ -847,7 +847,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
-  private async unLockUser(row: any, userStatus: number) {
+  public async unLockUser(row: any, userStatus: number) {
     try {
       this.tableParams.loading = true;
       await AccountModule.unLockUser({
@@ -863,7 +863,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
-  private async reSendUrl(row: any) {
+  public async reSendUrl(row: any) {
     try {
       this.tableParams.loading = true;
       await AccountModule.reSendUrl({
@@ -879,7 +879,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: this.$t('messages.tishi'),
