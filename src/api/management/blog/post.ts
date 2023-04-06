@@ -25,7 +25,7 @@ export class ManagementBlogPostAPIController {
   async updatePost(ctx: Koa.Context, next: Koa.Next) {
     return updatePost(ctx);
   }
-  @Route("/getPostList", HTTP_METHODS.GET)
+  @Route("/getPostList", HTTP_METHODS.POST)
   async getPostList(ctx: Koa.Context, next: Koa.Next) {
     return getPostList(ctx);
   }

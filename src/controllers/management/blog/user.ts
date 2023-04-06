@@ -1,16 +1,15 @@
-import { Context } from "koa";
-import jwt from "jsonwebtoken";
-import CONFIG from "src/config";
-import { sendMail } from "src/util/send-email";
-import fs from "fs";
-import path from "path";
+import { Context } from 'koa';
+import jwt from 'jsonwebtoken';
+import CONFIG from 'src/config';
+import { sendMail } from 'src/util/send-email';
+import fs from 'fs';
+import path from 'path';
 /* 查询所有用户 */
 export const getAllUser = async (ctx: Context): Promise<void> => {
-  const userName = (ctx.request.body as { userName?: "string" }).userName || "";
+  const userName = (ctx.request.body as { userName?: 'string' }).userName || '';
   const page = (ctx.request.body as { page?: number }).page || 1;
-  const rowsPerPage =
-    (ctx.request.body as { rowsPerPage?: number }).rowsPerPage || 20;
-  const token = ctx.request.headers.authorization.split(" ")[1];
+  const rowsPerPage = (ctx.request.body as { rowsPerPage?: number }).rowsPerPage || 20;
+  const token = ctx.request.headers.authorization.split(' ')[1];
   const decoded = jwt.verify(token, CONFIG.tokenSecret);
   /* 默认page 1， rowsNumber 20 */
   try {
@@ -30,10 +29,7 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
       results[1] = results[1].map((item) => {
         return Object.assign(item, {
           avatarPath: item.avatar,
-          avatar:
-            item.userType !== 2
-              ? CONFIG.defaultCdnUrl + item.avatar
-              : item.avatar,
+          avatar: item.userType !== 2 ? CONFIG.defaultCdnUrl + item.avatar : item.avatar,
         });
       });
       return ctx.success(ctx, {
@@ -53,17 +49,7 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
 };
 /* 新增用户 */
 export const addUser = async (ctx: Context): Promise<void> => {
-  const {
-    userName,
-    avatar,
-    role,
-    email,
-    province,
-    city,
-    ip,
-    description,
-    userType,
-  } = ctx.request.body as {
+  const { userName, avatar, role, email, province, city, ip, description, userType } = ctx.request.body as {
     userName: string;
     avatar: string;
     role: string;
@@ -74,18 +60,13 @@ export const addUser = async (ctx: Context): Promise<void> => {
     description: string;
     userType: number;
   };
-  if (
-    ctx.isFalsy([userName, avatar, role, email, province, city, ip, userType])
-  ) {
-    ctx.error(
-      ctx,
-      "404#userName, avatar, role, email, province, city, ip, userType"
-    );
+  if (ctx.isFalsy([userName, avatar, role, email, province, city, ip, userType])) {
+    ctx.error(ctx, '404#userName, avatar, role, email, province, city, ip, userType');
     return;
   }
   let createTime = new Date().getTime();
   let updateTime = createTime;
-  let salt = "LGGKqbCrRKRnywHv3uqFZw==";
+  let salt = 'LGGKqbCrRKRnywHv3uqFZw==';
   try {
     const results = await ctx.execSql([
       `INSERT INTO user (userName, avatar, role, createTime, email, updateTime, province, city, ip, description,userType,oldUserStatus,userStatus,salt) 
@@ -97,12 +78,10 @@ export const addUser = async (ctx: Context): Promise<void> => {
       ctx.error(ctx, 303);
     } else {
       let redis = ctx.redisDB.redis.duplicate();
-      const currentUser = await ctx.execSql([
-        `SELECT id FROM user WHERE email = '${email}' AND userName = '${userName}';`,
-      ]);
-      redis.subscribe("my-channel-1", async (err, count) => {
+      const currentUser = await ctx.execSql([`SELECT id FROM user WHERE email = '${email}' AND userName = '${userName}';`]);
+      redis.subscribe('my-channel-1', async (err, count) => {
         if (err) {
-          console.error("Failed to subscribe: %s", err.message);
+          console.error('Failed to subscribe: %s', err.message);
           return;
         }
         try {
@@ -113,9 +92,9 @@ export const addUser = async (ctx: Context): Promise<void> => {
           };
           // 签发token
           const token = jwt.sign(userToken, CONFIG.tokenSecret, {
-            expiresIn: "600s",
+            expiresIn: '600s',
           });
-          const subject = "【koa实战】- 设置密码";
+          const subject = '【koa实战】- 设置密码';
           ctx.redisDB.set(
             token,
             {
@@ -124,23 +103,8 @@ export const addUser = async (ctx: Context): Promise<void> => {
             },
             10 * 60 * 1000
           );
-          const content =
-            "点击该链接设置密码：" +
-            "<a href=" +
-            url +
-            token +
-            " style=color: white>" +
-            url +
-            token +
-            "</a>" +
-            "，账号有效时间<b>10分钟</b>。过期需让管理员重制链接";
-          const html = fs
-            .readFileSync(
-              path.resolve(__dirname, "../../../templates/email.template.html"),
-              "utf-8"
-            )
-            .replace("{{username}}", email)
-            .replace("{{content}}", content);
+          const content = '点击该链接设置密码：' + '<a href=' + url + token + ' style=color: white>' + url + token + '</a>' + '，账号有效时间<b>10分钟</b>。过期需让管理员重制链接';
+          const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);
           await sendMail({ to: email, subject, html });
         } catch (error) {
           console.log(error);
@@ -150,7 +114,7 @@ export const addUser = async (ctx: Context): Promise<void> => {
       const channel = `__keyevent@${CONFIG.db.redis.db}__:expired`;
       // 监听keyspace事件
       const listener = redis.psubscribe(channel);
-      redis.on("pmessage", async (pattern, channel, message) => {
+      redis.on('pmessage', async (pattern, channel, message) => {
         // 设置密码链接过期，把该用户状态变成异常
         let updateTime = new Date().getTime();
         try {
@@ -183,14 +147,12 @@ export const updateUser = async (ctx: Context): Promise<void> => {
     description: string;
   };
   if (ctx.isFalsy([id, avatar, province, city, ip])) {
-    ctx.error(ctx, "404#id, avatar, email, province, city, ip");
+    ctx.error(ctx, '404#id, avatar, email, province, city, ip');
     return;
   }
   let updateTime = new Date().getTime();
   try {
-    const results = await ctx.execSql([
-      `SELECT COUNT(*) as count FROM user WHERE id = ${id};`,
-    ]);
+    const results = await ctx.execSql([`SELECT COUNT(*) as count FROM user WHERE id = ${id};`]);
     if (results.length) {
       if (results[0][0].count === 0) {
         ctx.error(ctx, 108);
@@ -215,19 +177,17 @@ export const updateUser = async (ctx: Context): Promise<void> => {
 };
 /* 更新用户邮箱 */
 export const updateUserEmail = async (ctx: Context): Promise<void> => {
-  const { id, email, } = ctx.request.body as {
+  const { id, email } = ctx.request.body as {
     id: number;
     email: string;
   };
   if (ctx.isFalsy([id, email])) {
-    ctx.error(ctx, "404#id, email");
+    ctx.error(ctx, '404#id, email');
     return;
   }
   let updateTime = new Date().getTime();
   try {
-    const result = await ctx.execSql([
-      `SELECT COUNT(*) AS count FROM user WHERE email = '${email}';`,
-    ]);
+    const result = await ctx.execSql([`SELECT COUNT(*) AS count FROM user WHERE email = '${email}';`]);
     if (result[0][0].count === 1) {
       return ctx.error(ctx, 302);
     } else {
@@ -246,19 +206,17 @@ export const updateUserEmail = async (ctx: Context): Promise<void> => {
 };
 /* 更新用户手机号 */
 export const updateUserMobile = async (ctx: Context): Promise<void> => {
-  const { id, mobile, } = ctx.request.body as {
+  const { id, mobile } = ctx.request.body as {
     id: number;
     mobile: string;
   };
   if (ctx.isFalsy([id, mobile])) {
-    ctx.error(ctx, "404#id, mobile");
+    ctx.error(ctx, '404#id, mobile');
     return;
   }
   let updateTime = new Date().getTime();
   try {
-    const result = await ctx.execSql([
-      `SELECT COUNT(*) AS count FROM user WHERE mobile = ${mobile};`,
-    ]);
+    const result = await ctx.execSql([`SELECT COUNT(*) AS count FROM user WHERE mobile = ${mobile};`]);
     if (result[0][0].count === 1) {
       return ctx.error(ctx, 305);
     } else {
@@ -281,13 +239,11 @@ export const deleteUser = async (ctx: Context): Promise<void> => {
     id: number;
   };
   if (ctx.isFalsy([id])) {
-    ctx.error(ctx, "404#id");
+    ctx.error(ctx, '404#id');
     return;
   }
   try {
-    const results = await ctx.execSql([
-      `SELECT COUNT(*) as count FROM user WHERE id = ${id};`,
-    ]);
+    const results = await ctx.execSql([`SELECT COUNT(*) as count FROM user WHERE id = ${id};`]);
     if (results.length) {
       if (results[0][0].count === 0) {
         ctx.error(ctx, 108);
@@ -308,16 +264,12 @@ export const updateUserStatus = async (ctx: Context): Promise<void> => {
     userStatus: number;
   };
   if (ctx.isFalsy([id, userStatus])) {
-    ctx.error(ctx, "404#id,userStatus");
+    ctx.error(ctx, '404#id,userStatus');
     return;
   }
   let updateTime = new Date().getTime();
   try {
-    const results = await ctx.execSql([
-      `SELECT 1 as count FROM user WHERE id = ${id};`,
-      `SELECT userStatus FROM user WHERE id = ${id};`,
-      `SELECT oldUserStatus FROM user WHERE id = ${id};`,
-    ]);
+    const results = await ctx.execSql([`SELECT 1 as count FROM user WHERE id = ${id};`, `SELECT userStatus FROM user WHERE id = ${id};`, `SELECT oldUserStatus FROM user WHERE id = ${id};`]);
     if (results.length && results[0][0].count === 0) {
       ctx.error(ctx, 108);
     } else if (results.length && results[0][0].count === 1) {
@@ -347,14 +299,12 @@ export const unLockUser = async (ctx: Context): Promise<void> => {
     id: number;
   };
   if (ctx.isFalsy([id])) {
-    ctx.error(ctx, "404#id");
+    ctx.error(ctx, '404#id');
     return;
   }
   let updateTime = new Date().getTime();
   try {
-    const results = await ctx.execSql([
-      `SELECT 1 as count FROM user WHERE id = ${id};`,
-    ]);
+    const results = await ctx.execSql([`SELECT 1 as count FROM user WHERE id = ${id};`]);
     if (results.length && results[0][0].count === 0) {
       ctx.error(ctx, 108);
     } else if (results.length && results[0][0].count === 1) {
@@ -377,13 +327,11 @@ export const reSendUrl = async (ctx: Context): Promise<void> => {
     id: number;
   };
   if (ctx.isFalsy([id])) {
-    ctx.error(ctx, "404#id");
+    ctx.error(ctx, '404#id');
     return;
   }
   try {
-    const results = await ctx.execSql([
-      `SELECT userName,email FROM user WHERE id = ${id};`,
-    ]);
+    const results = await ctx.execSql([`SELECT userName,email FROM user WHERE id = ${id};`]);
     if (!results.length) {
       ctx.error(ctx, 108);
     } else {
@@ -401,9 +349,9 @@ export const reSendUrl = async (ctx: Context): Promise<void> => {
       };
       // 签发token
       const token = jwt.sign(userToken, CONFIG.tokenSecret, {
-        expiresIn: "600s",
+        expiresIn: '600s',
       });
-      const subject = "【koa实战】- 设置密码";
+      const subject = '【koa实战】- 设置密码';
       ctx.redisDB.set(
         token,
         {
@@ -412,23 +360,8 @@ export const reSendUrl = async (ctx: Context): Promise<void> => {
         },
         10 * 60 * 1000
       );
-      const content =
-        "点击该链接设置密码：" +
-        "<a href=" +
-        url +
-        token +
-        " style=color: white>" +
-        url +
-        token +
-        "</a>" +
-        "，账号有效时间<b>10分钟</b>。过期需让管理员重制链接";
-      const html = fs
-        .readFileSync(
-          path.resolve(__dirname, "../../../templates/email.template.html"),
-          "utf-8"
-        )
-        .replace("{{username}}", email)
-        .replace("{{content}}", content);
+      const content = '点击该链接设置密码：' + '<a href=' + url + token + ' style=color: white>' + url + token + '</a>' + '，账号有效时间<b>10分钟</b>。过期需让管理员重制链接';
+      const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);
       await sendMail({ to: email, subject, html });
       return ctx.success(ctx, null);
     }

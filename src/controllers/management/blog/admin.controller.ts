@@ -1,25 +1,22 @@
-import { Context } from "koa";
-import jwt from "jsonwebtoken";
-import { encryptInputPassword } from "src/util/helper";
-import CONFIG from "src/config";
-import { sendMail } from "src/util/send-email";
-import fs from "fs";
-import path from "path";
+import { Context } from 'koa';
+import jwt from 'jsonwebtoken';
+import { encryptInputPassword } from 'src/util/helper';
+import CONFIG from 'src/config';
+import { sendMail } from 'src/util/send-email';
+import fs from 'fs';
+import path from 'path';
 
 /* 登录 */
 export const login = async (ctx: Context): Promise<void> => {
-  const userName = (ctx.request.body as { userName?: string }).userName || "";
-  const code = (ctx.request.body as { code?: string }).code || "";
-  const password = (ctx.request.body as { password?: string }).password || "";
+  const userName = (ctx.request.body as { userName?: string }).userName || '';
+  const code = (ctx.request.body as { code?: string }).code || '';
+  const password = (ctx.request.body as { password?: string }).password || '';
   if (!userName || !password || !code) {
     ctx.error(ctx, 100);
     return;
   }
   try {
-    const results = await ctx.execSql(
-      `SELECT id, hashedPassword,salt,email,mobile,userStatus,role,userType,avatar FROM user WHERE userName = ?`,
-      userName
-    );
+    const results = await ctx.execSql(`SELECT id, hashedPassword,salt,email,mobile,userStatus,role,userType,avatar FROM user WHERE userName = ?`, userName);
     if (results.length > 0) {
       if (results[0].userStatus === 0) {
         ctx.error(ctx, 119);
@@ -30,14 +27,9 @@ export const login = async (ctx: Context): Promise<void> => {
       const mobile = results[0].mobile;
       const userId = results[0].id;
       const userType = results[0].userType;
-      const avatar = results[0].avatar
-      const session_code = await ctx.redisDB.get(
-        userName + "-" + email + "-code"
-      );
-      if (
-        !session_code ||
-        (session_code && String(session_code) !== String(code))
-      ) {
+      const avatar = results[0].avatar;
+      const session_code = await ctx.redisDB.get(userName + '-' + email + '-code');
+      if (!session_code || (session_code && String(session_code) !== String(code))) {
         ctx.error(ctx, 115);
       } else {
         if (results[0].userStatus === 4) {
@@ -62,30 +54,20 @@ export const login = async (ctx: Context): Promise<void> => {
             userType,
             id: userId,
           };
-          ctx.redisDB.set(
-            `${email}-${userName}-${userId}`,
-            userToken,
-            1000 * 60 * 60 * 24
-          );
-          await ctx.redisDB.destroy(userName + "-" + email + "-code");
+          ctx.redisDB.set(`${email}-${userName}-${userId}`, userToken, 1000 * 60 * 60 * 24);
+          await ctx.redisDB.destroy(userName + '-' + email + '-code');
           // 签发token
           const token = jwt.sign(userToken, CONFIG.tokenSecret, {
-            expiresIn: "24h",
+            expiresIn: '24h',
           });
           // 删除错误次数
-          await ctx.execSql(
-            `DELETE FROM user_login WHERE id = ${results[0].id};`
-          );
-          const roleResult = await ctx.execSql(
-            `SELECT permissionList FROM role WHERE name = '${results[0].role}'`
-          );
+          await ctx.execSql(`DELETE FROM user_login WHERE id = ${results[0].id};`);
+          const roleResult = await ctx.execSql(`SELECT permissionList FROM role WHERE name = '${results[0].role}'`);
           ctx.success(ctx, {
             token,
             email: email,
             userType: userType,
-            avatar: userType !== 2
-              ? CONFIG.defaultCdnUrl + avatar
-              : avatar,
+            avatar: userType !== 2 ? CONFIG.defaultCdnUrl + avatar : avatar,
             mobile: mobile,
             id: results[0].id,
             pagePermissionId: roleResult[0].permissionList,
@@ -123,38 +105,26 @@ export const login = async (ctx: Context): Promise<void> => {
 };
 /* 修改密码 */
 export const changePassword = async (ctx: Context): Promise<void> => {
-  const userName = (ctx.request.body as { userName?: string }).userName || "";
-  const oldPassword =
-    (ctx.request.body as { oldPassword?: string }).oldPassword || "";
-  const newPassword =
-    (ctx.request.body as { newPassword?: string }).newPassword || "";
+  const userName = (ctx.request.body as { userName?: string }).userName || '';
+  const oldPassword = (ctx.request.body as { oldPassword?: string }).oldPassword || '';
+  const newPassword = (ctx.request.body as { newPassword?: string }).newPassword || '';
   if (!userName || !oldPassword || !newPassword) {
     ctx.error(ctx, 104);
     return;
   }
   try {
-    const results = await ctx.execSql(
-      `SELECT id, hashedPassword, email, salt FROM user WHERE userName = ?`,
-      userName
-    );
+    const results = await ctx.execSql(`SELECT id, hashedPassword, email, salt FROM user WHERE userName = ?`, userName);
     if (results.length > 0) {
       const hashedPassword = results[0].hashedPassword;
       const salt = results[0].salt;
       const hashOldPassword = encryptInputPassword(oldPassword, salt);
       if (hashedPassword === hashOldPassword) {
         const hashNewPassword = encryptInputPassword(newPassword, salt);
-        await ctx.execSql(
-          `UPDATE user SET hashedPassword = ? WHERE id = ${results[0].id}`,
-          hashNewPassword
-        );
+        await ctx.execSql(`UPDATE user SET hashedPassword = ? WHERE id = ${results[0].id}`, hashNewPassword);
         if (ctx.request.headers.authorization) {
           // 修改已经登录的用户密码，删除redis中的token
-          if (
-            ctx.redisDB.get(`${results[0].email}-${userName}-${results[0].id}`)
-          ) {
-            ctx.redisDB.destroy(
-              `${results[0].email}-${userName}-${results[0].id}`
-            );
+          if (ctx.redisDB.get(`${results[0].email}-${userName}-${results[0].id}`)) {
+            ctx.redisDB.destroy(`${results[0].email}-${userName}-${results[0].id}`);
           }
         }
         ctx.success(ctx, null);
@@ -177,10 +147,7 @@ export const getUserInfo = async (ctx: Context): Promise<void> => {
     return;
   }
   try {
-    const results = await ctx.execSql(
-      `SELECT id, userName, email, avatar FROM user WHERE id = ?`,
-      id
-    );
+    const results = await ctx.execSql(`SELECT id, userName, email, avatar FROM user WHERE id = ?`, id);
     if (results.length > 0) {
       ctx.success(ctx, {
         id: results[0].id,
@@ -198,29 +165,20 @@ export const getUserInfo = async (ctx: Context): Promise<void> => {
 };
 /* 发送验证码 */
 export const getVerifyCode = async (ctx: Context): Promise<void> => {
-  const userName = (ctx.request.body as { userName?: string }).userName || "";
+  const userName = (ctx.request.body as { userName?: string }).userName || '';
   if (!userName) {
     ctx.error(ctx, 108);
     return;
   }
   try {
-    const results = await ctx.execSql(
-      `SELECT email FROM user WHERE userName = '${userName}'`
-    );
+    const results = await ctx.execSql(`SELECT email FROM user WHERE userName = '${userName}'`);
     if (results.length > 0) {
-      const subject = "【koa实战】- 获取验证码";
+      const subject = '【koa实战】- 获取验证码';
       const email = results[0].email;
       const code = (Math.floor(Math.random() * 90000) + 10000).toString();
-      ctx.redisDB.set(userName + "-" + email + "-code", code, 5 * 60 * 1000);
-      const content =
-        "您的验证码是：" + "<b>" + code + "</b>" + "，有效时间5分钟。";
-      const html = fs
-        .readFileSync(
-          path.resolve(__dirname, "../../../templates/email.template.html"),
-          "utf-8"
-        )
-        .replace("{{username}}", email)
-        .replace("{{content}}", content);
+      ctx.redisDB.set(userName + '-' + email + '-code', code, 5 * 60 * 1000);
+      const content = '您的验证码是：' + '<b>' + code + '</b>' + '，有效时间5分钟。';
+      const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);
       await sendMail({ to: email, subject, html });
       ctx.success(ctx, {
         email,
@@ -236,16 +194,14 @@ export const getVerifyCode = async (ctx: Context): Promise<void> => {
 };
 /* 忘记密码 */
 export const forgotPassword = async (ctx: Context): Promise<void> => {
-  const email = (ctx.request.body as { email?: string }).email || "";
-  const username = (ctx.request.body as { username?: string }).username || "";
+  const email = (ctx.request.body as { email?: string }).email || '';
+  const username = (ctx.request.body as { username?: string }).username || '';
   if (!email || !username) {
     ctx.error(ctx, 108);
     return;
   }
   try {
-    const results = await ctx.execSql(
-      `SELECT userName, id, avatar FROM user WHERE email = '${email}' and userName = '${username}'`
-    );
+    const results = await ctx.execSql(`SELECT userName, id, avatar FROM user WHERE email = '${email}' and userName = '${username}'`);
     const url = CONFIG.resetPasswordUrl;
     if (results.length > 0) {
       const userToken = {
@@ -254,9 +210,9 @@ export const forgotPassword = async (ctx: Context): Promise<void> => {
       };
       // 签发token
       const token = jwt.sign(userToken, CONFIG.tokenSecret, {
-        expiresIn: "600s",
+        expiresIn: '600s',
       });
-      const subject = "【koa实战】- 重置密码";
+      const subject = '【koa实战】- 重置密码';
       ctx.redisDB.set(
         token,
         {
@@ -265,23 +221,8 @@ export const forgotPassword = async (ctx: Context): Promise<void> => {
         },
         10 * 60 * 1000
       );
-      const content =
-        "点击该链接重置密码：" +
-        "<a href=" +
-        url +
-        token +
-        " style=color: white>" +
-        url +
-        token +
-        "</a>" +
-        "，有效时间10分钟。";
-      const html = fs
-        .readFileSync(
-          path.resolve(__dirname, "../../../templates/email.template.html"),
-          "utf-8"
-        )
-        .replace("{{username}}", email)
-        .replace("{{content}}", content);
+      const content = '点击该链接重置密码：' + '<a href=' + url + token + ' style=color: white>' + url + token + '</a>' + '，有效时间10分钟。';
+      const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);
       await sendMail({ to: email, subject, html });
       ctx.success(ctx, null);
     } else {
@@ -294,7 +235,7 @@ export const forgotPassword = async (ctx: Context): Promise<void> => {
 };
 /* 检查token是否有效 */
 export const checkToken = async (ctx: Context): Promise<void> => {
-  const token = (ctx.request.body as { token?: string }).token || "";
+  const token = (ctx.request.body as { token?: string }).token || '';
   if (!token) {
     ctx.error(ctx, 111);
     return;
@@ -318,8 +259,8 @@ export const checkToken = async (ctx: Context): Promise<void> => {
 };
 /* 重置密码，不需要老密码 */
 export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
-  const password = (ctx.request.body as { password?: string }).password || "";
-  const token = (ctx.request.body as { token?: string }).token || "";
+  const password = (ctx.request.body as { password?: string }).password || '';
+  const token = (ctx.request.body as { token?: string }).token || '';
   if (!password || !token) {
     ctx.error(ctx, 113);
     return;
@@ -329,16 +270,11 @@ export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
       ctx.error(ctx, 112);
     } else {
       const { username, email } = await ctx.redisDB.get(token);
-      const results = await ctx.execSql(
-        `SELECT id, hashedPassword, salt FROM user WHERE userName = '${username}' and email = '${email}'`
-      );
+      const results = await ctx.execSql(`SELECT id, hashedPassword, salt FROM user WHERE userName = '${username}' and email = '${email}'`);
       if (results.length > 0) {
         const salt = results[0].salt;
         const hashNewPassword = encryptInputPassword(password, salt);
-        await ctx.execSql(
-          `UPDATE user SET hashedPassword = ? , userStatus = 1  WHERE id = ${results[0].id}`,
-          hashNewPassword
-        );
+        await ctx.execSql(`UPDATE user SET hashedPassword = ? , userStatus = 1  WHERE id = ${results[0].id}`, hashNewPassword);
         // 删除重置密码链接
         await ctx.redisDB.destroy(token);
         ctx.success(ctx, null);
@@ -353,11 +289,11 @@ export const changePasswordWithOutOld = async (ctx: Context): Promise<void> => {
 };
 /* 退出登录 */
 export const signOut = async (ctx: Context): Promise<void> => {
-  const email = (ctx.request.body as { email?: string }).email || "";
-  const userName = (ctx.request.body as { userName?: string }).userName || "";
-  const userId = (ctx.request.body as { userId?: string }).userId || "";
+  const email = (ctx.request.body as { email?: string }).email || '';
+  const userName = (ctx.request.body as { userName?: string }).userName || '';
+  const userId = (ctx.request.body as { userId?: string }).userId || '';
   if (ctx.isFalsy([email, userName, userId])) {
-    ctx.error(ctx, "404#email, userName, userId");
+    ctx.error(ctx, '404#email, userName, userId');
     return;
   }
   await ctx.redisDB.destroy(`${email}-${userName}-${userId}`);
