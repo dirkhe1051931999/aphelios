@@ -17,6 +17,7 @@ import RedisDB from "./util/redis-db";
 import { hasEmptyValue } from "./util/helper";
 const app = new Koa();
 
+
 // 扩展 Context 接口
 declare module "koa" {
   interface Context {
@@ -24,6 +25,7 @@ declare module "koa" {
     error(ctx: Context, code: number | string): void;
     isFalsy(data: any[]): boolean;
     serializeObject(data: any): any;
+    wechat_oauth: any
   }
 }
 /* 跨域配置 */

@@ -38,15 +38,16 @@ export const githubOAuth = async (ctx) => {
       }).then(async (result: any) => {
         let { login, avatar_url, email } = result.data;
         let userId = 0;
+        let mobile = null;
         let isRegisterUser = await ctx.execSql([
-          `SELECT COUNT(*) as count, MAX(id) as id FROM user WHERE userName = '${login}'`,
+          `SELECT COUNT(*) as count, MAX(id) as id, MAX(mobile) as mobile FROM user WHERE userName = '${login}'`,
         ]);
-        console.log(isRegisterUser)
         if (isRegisterUser.length > 0 && isRegisterUser[0][0].count > 0) {
           userId = isRegisterUser[0][0].id
           await ctx.execSql([
             `UPDATE user SET avatar = '${avatar_url}', email = '${email}' WHERE id = ${userId}`,
           ]);
+          mobile = isRegisterUser[0][0].mobile
         } else {
           const result = await ctx.execSql([
             `INSERT INTO user (userName, avatar, email,role,createTime,userType)
@@ -54,15 +55,16 @@ export const githubOAuth = async (ctx) => {
           ]);
           if (result[0].affectedRows > 0) {
             userId = result[0].insertId;
+
           }
         }
         if (userId > 0) {
-          ctx.session.user = res.login;
           // 用户token
           const userToken = {
             name: login,
             email,
-            mobile: null,
+            userType: 2,
+            mobile: mobile,
             id: userId,
           };
           ctx.redisDB.set(
@@ -80,8 +82,11 @@ export const githubOAuth = async (ctx) => {
           ctx.success(ctx, {
             token,
             email: email,
-            mobile: null,
+            mobile: mobile,
             id: userId,
+            userType: 2,
+            avatar: avatar_url,
+            username: login,
             pagePermissionId: roleResult[0].permissionList,
           });
         } else {

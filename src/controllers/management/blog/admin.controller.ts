@@ -17,7 +17,7 @@ export const login = async (ctx: Context): Promise<void> => {
   }
   try {
     const results = await ctx.execSql(
-      `SELECT id, hashedPassword,salt,email,mobile,userStatus,role FROM user WHERE userName = ?`,
+      `SELECT id, hashedPassword,salt,email,mobile,userStatus,role,userType,avatar FROM user WHERE userName = ?`,
       userName
     );
     if (results.length > 0) {
@@ -29,6 +29,8 @@ export const login = async (ctx: Context): Promise<void> => {
       const email = results[0].email;
       const mobile = results[0].mobile;
       const userId = results[0].id;
+      const userType = results[0].userType;
+      const avatar = results[0].avatar
       const session_code = await ctx.redisDB.get(
         userName + "-" + email + "-code"
       );
@@ -57,6 +59,7 @@ export const login = async (ctx: Context): Promise<void> => {
             name: userName,
             email,
             mobile,
+            userType,
             id: userId,
           };
           ctx.redisDB.set(
@@ -79,6 +82,10 @@ export const login = async (ctx: Context): Promise<void> => {
           ctx.success(ctx, {
             token,
             email: email,
+            userType: userType,
+            avatar: userType !== 2
+              ? CONFIG.defaultCdnUrl + avatar
+              : avatar,
             mobile: mobile,
             id: results[0].id,
             pagePermissionId: roleResult[0].permissionList,

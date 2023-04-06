@@ -19,7 +19,7 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
       `
         SELECT id,userName,avatar,role,createTime,email,updateTime,province,city,ip,description,userType,userStatus
         FROM user 
-        WHERE userName LIKE CONCAT('%', '${userName}', '%') OR NULLIF('${userName}', '') IS NULL 
+        WHERE CASE WHEN ${decoded.userType} = 0 THEN 1 ELSE id = ${decoded.id} END AND (userName LIKE CONCAT('%', '${userName}', '%') OR NULLIF('${userName}', '') IS NULL )
         ORDER BY 
           CASE WHEN id = ${decoded.id} THEN 0 ELSE 1 END, 
           id

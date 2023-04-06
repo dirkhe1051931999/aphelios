@@ -46,7 +46,8 @@
     "reflect-metadata": "^0.1.13",
     "request-ip": "^3.3.0",
     "socket.io": "^4.6.1",
-    "socket.io-client": "^4.6.1"
+    "socket.io-client": "^4.6.1",
+    "wechat-oauth": "^1.5.0"
   },
   "devDependencies": {
     "@types/koa": "^2.13.5",
