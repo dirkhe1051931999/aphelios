@@ -4,25 +4,25 @@
     <div class="card thin-shadow q-pa-md">
       <div class="left row items-center">
         <q-avatar class="m-r-10 fs-68">
-          <img src="~assets/avatar.jpg" />
+          <img :src="avatar" />
         </q-avatar>
         <div class="q-ml-md">
           <p class="fs-20 q-pb-sm f-bold">{{ username }}</p>
-          <p class="text-grey">CEO / Co-Founder</p>
+          <p class="text-grey">{{ userTypeName }}</p>
         </div>
       </div>
-      <div class="right">
+      <!-- <div class="right">
         <div class="tab thin-shadow">
           <q-icon name="lightbulb" size="20px"></q-icon>
           <span class="q-ml-sm">App</span>
         </div>
-      </div>
+      </div> -->
     </div>
     <div class="profile q-mt-xl row">
       <div class="setting w-p-30 thin-shadow q-pa-lg q-mr-lg">
-        <div class="fs-18 f-bold q-pb-md">Platform Setting</div>
+        <div class="fs-18 f-bold q-pb-md">平台设置</div>
         <div class="account">
-          <div class="fs-14 q-pb-md">ACCOUNT</div>
+          <div class="fs-14 q-pb-md">账号</div>
           <ul>
             <li>
               <q-toggle label="Email me when someone follows me" v-model="switchModel.model1" dense class="q-mb-md" />
@@ -36,7 +36,7 @@
           </ul>
         </div>
         <div class="application q-mt-md">
-          <div class="fs-14 q-pb-md">APPLICATION</div>
+          <div class="fs-14 q-pb-md">应用</div>
           <ul>
             <li>
               <q-toggle label="New launches and projects" v-model="switchModel.model4" dense class="q-mb-md" />
@@ -51,7 +51,7 @@
         </div>
       </div>
       <div class="setting w-p-30 thin-shadow q-pa-lg">
-        <div class="fs-18 f-bold q-pb-md">Profile Information</div>
+        <div class="fs-18 f-bold q-pb-md">个人信息</div>
         <div class="account">
           <div class="fs-14 q-pb-md">嗨，我是厄斐琉斯与拉露恩，决定： 如果你无法决定，答案是否定的。如果有两条同样困难的道路，选择短期内更痛苦的那条（避免痛苦是在制造平等的假象）。</div>
           <ul>
@@ -68,7 +68,9 @@
                 @close="textToInputCloseForEmail"
               >
               </TextToInput>
-              <span class="link-type q-ml-md" v-if="!profileInfomation.showEdit.email" @click="(profileInfomation.showEdit.email = true), (profileInfomation.params.email = email || '')">修改</span>
+              <span class="link-type q-ml-md" v-if="!profileInfomation.showEdit.email && canEdit" @click="(profileInfomation.showEdit.email = true), (profileInfomation.params.email = email || '')"
+                >修改</span
+              >
             </li>
             <li class="q-mb-md h-40 lh-40">
               <span class="q-pr-md f-bold bold fs-16">手机：</span>
@@ -111,6 +113,9 @@ export default class myComponent extends Vue {
   get username() {
     return UserModule.username;
   }
+  get avatar() {
+    return UserModule.userInfo.avatar;
+  }
   get email() {
     return UserModule.userInfo.email;
   }
@@ -119,6 +124,24 @@ export default class myComponent extends Vue {
   }
   get location() {
     return UserModule.userInfo.location;
+  }
+  get canEdit() {
+    return UserModule.userInfo.userType !== 2;
+  }
+  get UserType() {
+    return UserModule.userInfo.userType;
+  }
+  get userTypeName() {
+    switch (UserModule.userInfo.userType) {
+      case 0:
+        return '管理员';
+      case 1:
+        return '普通用户';
+      case 2:
+        return '第三方登录用户';
+      default:
+        break;
+    }
   }
   private switchModel = {
     model1: false,

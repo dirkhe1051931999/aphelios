@@ -4,6 +4,7 @@
 export default {
   routes: {
     dashboard: 'Dashboard',
+    'blog-post': 'Blog post',
     account: 'Account',
     'account-role': 'Role',
     'account-user': 'User',

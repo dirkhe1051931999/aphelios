@@ -42,7 +42,7 @@
       <q-btn-dropdown stretch flat align="center" dropdown-icon="app:topbar-arrow-bottom-white" :id="`${appTitle}-userinfo`">
         <template v-slot:label>
           <q-avatar class="m-r-10 fs-38">
-            <img src="~assets/avatar.jpg" />
+            <img :src="avatar" />
           </q-avatar>
           <span>{{ username }}</span>
         </template>
@@ -68,7 +68,7 @@
           <q-separator vertical inset class="q-mx-md" />
           <div class="column items-center">
             <q-avatar size="72px">
-              <img src="~assets/logo.png" />
+              <img :src="avatar" />
             </q-avatar>
             <div class="text-subtitle1 q-my-md fs-18">{{ username }}</div>
             <q-btn color="primary" :label="$t('layouts.logout')" push @click="logout" v-close-popup />
@@ -112,6 +112,9 @@ export default class NavigationBarComponent extends Vue {
   }
   get darkIsActive() {
     return this.$q.dark.isActive;
+  }
+  get avatar() {
+    return UserModule.userInfo.avatar;
   }
   mounted() {
     this.initStep();

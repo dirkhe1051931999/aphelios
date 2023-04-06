@@ -339,7 +339,6 @@
         </div>
       </div>
     </div>
-    <!-- <iframe id="my-iframe" style="width: 400px; height: 400px" src="http://localhost:9002/index.html#/login"></iframe> -->
   </div>
 </template>
 
@@ -441,6 +440,13 @@ export default class LoginPage2 extends Vue {
           });
         console.log(error);
       }
+    }
+    if (location.search && new URLSearchParams(location.search).get('code')) {
+      this.$q.loading.show();
+      const code = new URLSearchParams(location.search).get('code');
+      await UserModule.oauthGithub(code);
+      this.$q.loading.hide();
+      location.replace('index.html#/login');
     }
   }
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
@@ -580,8 +586,7 @@ export default class LoginPage2 extends Vue {
     this.$router.push('/login');
   }
   private clickGithubLogin() {
-    // window.open(setting.github_oauth_url, '__blank');
-    window.open(setting.github_oauth_url, 'myWindow', 'width=400,height=300');
+    location.href = setting.github_oauth_url;
   }
   /* http */
   private async handlerSignIn() {

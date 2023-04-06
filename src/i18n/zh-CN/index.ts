@@ -4,6 +4,7 @@
 export default {
   routes: {
     dashboard: '运行面板',
+    'blog-post': '博文文章管理',
     account: '账号管理',
     'account-role': '角色',
     'account-user': '用户',

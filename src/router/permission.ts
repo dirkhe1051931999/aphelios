@@ -8,7 +8,7 @@ import { AppModule } from 'src/store/modules/app';
 import i18n from 'src/i18n';
 import store from 'src/store';
 import { getUserinfo } from 'src/utils/localStorage';
-const whiteList = ['/login', 'oauth_github'];
+const whiteList = ['/login'];
 const getPageTitle = (to: any) => {
   if (whiteList.indexOf(to.path) !== -1) {
     return `${setting.title}`;
@@ -24,7 +24,6 @@ const getPageTitle = (to: any) => {
 };
 
 router.beforeEach(async (to, _from, next) => {
-  console.log(to)
   // 判断该用户是否登录
   if (getToken() && getUserinfo() && getUsername()) {
     if (whiteList.indexOf(to.path) !== -1) {

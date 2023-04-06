@@ -40,14 +40,6 @@ export const constantRoutes: RouteRecordRaw[] = [
     component: () => import(/* webpackChunkName: "login" */ 'src/pages/login/index.vue'),
     meta: { hidden: true },
   },
-  {
-    path: '/oauthGithub',
-    name: 'OauthGithub',
-    component: () => import(/* webpackChunkName: "oauth_github" */ 'src/pages/Oauth/github.vue'),
-    meta: {
-      hidden: true,
-    },
-  },
 ];
 /**
  * 动态路由
@@ -71,6 +63,25 @@ export const asyncRoutes: RouteRecordRaw[] = [
           title: 'dashboard',
           icon: 'home',
           affix: true,
+        },
+      },
+    ],
+  },
+  {
+    path: '/blog-post',
+    component: shallowRef(Layout),
+    name: 'BlogPost0',
+    meta: {
+      pagePermissionId: ['BlogPost'],
+    },
+    children: [
+      {
+        path: '',
+        component: () => import(/* webpackChunkName: "blog-post" */ 'src/pages/blog-post/index.vue'),
+        name: 'BlogPost',
+        meta: {
+          title: 'blog-post',
+          icon: 'rss_feed',
         },
       },
     ],

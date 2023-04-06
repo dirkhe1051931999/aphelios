@@ -45,7 +45,7 @@ class User extends VuexModule implements IUserState {
   @Action({ rawError: true })
   public async Login(data: any) {
     const { username, password, code } = data;
-    let { token, pagePermissionId, email, id, errorCode, mobile } = await login({ userName: username, password: enCrypty(password), code });
+    let { token, pagePermissionId, email, id, errorCode, mobile, userType, avatar } = await login({ userName: username, password: enCrypty(password), code });
     if (errorCode && errorCode === '119') {
       return Promise.resolve(errorCode);
     }
@@ -55,6 +55,8 @@ class User extends VuexModule implements IUserState {
       username,
       mobile,
       email,
+      userType,
+      avatar,
       pagePermissionId,
       id,
     };
@@ -70,8 +72,27 @@ class User extends VuexModule implements IUserState {
   }
   @Action({ rawError: true })
   public async oauthGithub(code: any) {
-    const { data } = await oauthGithub(code || '');
-    return Promise.resolve(data);
+    let { token, pagePermissionId, email, id, mobile, username, userType, avatar } = await oauthGithub(code || '');
+    pagePermissionId = JSON.parse(pagePermissionId);
+    const userinfo = {
+      token,
+      username,
+      mobile,
+      email,
+      userType,
+      avatar,
+      pagePermissionId,
+      id,
+    };
+    setToken(token);
+    setUsername(username);
+    setUserinfo(JSON.stringify(userinfo));
+    setPagePermissionID(pagePermissionId);
+    this.SET_TOKEN(token);
+    this.SET_USERNAME(username);
+    this.SET_USERINFO(userinfo);
+    this.SET_PAGE_PERMISION_ID(pagePermissionId);
+    return Promise.resolve();
   }
   // 获取用户信息
   @Action({ rawError: true })
