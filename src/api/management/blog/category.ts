@@ -7,7 +7,7 @@ import {
 import { HTTP_METHODS, Route } from "src/util/route.decorator";
 import Koa from "koa";
 export class ManagementBlogCategoryAPIController {
-  @Route("/getCategories", HTTP_METHODS.GET)
+  @Route("/getCategories", HTTP_METHODS.POST)
   async login(ctx: Koa.Context, next: Koa.Next) {
     return getCategories(ctx);
   }

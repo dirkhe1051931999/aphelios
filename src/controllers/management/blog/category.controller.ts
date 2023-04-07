@@ -1,21 +1,14 @@
 // 获取所有文章类别
 export const getCategories = async (ctx) => {
-  let sql = ` SELECT category.id, category.name, COUNT(post.id) AS count 
-                FROM category LEFT JOIN post ON post.categoryId = category.id 
-                GROUP BY category.id`;
+  let sql = `SELECT id, name FROM post_category`;
   try {
     let results = await ctx.execSql(sql);
-    ctx.body = {
-      success: 1,
-      message: "",
-      categories: results.length > 0 ? results : [],
-    };
+    ctx.success(ctx, {
+      pageData: results,
+    });
   } catch (error) {
     console.log(error);
-    ctx.body = {
-      success: 0,
-      message: "查询数据出错",
-    };
+    ctx.error(ctx, 402);
   }
 };
 // 获取当前文章类型
@@ -24,7 +17,7 @@ export const getPostsByCategoryId = async (ctx) => {
     page = ctx.query.page || 1,
     pageNum = ctx.query.pageNum || 10,
     pageIndex = (page - 1) * pageNum < 0 ? 0 : (page - 1) * pageNum,
-    fliter = id == 0 ? "" : ` WHERE post.categoryId = ${id} `,
+    fliter = id == 0 ? '' : ` WHERE post.categoryId = ${id} `,
     sql = ` SELECT post.id, post.title, post.createTime, post.status, post.categoryId, 
               category.name AS categoryName FROM post LEFT JOIN category 
               ON post.categoryId = category.id ${fliter}
@@ -33,14 +26,14 @@ export const getPostsByCategoryId = async (ctx) => {
     let results = await ctx.execSql(sql);
     ctx.body = {
       success: 1,
-      message: "",
+      message: '',
       posts: results,
     };
   } catch (error) {
     console.log(error);
     ctx.body = {
       success: 0,
-      message: "查询数据出错",
+      message: '查询数据出错',
       posts: null,
     };
   }
@@ -49,28 +42,25 @@ export const getPostsByCategoryId = async (ctx) => {
 export const addNewCategory = async (ctx) => {
   let name = ctx.params.name || 0;
   try {
-    let existName = await ctx.execSql(
-      `SELECT * FROM category WHERE name = ?`,
-      name
-    );
+    let existName = await ctx.execSql(`SELECT * FROM category WHERE name = ?`, name);
     if (existName.length > 0) {
       ctx.body = {
         success: 0,
-        message: "分类名称已存在！",
+        message: '分类名称已存在！',
       };
       return false;
     }
     let results = await ctx.execSql(`INSERT INTO category SET name = ?`, name);
     ctx.body = {
       success: 1,
-      message: "",
+      message: '',
       newId: results.insertId,
     };
   } catch (error) {
     console.log(error);
     ctx.body = {
       success: 0,
-      message: "添加新分类出错",
+      message: '添加新分类出错',
       newId: 0,
     };
   }
@@ -78,32 +68,26 @@ export const addNewCategory = async (ctx) => {
 // 更新分类
 export const updateCategory = async (ctx) => {
   let id = ctx.params.id || 0,
-    name = ctx.query.name || "";
+    name = ctx.query.name || '';
   try {
-    let existName = await ctx.execSql(
-      `SELECT * FROM category WHERE name = ? AND id <> ?`,
-      [name, id]
-    );
+    let existName = await ctx.execSql(`SELECT * FROM category WHERE name = ? AND id <> ?`, [name, id]);
     if (existName.length > 0) {
       ctx.body = {
         success: 0,
-        message: "分类名称已存在！",
+        message: '分类名称已存在！',
       };
       return false;
     }
-    let results = await ctx.execSql(
-      `UPDATE category SET name = ? WHERE id = ?`,
-      [name, id]
-    );
+    let results = await ctx.execSql(`UPDATE category SET name = ? WHERE id = ?`, [name, id]);
     ctx.body = {
       success: 1,
-      message: "",
+      message: '',
     };
   } catch (error) {
     console.log(error);
     ctx.body = {
       success: 0,
-      message: "更新分类出错",
+      message: '更新分类出错',
     };
   }
 };
@@ -114,13 +98,13 @@ export const deleteCategory = async (ctx) => {
     let results = await ctx.execSql(`DELETE FROM category WHERE id = ?`, id);
     ctx.body = {
       success: 1,
-      message: "",
+      message: '',
     };
   } catch (error) {
     console.log(error);
     ctx.body = {
       success: 0,
-      message: "删除分类出错",
+      message: '删除分类出错',
     };
   }
 };

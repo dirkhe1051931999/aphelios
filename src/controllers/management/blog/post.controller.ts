@@ -1,40 +1,48 @@
 import moment from 'moment';
 
-// 获取具体文章
-export const getPostById = async (ctx) => {
-  let id = ctx.params.id || 0,
-    sql = ` SELECT post.id, post.title, post.content, post.poster, post.createTime, 
-            post.categoryId, category.name AS categoryName, viewTotal 
-            FROM post LEFT JOIN category ON post.categoryId = category.id 
-            WHERE post.id = ${id}`,
-    tagSql = `SELECT tag.id, tag.name from post_tag a LEFT JOIN tag on a.tagId = tag.id 
-              WHERE a.postId = ${id}`;
+// 获取文章列表
+export const getPostList = async (ctx) => {
+  let { categoryId, status, page, rowsPerPage } = ctx.request.body;
+  categoryId = categoryId || null;
+  status = status || null;
+  page = page || 1;
+  rowsPerPage = rowsPerPage || 20;
   try {
-    let results = await ctx.execSql(sql);
-    if (results.length > 0) {
-      let tagResults = await ctx.execSql(tagSql);
-      ctx.body = {
-        success: 1,
-        message: '',
-        post: results[0],
-        tags: tagResults.length > 0 ? tagResults : [],
-      };
-    } else {
-      ctx.body = {
-        success: 1,
-        message: '',
-        post: null,
-        tags: [],
-      };
-    }
+    let results = await ctx.execSql([
+      `SELECT COUNT(*) as total FROM post_list;`,
+      `
+          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId,  commentId, categoryId
+          FROM post_list 
+          WHERE (categoryId = ${categoryId} OR ${categoryId} IS NULL) 
+          AND (status = ${status} OR ${status} IS NULL)
+          ORDER BY createTime DESC 
+          LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
+    ]);
+    ctx.success(ctx, {
+      pageData: results[1],
+      total: results[0][0].total,
+    });
   } catch (error) {
     console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '查询数据出错',
-    };
+    ctx.error(ctx, 402);
   }
 };
+// 获取具体文章
+export const getPostById = async (ctx) => {
+  let { id } = ctx.request.body;
+  if (!id) {
+    ctx.error(ctx, '404#id');
+  }
+  try {
+    let result = await ctx.execSql(`SELECT content FROM post_list WHERE id = ${id}`);
+    ctx.success(ctx, result[0].content);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+
+
 // 添加文章
 export const addPost = async (ctx) => {
   let postData = ctx.request.body,
@@ -110,30 +118,6 @@ export const updatePost = async (ctx) => {
       success: 0,
       message: '添加文章出错',
     };
-  }
-};
-// 获取文章列表
-export const getPostList = async (ctx) => {
-  let { categoryId, status, page, rowsPerPage } = ctx.request.body;
-  categoryId = categoryId || null;
-  status = status || null;
-  page = page || 1;
-  rowsPerPage = rowsPerPage || 20;
-  let sql = `
-        SELECT post.id, post.title, post.createTime, post.status, post.categoryId, category.name AS categoryName 
-        FROM post 
-        LEFT JOIN category ON post.categoryId = category.id 
-        WHERE (post.categoryId = ${categoryId} OR ${categoryId} IS NULL) 
-        AND (post.status = ${status} OR ${status} IS NULL)
-        ORDER BY post.createTime DESC 
-        LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
-  `;
-  try {
-    let results = await ctx.execSql(sql);
-    ctx.success(ctx, results);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 402);
   }
 };
 // 获取文章总数
