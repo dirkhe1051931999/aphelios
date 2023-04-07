@@ -807,7 +807,7 @@ export default class myComponentTableBeta extends Vue {
     }
   }
   /**http */
-  private getData() {
+  private async getData() {
     try {
       this.tableParams.loading = true;
       this.tableParams.loading = false;
@@ -901,5 +901,4 @@ export default class myComponentTableBeta extends Vue {
   z-index: 1;
 }
 </style>
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

@@ -108,8 +108,8 @@ import { setUserinfo } from 'src/utils/localStorage';
 import { isValidEmail, isValidMobilePhone } from 'src/utils/validate';
 import { Component, Vue } from 'vue-facing-decorator';
 
-@Component({ name: 'myComponent' })
-export default class myComponent extends Vue {
+@Component({ name: 'profileComponent' })
+export default class profileComponent extends Vue {
   get username() {
     return UserModule.username;
   }
@@ -143,7 +143,7 @@ export default class myComponent extends Vue {
         break;
     }
   }
-  private switchModel = {
+  public switchModel = {
     model1: false,
     model2: true,
     model3: true,
@@ -152,7 +152,7 @@ export default class myComponent extends Vue {
     model6: false,
     model7: false,
   };
-  private profileInfomation = {
+  public profileInfomation = {
     params: {
       email: '',
       mobile: '',
@@ -169,7 +169,7 @@ export default class myComponent extends Vue {
       location: false,
     },
   };
-  private async textToInputConfirmForEmail({ value, that }: { value: string; that: any }) {
+  public async textToInputConfirmForEmail({ value, that }: { value: string; that: any }) {
     if (!isValidEmail(value)) {
       this.$globalMessage.show({ type: 'error', content: '邮箱格式不正确' });
       return;
@@ -183,10 +183,10 @@ export default class myComponent extends Vue {
     UserModule.SET_USERINFO(userinfo);
     this.profileInfomation.showEdit.email = false;
   }
-  private textToInputCloseForEmail({ value, that }: { value: string; that: any }) {
+  public textToInputCloseForEmail({ value, that }: { value: string; that: any }) {
     this.profileInfomation.showEdit.email = false;
   }
-  private async textToInputConfirmForMobile({ value, that }: { value: string; that: any }) {
+  public async textToInputConfirmForMobile({ value, that }: { value: string; that: any }) {
     if (!isValidMobilePhone(value)) {
       this.$globalMessage.show({ type: 'error', content: '手机号格式不正确' });
       return;
@@ -200,7 +200,7 @@ export default class myComponent extends Vue {
     UserModule.SET_USERINFO(userinfo);
     this.profileInfomation.showEdit.mobile = false;
   }
-  private textToInputCloseForMobile({ value, that }: { value: string; that: any }) {
+  public textToInputCloseForMobile({ value, that }: { value: string; that: any }) {
     this.profileInfomation.showEdit.mobile = false;
   }
 }

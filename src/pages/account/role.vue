@@ -178,12 +178,12 @@ export default class AccountRoleComponent extends Vue {
     }
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
   async created() {
     this.getData();
     this.getAllPermission();
   }
-  private tableParams = {
+  public tableParams = {
     loading: false,
     data: [],
     pagination: {
@@ -235,7 +235,7 @@ export default class AccountRoleComponent extends Vue {
       },
     ],
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -271,7 +271,7 @@ export default class AccountRoleComponent extends Vue {
     ],
   };
   /* event */
-  private handleClickAdd() {
+  public handleClickAdd() {
     const index = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'name');
     this.dialogAddUpdateParams.input[index].readonly = false;
     this.dialogAddUpdateParams.visiable = true;
@@ -281,7 +281,7 @@ export default class AccountRoleComponent extends Vue {
       this.$refs['addUpdatePannel'].isOpened = true;
     });
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.params.id = row.id;
     const index = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'name');
     this.dialogAddUpdateParams.input[index].readonly = true;
@@ -295,7 +295,7 @@ export default class AccountRoleComponent extends Vue {
     this.dialogAddUpdateParams.params.name = row.name;
     this.dialogAddUpdateParams.params.description = row.description;
   }
-  private dialogAddUpdateBeforeHideEvent(visiable: boolean) {
+  public dialogAddUpdateBeforeHideEvent(visiable: boolean) {
     if (!visiable) {
       this.dialogAddUpdateParams.params.id = '';
       this.dialogAddUpdateParams.params.name = '';
@@ -306,7 +306,7 @@ export default class AccountRoleComponent extends Vue {
       this.dialogAddUpdateParams.visiable = false;
     }
   }
-  private monitorAllChecked(newVal: boolean) {
+  public monitorAllChecked(newVal: boolean) {
     if (newVal) {
       this.dialogAddUpdateParams.ticked = this.dialogAddUpdateParams.permissionViewTreeId;
     } else {
@@ -314,7 +314,7 @@ export default class AccountRoleComponent extends Vue {
     }
   }
   /* http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       const { pageData } = await AccountModule.getAllRole({});
@@ -330,7 +330,7 @@ export default class AccountRoleComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getAllPermission() {
+  public async getAllPermission() {
     function buildHierarchy(originalArray: any, parentId = null): any {
       const hierarchy = [];
       const children = originalArray.filter((item: any) => item.parent === parentId);
@@ -360,7 +360,7 @@ export default class AccountRoleComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.ticked.length) {
       this.$globalMessage.show({
         type: 'error',
@@ -410,7 +410,7 @@ export default class AccountRoleComponent extends Vue {
       this.dialogAddUpdateParams.clickLoading = false;
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: this.$t('messages.tishi'),
@@ -433,5 +433,4 @@ export default class AccountRoleComponent extends Vue {
 }
 </script>
 
-<style scoped lang='scss'>
-</style>
+<style scoped lang="scss"></style>
