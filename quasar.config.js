@@ -13,6 +13,7 @@
 const { configure } = require('quasar/wrappers');
 const setting = require('./src/setting.json');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const multiplePage = require('./multiple.page.generate');
 const path = require('path');
 module.exports = configure(function (ctx) {
@@ -76,8 +77,9 @@ module.exports = configure(function (ctx) {
 
       // https://v2.quasar.dev/quasar-cli-webpack/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      chainWebpack(/* chain */) {},
+      chainWebpack(chain) {},
       extendWebpack(cfg) {
+        cfg.plugins.push(new MonacoWebpackPlugin());
         // linting is slow in TS projects, we execute it only for production builds
         if (ctx.prod) {
           cfg.plugins.push(new CleanWebpackPlugin());

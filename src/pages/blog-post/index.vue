@@ -129,17 +129,17 @@
       </q-table>
       <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     </div>
-    <q-dialog v-model="dialogAddUpdateParams.visiable" position="bottom">
+    <q-dialog v-model="dialogAddUpdateParams.visiable" position="bottom" @before-hide="handlerBeforeHide">
       <q-dialog v-model="dialogAddUpdateParams.addCode.visiable" position="top">
-        <q-card style="width: 500px">
-          <q-card-section>
+        <q-card style="min-width: 1000px" v-if="dialogAddUpdateParams.addCode.visiable">
+          <q-card-section class="row items-center justify-between">
             <div class="text-h6">{{ dialogAddUpdateParams.addCode.title }}</div>
           </q-card-section>
-          <q-card-section>
-            <div contenteditable="true" class="h-300 q-pa-md" :ref="dialogAddUpdateParams.id + '-addCode'"></div>
+          <q-card-section class="q-pa-none">
+            <MonacoEditor :ref="dialogAddUpdateParams.id + '-addCode'" class="h-300 q-px-md q-pb-md"></MonacoEditor>
           </q-card-section>
           <q-card-actions align="right">
-            <q-btn color="primary" label="确定" v-close-popup />
+            <q-btn color="primary" label="确定" @click="submitAddCode" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -148,11 +148,69 @@
         <q-splitter v-model="dialogAddUpdateParams.splitterModel" class="splitter">
           <template v-slot:before>
             <div class="q-pa-md" style="height: 100%">
+              <div class="text-h5 row items-center">
+                <span v-if="!dialogAddUpdateParams.showEdit.title"> {{ dialogAddUpdateParams.row.title }}</span>
+                <TextToInput
+                  class="full-width"
+                  v-if="dialogAddUpdateParams.showEdit.title"
+                  :value="dialogAddUpdateParams.edit.title"
+                  :that="dialogAddUpdateParams.row"
+                  @confirm="textToInputConfirmForTitle"
+                  @close="textToInputCloseForTitle"
+                >
+                </TextToInput>
+                <span
+                  class="link-type q-ml-md fs-14"
+                  v-if="!dialogAddUpdateParams.showEdit.title"
+                  @click="(dialogAddUpdateParams.showEdit.title = true), (dialogAddUpdateParams.edit.title = dialogAddUpdateParams.row.title || '')"
+                  >修改
+                </span>
+              </div>
+              <div class="row q-my-md">
+                <q-select
+                  v-model="dialogAddUpdateParams.row.authorId"
+                  :options="dialogAddUpdateParams.authorOptions"
+                  label="请选择作者"
+                  class="w-p-20 q-mr-md"
+                  :spellcheck="false"
+                  autocapitalize="off"
+                  autocomplete="new-password"
+                  autocorrect="off"
+                  clearable
+                  dense
+                  options-dense
+                  outlined
+                  emit-value
+                  dropdown-icon="app:topbar-arrow-bottom"
+                  clear-icon="app:clear"
+                  map-options
+                />
+                <q-select
+                  v-model="dialogAddUpdateParams.row.categoryId"
+                  :options="dialogAddUpdateParams.categoryOptions"
+                  label="请选择分类"
+                  class="w-p-20"
+                  :spellcheck="false"
+                  autocapitalize="off"
+                  autocomplete="new-password"
+                  autocorrect="off"
+                  clearable
+                  dense
+                  options-dense
+                  outlined
+                  emit-value
+                  dropdown-icon="app:topbar-arrow-bottom"
+                  clear-icon="app:clear"
+                  map-options
+                />
+              </div>
+
+              <div class="split-line h-1 q-my-md"></div>
               <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
               <q-editor
                 v-model="dialogAddUpdateParams.row.content"
                 height="100%"
-                ref="editorRef"
+                ref="qEditor"
                 min-height="100%"
                 :definitions="{
                   upload: {
@@ -255,7 +313,7 @@
                   <template #loading> <q-skeleton height="300px" square width="100%" /> </template>?
                 </q-img>
               </div>
-              <div class="post-content lh-30 fs-16 h-760 thin-shadow q-pa-md" v-html="dialogAddUpdateParams.row.content"></div>
+              <div class="post-content lh-30 fs-16 thin-shadow q-pa-md" v-html="viewPostHTML(dialogAddUpdateParams.row.content)" ref="postContent"></div>
             </div>
           </template>
         </q-splitter>
@@ -268,18 +326,26 @@
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
-import { defaultFill } from 'src/utils/tools';
+import { defaultFill, sleep } from 'src/utils/tools';
+import MonacoEditor from 'src/components/MonacoEditor/index.vue';
 import { getCurrentInstance } from 'vue';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
 import 'prismjs/themes/prism.css';
+import { copyToClipboard } from 'quasar';
+
 const CONST_PARAMS: any = {
   query: { categoryId: '', status: '' },
   dialog_add_update: { a: '', b: '', c: '', d: [], e: '', e_dateRange: { from: '', to: '' }, f: '', g: '', g_startModel: '', g_endModel: '', h: 10, i: 'true' },
 };
 
-@Component({ name: 'myComponent' })
-export default class myComponent extends Vue {
+@Component({
+  name: 'BlogPostComponent',
+  components: {
+    MonacoEditor,
+  },
+})
+export default class BlogPostComponent extends Vue {
   /**instance */
   declare $refs: any;
   get postStatus() {
@@ -304,6 +370,28 @@ export default class myComponent extends Vue {
       const item = selectOption.find((item: any) => item.value === row.authorId);
       if (!item) return '--';
       return item.label;
+    };
+  }
+  get viewPostHTML() {
+    function removeDOMByPartialId(html: string, id: string) {
+      const regex = new RegExp(`<[^>]*id=['"].*${id}.*['"][^>]*>(.*?)<\/[^>]*>`, 'gi');
+      return html.replace(regex, '');
+    }
+
+    function replaceClassByPartialId(html: string, partialId: string, newClass: string) {
+      const regex = new RegExp(`(?<=<[^>]*id=['"].*${partialId}.*['"][^>]*class=['"])[^'"]*(?=['"])`, 'gi');
+      return html.replace(regex, newClass);
+    }
+    return (html: any) => {
+      const result1 = removeDOMByPartialId(html, this.dialogAddUpdateParams.addCode.deleteId);
+      const result2 = removeDOMByPartialId(result1, this.dialogAddUpdateParams.addCode.editId);
+      const regex = /(?<=class="[^"]*\s)(.*\s)?right-50(\s.*)?(?=\s.*top-10.*)/g;
+      const result3 = result2.replace(regex, '$1right-30$2');
+      const regex2 = new RegExp(`id="${this.dialogAddUpdateParams.addCode.copyId}\\d+"`, 'g');
+      const result = result3.replace(regex2, (match) => {
+        return `${match.slice(0, -1)}-view"`;
+      });
+      return result;
     };
   }
   mounted() {
@@ -424,18 +512,42 @@ export default class myComponent extends Vue {
     getDataLoading: false,
     visiable: false,
     title: '',
+    authorOptions: [],
+    categoryOptions: [],
+    edit: {
+      title: '',
+    },
+    showEdit: {
+      title: false,
+    },
     addCode: {
       visiable: false,
       title: '',
       content: '',
+      type: '',
+      deleteId: 'blog-post-editor-add-code-delete-button-',
+      copyId: 'blog-post-editor-add-code-copy-button-',
+      editId: 'blog-post-editor-add-code-edit-button-',
+      contentId: 'blog-post-editor-add-code-content-',
+      curContentId: '',
+      action: 'add',
     },
     supportCodeType: [
-      { label: 'JavaScript', value: 'js' },
-      { label: 'Java', value: 'java' },
+      { label: 'JavaScript', value: 'javascript' },
+      { label: 'TypeScript', value: 'typescript' },
+      { label: 'HTML', value: 'html' },
+      { label: 'CSS', value: 'css' },
+      { label: 'JSON', value: 'json' },
+      { label: 'Markdown', value: 'markdown' },
+      { label: 'Vue', value: 'vue' },
+      { label: 'XML', value: 'xml' },
+      { label: 'YAML', value: 'yaml' },
     ],
     splitterModel: 50,
+    codeNum: 0,
     row: {
       content: '',
+      title: '',
     },
   };
   private dialogUpload = {
@@ -474,20 +586,108 @@ export default class myComponent extends Vue {
   private addCode(type: any) {
     this.dialogAddUpdateParams.addCode.visiable = true;
     this.dialogAddUpdateParams.addCode.title = type.label;
+    this.dialogAddUpdateParams.addCode.type = type.value;
+    this.dialogAddUpdateParams.addCode.action = 'add';
+    this.dialogAddUpdateParams.addCode.curContentId = '';
     this.$nextTick(() => {
-      this.$refs[`${this.dialogAddUpdateParams.id}-addCode`]!.focus();
-      this.$refs[`${this.dialogAddUpdateParams.id}-addCode`]!.innerHTML = '<pre><code class="language-js">console.log(123123);function test(){\n return "hello"\n }</code></pre>';
-      Prism.highlightAll();
+      this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].initEditor({
+        language: type.value,
+        value: '',
+      });
     });
-    // this.$refs.editorRef.caret.restore();
-    // this.$refs.editorRef.runCmd(
-    //   'insertHTML',
-    //   '&nbsp;<div><pre><code class="language-js">console.log(123123);function test(){\n return "hello"\n }</code></pre><i class="q-icon material-icons cursor-pointer" onclick="this.parentNode.parentNode.removeChild(this.parentNode)">close</i></div> &nbsp;'
-    // );
-    // this.$refs.editorRef.focus();
-    // this.$nextTick(() => {
-    //   Prism.highlightAll();
-    // });
+  }
+  private async submitAddCode() {
+    if (!this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].code) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请输入代码',
+      });
+      return;
+    }
+    const isValid = this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].validateCode();
+    const init = () => {
+      setTimeout(() => {
+        this.dialogAddUpdateParams.addCode.visiable = false;
+        const code = this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].code;
+        this.$nextTick(() => {
+          if (this.dialogAddUpdateParams.addCode.action === 'add') {
+            this.$refs.qEditor.caret.restore();
+            this.$refs.qEditor.runCmd(
+              'insertHTML',
+              `&nbsp;
+            <div contenteditable="false" class="relative">
+            <pre><code class="language-js" id="${this.dialogAddUpdateParams.addCode.contentId}${this.dialogAddUpdateParams.codeNum + 1}">${code}</code></pre>
+            <span class="link-type fs-12 absolute right-90 top-10" lang="${this.dialogAddUpdateParams.addCode.type}" cId="${this.dialogAddUpdateParams.addCode.contentId}${
+                this.dialogAddUpdateParams.codeNum + 1
+              }" id="${this.dialogAddUpdateParams.addCode.editId}${this.dialogAddUpdateParams.codeNum + 1}">编辑</span> 
+            <span class="link-type fs-12 absolute right-50 top-10" id="${this.dialogAddUpdateParams.addCode.copyId}${this.dialogAddUpdateParams.codeNum + 1}">复制</span> 
+            <span class="link-type fs-12 absolute right-10 top-10" id="${this.dialogAddUpdateParams.addCode.deleteId}${this.dialogAddUpdateParams.codeNum + 1}">删除</span>
+            </div> 
+            &nbsp;`
+            );
+            this.$refs.qEditor.focus();
+            this.dialogAddUpdateParams.codeNum++;
+          } else {
+            document.querySelector(`#${this.dialogAddUpdateParams.addCode.curContentId}`)!.innerHTML = code;
+          }
+          setTimeout(() => {
+            Prism.highlightAll();
+          }, 100);
+        });
+      }, 300);
+    };
+    if (!isValid) {
+      const result = await this.$globalConfirm.show({
+        title: '再次确认',
+        color: 'primary',
+        content: '语法不符合规范，是否继续添加？',
+        confirmButtonText: 'Confirm',
+      });
+      if (result) {
+        init();
+      }
+    } else {
+      this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].formatCode();
+      init();
+    }
+  }
+  private handlerActionCode(event: any) {
+    let isDelete = /blog-post-editor-add-code-delete-button-\d+/.test(event.target.id);
+    let isCopy = /blog-post-editor-add-code-copy-button-\d+/.test(event.target.id);
+    let isEdit = /blog-post-editor-add-code-edit-button-\d+/.test(event.target.id);
+    if (isDelete) {
+      event.target.parentNode.remove();
+      this.dialogAddUpdateParams.row.content = this.$refs.qEditor.getContentEl().innerHTML;
+    } else if (isCopy) {
+      copyToClipboard(event.target.parentNode.children[0].innerText);
+      this.$globalMessage.show({
+        content: '复制成功',
+        type: 'success',
+      });
+    } else if (isEdit) {
+      this.dialogAddUpdateParams.addCode.visiable = true;
+      this.dialogAddUpdateParams.addCode.title = 'Edit';
+      this.dialogAddUpdateParams.addCode.action = 'update';
+      this.dialogAddUpdateParams.addCode.type = event.target.getAttribute('lang');
+      this.dialogAddUpdateParams.addCode.curContentId = event.target.getAttribute('cId');
+      this.$nextTick(() => {
+        this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].initEditor({
+          language: event.target.getAttribute('lang'),
+          value: event.target.parentNode.children[0].innerText,
+        });
+      });
+    }
+  }
+  public async textToInputConfirmForTitle({ value, that }: { value: string; that: any }) {
+    if (!value) {
+      this.$globalMessage.show({ type: 'error', content: 'Title不能为空' });
+      return;
+    }
+    this.dialogAddUpdateParams.row.title = value;
+    this.dialogAddUpdateParams.showEdit.title = false;
+  }
+  public textToInputCloseForTitle({ value, that }: { value: string; that: any }) {
+    this.dialogAddUpdateParams.showEdit.title = false;
   }
   private handleClickUploadFile() {
     this.$refs[this.dialogUpload.fileID].type = 'text';
@@ -519,6 +719,10 @@ export default class myComponent extends Vue {
     if (data.params) {
       this.dialogUpload.params = data.params;
     }
+  }
+  private handlerBeforeHide() {
+    this.$refs.qEditor.caret.el.removeEventListener('click', this.handlerActionCode);
+    this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
   }
   /**http */
   private async getData() {
@@ -557,6 +761,7 @@ export default class myComponent extends Vue {
           };
         });
         this.queryParams.input[index].selectOption = pageData;
+        this.dialogAddUpdateParams.authorOptions = pageData;
       }
     } finally {
       return Promise.resolve();
@@ -574,6 +779,7 @@ export default class myComponent extends Vue {
           };
         });
         this.queryParams.input[index].selectOption = pageData;
+        this.dialogAddUpdateParams.categoryOptions = pageData;
       }
     } finally {
       return Promise.resolve();
@@ -589,6 +795,8 @@ export default class myComponent extends Vue {
     row.content = result;
     this.dialogAddUpdateParams.row = row;
     this.dialogAddUpdateParams.getDataLoading = false;
+    this.$refs.qEditor.caret.el.addEventListener('click', this.handlerActionCode);
+    this.$refs.postContent.addEventListener('click', this.handlerActionCode);
   }
   private async dialogAddUpdateConfirmEvent() {
     try {
@@ -651,41 +859,14 @@ pre[class*='language-'] code {
 .body--dark {
   .splitter {
     background: $dark;
-    .post-content {
-      &::-webkit-scrollbar-thumb {
-        background-color: rgba($color: #ffffff, $alpha: 0.4);
-      }
-    }
   }
 }
 .body--light {
   .splitter {
     background: #ffffff;
-    .post-content {
-      &::-webkit-scrollbar-thumb {
-        background-color: rgba($color: #000000, $alpha: 0.4);
-      }
-    }
   }
 }
 .splitter {
   height: 100%;
-  .post-content {
-    overflow: auto;
-    &::-webkit-scrollbar {
-      background: transparent;
-    }
-    &::-webkit-scrollbar:vertical {
-      width: 16px;
-    }
-    &::-webkit-scrollbar:horizontal {
-      height: 16px;
-    }
-    &::-webkit-scrollbar-thumb {
-      border-radius: 99999px;
-      border: 0.3125em solid transparent;
-      background-clip: content-box;
-    }
-  }
 }
 </style>
