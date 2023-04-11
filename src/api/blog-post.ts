@@ -5,6 +5,7 @@ const api = {
   getAuthor: 'management/blog/author/getAuthor',
   getCategories: '/management/blog/category/getCategories',
   getPostById: 'management/blog/post/getPostById',
+  uploadPostImgs: '/management/blog/post/uploadPostImgs',
 };
 
 export const getPostList = (data: any): any =>
@@ -28,6 +29,13 @@ export const getCategories = (data: any): any =>
 export const getPostById = (data: any): any =>
   request({
     url: api.getPostById,
+    method: 'post',
+    data,
+  });
+
+export const uploadPostImgs = (data: any): any =>
+  request({
+    url: api.uploadPostImgs,
     method: 'post',
     data,
   });

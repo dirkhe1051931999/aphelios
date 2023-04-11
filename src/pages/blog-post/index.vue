@@ -129,7 +129,8 @@
       </q-table>
       <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     </div>
-    <q-dialog v-model="dialogAddUpdateParams.visiable" position="bottom" @before-hide="handlerBeforeHide">
+    <q-dialog v-model="dialogAddUpdateParams.visiable" position="bottom" @before-hide="handlerDialogBeforeHide">
+      <!-- code -->
       <q-dialog v-model="dialogAddUpdateParams.addCode.visiable" position="top">
         <q-card style="min-width: 1000px" v-if="dialogAddUpdateParams.addCode.visiable">
           <q-card-section class="row items-center justify-between">
@@ -140,6 +141,33 @@
           </q-card-section>
           <q-card-actions align="right">
             <q-btn color="primary" label="确定" @click="submitAddCode" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+      <q-dialog v-model="dialogUpload.visiable" position="top">
+        <q-card style="min-width: 1000px">
+          <q-card-section class="row items-center justify-between">
+            <div class="text-h6">{{ dialogUpload.title }}</div>
+          </q-card-section>
+          <q-card-section class="q-py-none">
+            <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
+            <ul class="row">
+              <li
+                class="upload-img relative"
+                v-for="(item, index) in dialogUpload.params.fileBase64"
+                :key="item"
+                :class="{ 'w-148 h-148 q-mr-md': dialogUpload.maxCount !== 1, 'full-width h-300': dialogUpload.maxCount === 1 }"
+              >
+                <q-img :src="item" :width="dialogUpload.maxCount !== 1 ? '128px' : '100%'" :height="dialogUpload.maxCount !== 1 ? '128px' : '300px'" fit="contain"> </q-img>
+                <q-icon name="close" size="20px" class="absolute right-10 top-10 cursor-pointer" color="grey" style="z-index: 1000" @click="removeCurrentImg(index)"></q-icon>
+              </li>
+              <div class="upload-button" @click="handleClickUploadFile" v-if="canUploadImg">
+                <q-icon name="o_add" size="50px"></q-icon>
+              </div>
+            </ul>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn color="primary" label="确定" @click="saveBase64ImgInHTML" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -166,6 +194,7 @@
                   >修改
                 </span>
               </div>
+              <div class="split-line h-1 q-my-md"></div>
               <div class="row q-my-md">
                 <q-select
                   v-model="dialogAddUpdateParams.row.authorId"
@@ -204,9 +233,12 @@
                   map-options
                 />
               </div>
-
-              <div class="split-line h-1 q-my-md"></div>
-              <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
+              <div class="poster q-my-lg relative thin-shadow q-pa-md">
+                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px">
+                  <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
+                </q-img>
+                <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click="handleOpenUploadPosterContainer">修改</span>
+              </div>
               <q-editor
                 v-model="dialogAddUpdateParams.row.content"
                 height="100%"
@@ -216,7 +248,7 @@
                   upload: {
                     icon: 'o_cloud_upload',
                     label: '上传图片',
-                    handler: handleClickUploadFile,
+                    handler: handleOpenUploadContainer,
                   },
                 }"
                 :toolbar="[
@@ -272,7 +304,7 @@
                 }"
               >
                 <template v-slot:input_code>
-                  <q-btn-dropdown dense no-caps ref="tokenRef" no-wrap unelevated color="white" text-color="black" label="上传代码" size="sm" flat dropdown-icon="app:topbar-arrow-bottom">
+                  <q-btn-dropdown dense no-caps ref="tokenRef" no-wrap unelevated label="上传代码" size="sm" flat dropdown-icon="app:topbar-arrow-bottom" icon="o_code">
                     <q-list dense>
                       <q-item tag="label" clickable v-for="(item, index) in dialogAddUpdateParams.supportCodeType" :key="index" @click="addCode(item)" v-close-popup>
                         <q-item-section>{{ item.label }}</q-item-section>
@@ -308,9 +340,9 @@
                   {{ parseTime(dialogAddUpdateParams.row.updateTime) }}
                 </div>
               </ul>
-              <div class="poster q-my-lg">
-                <q-img src="https://mindthegraph.com/blog/wp-content/uploads/2022/04/award-winning-scientific-750x465.jpg" height="300px" style="border-radius: 12px">
-                  <template #loading> <q-skeleton height="300px" square width="100%" /> </template>?
+              <div class="poster q-my-xl thin-shadow q-pa-md">
+                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px">
+                  <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
                 </q-img>
               </div>
               <div class="post-content lh-30 fs-16 thin-shadow q-pa-md" v-html="viewPostHTML(dialogAddUpdateParams.row.content)" ref="postContent"></div>
@@ -377,7 +409,6 @@ export default class BlogPostComponent extends Vue {
       const regex = new RegExp(`<[^>]*id=['"].*${id}.*['"][^>]*>(.*?)<\/[^>]*>`, 'gi');
       return html.replace(regex, '');
     }
-
     function replaceClassByPartialId(html: string, partialId: string, newClass: string) {
       const regex = new RegExp(`(?<=<[^>]*id=['"].*${partialId}.*['"][^>]*class=['"])[^'"]*(?=['"])`, 'gi');
       return html.replace(regex, newClass);
@@ -393,6 +424,9 @@ export default class BlogPostComponent extends Vue {
       });
       return result;
     };
+  }
+  get canUploadImg() {
+    return this.dialogUpload.params.fileBase64.length < this.dialogUpload.maxCount;
   }
   mounted() {
     this.getData();
@@ -543,22 +577,29 @@ export default class BlogPostComponent extends Vue {
       { label: 'XML', value: 'xml' },
       { label: 'YAML', value: 'yaml' },
     ],
+    htmlImg: [],
+    htmlImgKey: [],
+    posterImg: [],
+    posterImgKey: [],
     splitterModel: 50,
     codeNum: 0,
     row: {
       content: '',
       title: '',
+      poster: '',
     },
   };
   private dialogUpload = {
-    id: 'dialog-upload-file',
-    fileID: 'dialog_upload_file',
+    id: 'dialog-upload-img',
+    fileID: 'dialog_upload_img',
     clickLoading: false,
     getDataLoading: false,
     visiable: false,
+    maxCount: 3,
     title: '',
+    type: 'html',
     accept: '.png,.jpg',
-    params: { file: '', fileName: '' },
+    params: { file: [], fileName: [], fileBase64: [] },
   };
   /**event */
   private paginationInput(data: any) {
@@ -689,10 +730,49 @@ export default class BlogPostComponent extends Vue {
   public textToInputCloseForTitle({ value, that }: { value: string; that: any }) {
     this.dialogAddUpdateParams.showEdit.title = false;
   }
+  private saveBase64ImgInHTML() {
+    if (this.dialogUpload.type === 'poster') {
+      this.dialogAddUpdateParams.row.poster = this.dialogUpload.params.fileBase64[0];
+      this.dialogAddUpdateParams.posterImg.push(this.dialogUpload.params.file[0]);
+      this.dialogAddUpdateParams.posterImgKey.push;
+      this.dialogUpload.visiable = false;
+    } else if (this.dialogUpload.type === 'html') {
+      let html = '';
+      this.dialogUpload.params.fileBase64.forEach((item: string, index: number) => {
+        html += `<img src="${item}" alt=""  style="max-height:30em;"/>`;
+      });
+      this.$refs.qEditor.caret.restore();
+      this.$refs.qEditor.runCmd(
+        'insertHTML',
+        `&nbsp;
+          ${html}
+      &nbsp;`
+      );
+      this.$refs.qEditor.focus();
+      this.dialogAddUpdateParams.htmlImg.push(...this.dialogUpload.params.file);
+      this.dialogUpload.visiable = false;
+    }
+  }
+  private handleOpenUploadPosterContainer() {
+    this.dialogUpload.params.file = [];
+    this.dialogUpload.params.fileBase64 = [];
+    this.dialogUpload.params.fileName = [];
+    this.dialogUpload.type = 'poster';
+    this.dialogUpload.maxCount = 1;
+    this.dialogUpload.visiable = true;
+    this.dialogUpload.title = '上传封面';
+  }
+  private handleOpenUploadContainer() {
+    this.dialogUpload.params.file = [];
+    this.dialogUpload.params.fileBase64 = [];
+    this.dialogUpload.params.fileName = [];
+    this.dialogUpload.type = 'html';
+    this.dialogUpload.maxCount = 3;
+    this.dialogUpload.visiable = true;
+    this.dialogUpload.title = '上传图片';
+  }
   private handleClickUploadFile() {
     this.$refs[this.dialogUpload.fileID].type = 'text';
-    this.dialogUpload.params.fileName = '';
-    this.dialogUpload.params.file = '';
     setTimeout(() => {
       this.$refs[this.dialogUpload.fileID].type = 'file';
       this.$refs[this.dialogUpload.fileID].value = '';
@@ -703,24 +783,31 @@ export default class BlogPostComponent extends Vue {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
-    postFiles.forEach((rawFile: any) => {
-      this.dialogUpload.params.fileName = rawFile.name;
-      this.dialogUpload.params.file = rawFile;
+    function getBase64(file: any) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          resolve(reader.result);
+        };
+        reader.onerror = (error) => {
+          reject(error);
+        };
+      });
+    }
+    postFiles.forEach(async (rawFile: any) => {
+      (this.dialogUpload.params.fileName as any).push(rawFile.name);
+      (this.dialogUpload.params.file as any).push(rawFile);
+      const base64 = await getBase64(rawFile);
+      (this.dialogUpload.params.fileBase64 as any).push(base64);
     });
   }
-  private monitorDialogUploadHide() {
-    this.dialogUpload.params.fileName = '';
-    this.dialogUpload.params.file = '';
+  private removeCurrentImg(index: number) {
+    (this.dialogUpload.params.fileName as any).splice(index, 1);
+    (this.dialogUpload.params.file as any).splice(index, 1);
+    (this.dialogUpload.params.fileBase64 as any).splice(index, 1);
   }
-  private dialogUploadCloseEvent(data: { type: string }) {
-    this.dialogUpload.visiable = false;
-  }
-  private dialogUploadBeforeHideEvent(data: { type: string; params: any }) {
-    if (data.params) {
-      this.dialogUpload.params = data.params;
-    }
-  }
-  private handlerBeforeHide() {
+  private handlerDialogBeforeHide() {
     this.$refs.qEditor.caret.el.removeEventListener('click', this.handlerActionCode);
     this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
   }
@@ -834,9 +921,12 @@ export default class BlogPostComponent extends Vue {
   private async hanleClickUploadConfirm() {
     try {
       const form = new FormData();
-      form.append('file', this.dialogUpload.params.file);
+      for (let i = 0; i < this.dialogUpload.params.file.length; i++) {
+        form.append(`file-${i}`, this.dialogUpload.params.file[i]);
+        form.append(`file-${i + 1}`, this.dialogUpload.params.file[i]);
+      }
       this.dialogUpload.clickLoading = true;
-      // await HTTP_REQUEST()
+      await BlogPostModule.uploadPostImgs(form);
       this.$globalMessage.show({
         type: 'success',
         content: this.$t('messages.success'),
@@ -860,13 +950,36 @@ pre[class*='language-'] code {
   .splitter {
     background: $dark;
   }
+  .upload-button,
+  .upload-img {
+    background: $dark;
+    border: solid 1px #ffffff;
+  }
 }
 .body--light {
   .splitter {
     background: #ffffff;
   }
+  .upload-button,
+  .upload-img {
+    background: #ffffff;
+    border: solid 1px $dark;
+  }
 }
 .splitter {
   height: 100%;
+}
+.upload-button {
+  width: 148px;
+  height: 148px;
+  border-radius: 4px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  cursor: pointer;
+}
+.upload-img {
+  padding: 8px;
+  border-radius: 4px;
 }
 </style>
