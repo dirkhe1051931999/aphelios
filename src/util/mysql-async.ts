@@ -1,5 +1,5 @@
-import mysql from "mysql";
-import CONFIG from "src/config";
+import mysql from 'mysql2';
+import CONFIG from 'src/config';
 
 const pool = mysql.createPool({
   host: CONFIG.db.mysql.host,
@@ -14,10 +14,10 @@ const query = function (sqls: string | string[], values?: any): Promise<any> {
   return new Promise((resolve, reject) => {
     pool.getConnection((err, connection) => {
       if (err) {
-        console.log(err)
+        console.log(err);
         return reject(err);
       }
-      if (typeof sqls === "string") {
+      if (typeof sqls === 'string') {
         connection.query(sqls, values, (err, rows) => {
           connection.release();
           if (err) {
@@ -44,7 +44,7 @@ const query = function (sqls: string | string[], values?: any): Promise<any> {
                     // 如果执行出错，回滚事务并释放连接
                     connection.rollback(() => {
                       connection.release();
-                      console.log(err.sqlMessage, err.sql)
+                      console.log(err.message, sql);
                       reject(err);
                     });
                   } else {

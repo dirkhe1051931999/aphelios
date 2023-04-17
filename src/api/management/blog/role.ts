@@ -6,7 +6,7 @@ import {
   getAllPermission,
   getAllRole,
   updateRole,
-} from "src/controllers/management/blog/role";
+} from "src/controllers/management/blog/role.controller";
 export class ManagementBlogRoleAPIController {
   @Route("/getAllRole", HTTP_METHODS.POST)
   async getAllRole(ctx: Koa.Context, next: Koa.Next) {

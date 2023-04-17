@@ -11,7 +11,7 @@ import {
   updateUserEmail,
   updateUserMobile,
   updateUserStatus,
-} from "src/controllers/management/blog/user";
+} from "src/controllers/management/blog/user.controller";
 
 export class ManagementBlogUserAPIController {
   @Route("/getAllUser", HTTP_METHODS.POST)

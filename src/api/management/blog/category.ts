@@ -8,7 +8,7 @@ import { HTTP_METHODS, Route } from "src/util/route.decorator";
 import Koa from "koa";
 export class ManagementBlogCategoryAPIController {
   @Route("/getCategories", HTTP_METHODS.POST)
-  async login(ctx: Koa.Context, next: Koa.Next) {
+  async getCategories(ctx: Koa.Context, next: Koa.Next) {
     return getCategories(ctx);
   }
   @Route("/addNewCategory/:name", HTTP_METHODS.PUT)

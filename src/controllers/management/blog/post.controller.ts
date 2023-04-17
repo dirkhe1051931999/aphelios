@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { uploadImage } from 'src/util/helper';
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
@@ -11,7 +12,7 @@ export const getPostList = async (ctx) => {
     let results = await ctx.execSql([
       `SELECT COUNT(*) as total FROM post_list;`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId,  commentId, categoryId
+          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId,  commentId, categoryId, codeCount, postType
           FROM post_list 
           WHERE (categoryId = ${categoryId} OR ${categoryId} IS NULL) 
           AND (status = ${status} OR ${status} IS NULL)
@@ -41,151 +42,110 @@ export const getPostById = async (ctx) => {
     ctx.error(ctx, 402);
   }
 };
-
-
+export const uploadPostImgs = async (ctx) => {
+  try {
+    const result = await uploadImage(ctx);
+    ctx.success(ctx, result);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
 // 添加文章
 export const addPost = async (ctx) => {
-  let postData = ctx.request.body,
-    tags: [{ id?: string }] = postData.tags,
-    newPost = {
-      title: postData.title,
-      content: postData.content,
-      categoryId: postData.categoryId,
-      viewTotal: 0,
-      status: postData.status,
-      poster: '',
-      createTime: moment().format('YYYY-MM-DD HH:mm:ss'),
-    };
+  let { title, content, poster, authorId, categoryId, codeCount, postType } = ctx.request.body;
+  let status = 'OFFLINE';
+  let createTime = new Date().getTime();
+  let updateTime = createTime;
+  let view = 0;
+  let comment = 0;
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, codeCount, postType])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, codeCount, postType');
+    return;
+  }
   try {
-    let insert = await ctx.execSql('INSERT INTO post SET ?', newPost);
-    if (insert.affectedRows > 0) {
-      let id = insert.insertId;
-      if (tags.length > 0) {
-        let updateTag = 'INSERT INTO post_tag (postId, tagId) values ';
-        for (let tag of Object.values(tags)) {
-          updateTag += `(${id}, ${tag.id}),`;
-        }
-        let tagSql = updateTag.substring(0, updateTag.length - 1);
-        let insertTag = await ctx.execSql(tagSql);
-      }
-      ctx.body = {
-        success: 1,
-        id: id,
-      };
+    let results = await ctx.execSql([
+      `INSERT INTO post_list (title, content,poster, authorId, categoryId, codeCount, postType, status, createTime, updateTime, view, comment) 
+      VALUES ('${title}', '${content}','${poster}', ${authorId}, ${categoryId}, ${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
+    ]);
+    if (results[0].affectedRows > 0) {
+      ctx.success(ctx, null);
     } else {
-      ctx.body = {
-        success: 0,
-        message: '添加文章出错',
-      };
+      ctx.error(ctx, 405);
     }
   } catch (error) {
     console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '添加文章出错',
-    };
-  }
-};
-// 更新文章
-export const updatePost = async (ctx) => {
-  let id = ctx.params.id || 0,
-    postData = ctx.request.body,
-    tags: [{ id?: string }] = postData.tags,
-    newPost = {
-      title: postData.title,
-      content: postData.content,
-      categoryId: postData.categoryId,
-      status: postData.status,
-      poster: postData.poster,
-    };
-  try {
-    let result = await ctx.execSql('UPDATE post SET ? WHERE id = ?', [newPost, id]);
-    let delResult = await ctx.execSql('DELETE FROM post_tag WHERE postId = ?', id);
-    if (tags.length > 0) {
-      let updateTag = 'INSERT INTO post_tag (postId, tagId) values ';
-      for (let tag of Object.values(tags)) {
-        updateTag += `(${id}, ${tag.id}),`;
-      }
-      let tagSql = updateTag.substring(0, updateTag.length - 1);
-      let insertTag = await ctx.execSql(tagSql);
-    }
-    ctx.body = {
-      success: 1,
-    };
-  } catch (error) {
-    console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '添加文章出错',
-    };
-  }
-};
-// 获取文章总数
-export const getPostTotal = async (ctx) => {
-  try {
-    let results = await ctx.execSql(`SELECT * FROM post`);
-    ctx.body = {
-      success: 1,
-      message: '',
-      total: results.length || 0,
-    };
-  } catch (error) {
-    console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '查询数据出错',
-      total: 0,
-    };
-  }
-};
-// 下架文章
-export const offlinePost = async (ctx) => {
-  let id = ctx.params.id || 0;
-  try {
-    let results = await ctx.execSql(`UPDATE post SET status = 'OFFLINE' WHERE id = ?`, id);
-    ctx.body = {
-      success: 1,
-      message: '',
-    };
-  } catch (error) {
-    console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '文章下线出错',
-    };
-  }
-};
-// 发布文章
-export const publishPost = async (ctx) => {
-  let id = ctx.params.id || 0;
-  try {
-    let results = await ctx.execSql(`UPDATE post SET status = 'PUBLISHED' WHERE id = ?`, id);
-    ctx.body = {
-      success: 1,
-      message: '',
-    };
-  } catch (error) {
-    console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '文章发布出错',
-    };
+    ctx.error(ctx, 405);
   }
 };
 // 删除文章
 export const deletePost = async (ctx) => {
-  let id = ctx.params.id || 0;
+  let { id } = ctx.request.body;
+  if (ctx.isFalsy([id])) {
+    ctx.error(ctx, '404#id');
+    return;
+  }
   try {
-    let results = await ctx.execSql(`DELETE FROM post WHERE id = ?`, id);
-    ctx.body = {
-      success: 1,
-      message: '',
-    };
+    let results = await ctx.execSql(`DELETE FROM post_list WHERE id = ?`, id);
+    ge: ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
-    ctx.body = {
-      success: 0,
-      message: '文章删除出错',
-    };
+    ctx.error(ctx, 405);
+  }
+};
+// 更新文章
+export const updatePost = async (ctx) => {
+  let { title, content, poster, authorId, categoryId, codeCount, id } = ctx.request.body;
+  let updateTime = new Date().getTime();
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, codeCount, id])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, codeCount, postType,id');
+    return;
+  }
+  try {
+    ctx.execSql([
+      `UPDATE post_list SET
+      title = '${title}',
+      content = '${content}',
+      poster = '${poster}',
+      authorId = ${authorId},
+      categoryId = ${categoryId},
+      codeCount = ${codeCount},
+      updateTime = ${updateTime}
+      WHERE id = ${id};`,
+    ]);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+// 下架文章
+export const offlinePost = async (ctx) => {
+  let { id } = ctx.request.body;
+  if (ctx.isFalsy([id])) {
+    ctx.error(ctx, '404#id');
+    return;
+  }
+  try {
+    await ctx.execSql(`UPDATE post_list SET status = 'OFFLINE' WHERE id = ?`, id);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+// 发布文章
+export const publishPost = async (ctx) => {
+  let { id } = ctx.request.body;
+  if (ctx.isFalsy([id])) {
+    ctx.error(ctx, '404#id');
+    return;
+  }
+  try {
+    await ctx.execSql(`UPDATE post_list SET status = 'PUBLISHED' WHERE id = ?`, id);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
   }
 };

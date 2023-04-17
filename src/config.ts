@@ -54,7 +54,7 @@ const config: Config = {
       host: "192.168.200.128",
       user: "root",
       password: "123456",
-      port: 3309,
+      port: 3310,
       database: "nodejs-service",
       connectionLimit: 10,
     },

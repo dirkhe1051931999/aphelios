@@ -2,3 +2,9 @@ node_modules
 dist
 yarn.lock
 package.json.lock
+src/static/cdn/post
+src/static/cdn/post_author_avatar
+src/static/cdn/post_author_cover/*
+!src/static/cdn/post_author_cover/default.png
+src/static/cdn/sheet_directory
+src/static/cdn/sheet_directory_image
