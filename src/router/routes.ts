@@ -72,16 +72,45 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: shallowRef(Layout),
     name: 'BlogPost0',
     meta: {
-      pagePermissionId: ['BlogPost'],
+      pagePermissionId: ['BlogPost', 'BlogPostList', 'BlogPostChannel', 'BlogPostDirectory', 'BlogPostAuthor', 'BlogPostUser'],
+      title: 'blog-post',
+      icon: 'rss_feed',
     },
     children: [
       {
-        path: '',
-        component: () => import(/* webpackChunkName: "blog-post" */ 'src/pages/blog-post/index.vue'),
-        name: 'BlogPost',
+        path: 'list',
+        component: () => import(/* webpackChunkName: "blog-post-list" */ 'src/pages/blog-post/index.vue'),
+        name: 'BlogPostList',
         meta: {
-          title: 'blog-post',
-          icon: 'rss_feed',
+          title: 'blog-post-list',
+          pagePermissionId: ['BlogPostList'],
+        },
+      },
+      {
+        path: 'channel',
+        component: () => import(/* webpackChunkName: "blog-post-channel" */ 'src/pages/blog-post/channel.vue'),
+        name: 'BlogPostChannel',
+        meta: {
+          title: 'blog-post-channel',
+          pagePermissionId: ['BlogPostChannel'],
+        },
+      },
+      {
+        path: 'directory',
+        component: () => import(/* webpackChunkName: "blog-post-directory" */ 'src/pages/blog-post/directory.vue'),
+        name: 'BlogPostDirectory',
+        meta: {
+          title: 'blog-post-directory',
+          pagePermissionId: ['BlogPostDirectory'],
+        },
+      },
+      {
+        path: 'author',
+        component: () => import(/* webpackChunkName: "blog-post-author" */ 'src/pages/blog-post/author.vue'),
+        name: 'BlogPostAuthor',
+        meta: {
+          title: 'blog-post-author',
+          pagePermissionId: ['BlogPostAuthor'],
         },
       },
     ],
@@ -133,8 +162,8 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           title: 'profile',
         },
-      }
-    ]
+      },
+    ],
   },
   // Always leave this as last one,
   // but you can also remove it

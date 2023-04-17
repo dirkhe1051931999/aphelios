@@ -1,5 +1,6 @@
 <template>
   <section class="app-main" :style="[calcStyle1, calcStyle2]" ref="appMain">
+    <div class="hide">{{ scrollTop }}</div>
     <router-view v-slot="{ Component }" v-if="refreshPage">
       <transition name="fade-transform" mode="out-in">
         <keep-alive>
@@ -11,6 +12,7 @@
 </template>
 <script lang="ts">
 import { AppModule } from 'src/store/modules/app';
+import { BlogPostModule } from 'src/store/modules/blog-post';
 import { getCurrentInstance } from 'vue';
 
 import { Component, Vue, Watch } from 'vue-facing-decorator';
@@ -21,6 +23,16 @@ import { Component, Vue, Watch } from 'vue-facing-decorator';
 })
 export default class AppMainComponent extends Vue {
   $refs: any;
+  get scrollTop() {
+    this.$nextTick(() => {
+      this.$refs['appMain'].scrollTo({
+        top: BlogPostModule.scrollTop,
+        left: 0,
+        behavior: 'smooth',
+      });
+    });
+    return BlogPostModule.scrollTop;
+  }
   get isCollapse() {
     return !AppModule.sidebar.opened;
   }
@@ -50,8 +62,6 @@ export default class AppMainComponent extends Vue {
   private calcStyle2 = '';
 }
 </script>
-
-
 
 <style lang="scss" scoped>
 .body--dark {

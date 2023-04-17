@@ -1,0 +1,325 @@
+<template>
+  <div>
+    <div class="row items-center justify-end q-mb-md">
+      <q-btn class="q-mr-md" color="primary" label="新增" @click="handleClickAdd" />
+      <q-btn class="q-mr-md" color="primary" label="保存" @click="handleClickSave" :disable="!isSorted" />
+    </div>
+    <q-inner-loading style="min-height: 300px" :showing="tableParams.loading"></q-inner-loading>
+    <div id="listWithHandle" class="list-group" v-if="!tableParams.loading && tableParams.data.length">
+      <div class="list-group-item row thin-shadow q-mb-md q-pa-sm items-center h-60" v-for="item in tableParams.data" :key="item.name">
+        <div>
+          <q-icon name="drag_indicator" class="move" size="20px"></q-icon>
+          <span v-if="!dialogAddParams.showEdit[item.id]" class="q-ml-md">{{ item.name }}</span>
+          <TextToInput
+            class="inline-block w-300 q-ml-md"
+            v-if="dialogAddParams.showEdit[item.id]"
+            :value="dialogAddParams.param[item.id]"
+            :that="item.id"
+            :loading="dialogAddParams.loading[item.id]"
+            @confirm="textToInputConfirmForEmail"
+            @close="textToInputCloseForEmail"
+          >
+          </TextToInput>
+          <span class="link-type q-ml-md" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
+        </div>
+        <div class="q-ml-auto">
+          <span class="in-table-delete-button" @click="handlerClickDelete(item)">{{ $t(`action.delete`) }} </span>
+        </div>
+      </div>
+    </div>
+    <div v-else>暂无数据</div>
+    <MyDialog
+      :option="{
+        id: dialogAddParams.id,
+        dialogType: dialogAddParams.dialogType,
+        clickLoading: dialogAddParams.clickLoading,
+        getDataLoading: dialogAddParams.getDataLoading,
+        visiable: dialogAddParams.visiable,
+        title: dialogAddParams.title,
+        params: dialogAddParams.params,
+      }"
+      width="30vw"
+      @close="dialogAddCloseEvent"
+      @confirm="dialogAddConfirmEvent"
+      @before-hide="dialogAddBeforeHideEvent"
+    >
+      <div class="row q-col-gutter-x-md">
+        <div v-for="(item, index) in dialogAddParams.input" :key="index" class="col-12">
+          <MyFormSelect
+            v-if="item.type === 'select'"
+            :option="{
+              inputId: `${dialogAddParams.id}-select-${item.model}`,
+              rules: item.rules,
+              classes: item.classes,
+              model: dialogAddParams.params[item.model],
+              label: item.label,
+              inputSelectOption: item.inputSelectOption,
+              userInput: true,
+            }"
+            @input="(data) => (dialogAddParams.params[item.model] = data)"
+          />
+          <MyFormInput
+            v-if="item.type === 'text'"
+            :option="{
+              model: dialogAddParams.params[item.model],
+              rules: item.rules,
+              classes: item.classes,
+              label: item.label,
+            }"
+            @input="(data) => (dialogAddParams.params[item.model] = data)"
+          >
+          </MyFormInput>
+        </div>
+      </div>
+    </MyDialog>
+  </div>
+</template>
+
+<script lang="ts">
+import { cloneDeep, isEqual, differenceWith } from 'lodash';
+import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { defaultFill } from 'src/utils/tools';
+import { getCurrentInstance } from 'vue';
+import { BlogPostModule } from 'src/store/modules/blog-post';
+import Sortable from 'sortablejs';
+const CONST_PARAMS: any = {
+  dialog_add_update: { name: '', pos: 0 },
+};
+
+@Component({
+  name: 'BlogPostChannelComponent',
+  components: {},
+})
+export default class BlogPostChannelComponent extends Vue {
+  /**instance */
+  declare $refs: any;
+  get channelNameList() {
+    return (data: any) => {
+      return data.map((item: any) => item.name);
+    };
+  }
+  get channelIndexList() {
+    return (data: any) => {
+      return data.map((item: any) => item.pos);
+    };
+  }
+  get isSorted() {
+    return !isEqual(this.tableParams.data, this.tableParams.oldData);
+  }
+  mounted() {
+    // List with handle
+    this.getData();
+  }
+  /**params */
+  private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  private tableParams = {
+    loading: false,
+    data: [],
+    oldData: [],
+  };
+  private dialogAddParams = {
+    id: 'dialog_add_update',
+    dialogType: 'add',
+    clickLoading: false,
+    getDataLoading: false,
+    visiable: false,
+    title: '',
+    showEdit: {},
+    param: {},
+    loading: {},
+    params: cloneDeep(CONST_PARAMS.dialog_add_update),
+    input: [
+      {
+        model: 'name',
+        type: 'text',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+        ],
+        label: '频道名',
+      },
+    ],
+  };
+  /* event */
+  private handleClickAdd() {
+    this.dialogAddParams.visiable = true;
+    this.dialogAddParams.dialogType = 'add';
+    this.dialogAddParams.title = 'Add';
+  }
+  private dialogAddCloseEvent(data: { type: string }) {
+    this.dialogAddParams.visiable = false;
+  }
+  private dialogAddBeforeHideEvent(data: { type: string; params: any }) {
+    if (data.params) {
+      this.dialogAddParams.params = data.params;
+    }
+  }
+  /* http */
+  private async getData() {
+    try {
+      this.tableParams.loading = true;
+      const { pageData } = await BlogPostModule.getAllChannel({});
+      if (pageData && pageData.length > 0) {
+        this.tableParams.data = pageData;
+        this.tableParams.oldData = cloneDeep(pageData);
+        let showEdit: any = this.dialogAddParams.showEdit;
+        let param: any = this.dialogAddParams.param;
+        let loading: any = this.dialogAddParams.loading;
+        for (let item of this.tableParams.oldData as any) {
+          showEdit[item.id] = false;
+          param[item.id] = '';
+          loading[item.id] = false;
+        }
+        this.$nextTick(() => {
+          Sortable.create(document.querySelector('#listWithHandle'), {
+            animation: 150,
+            // Called by any change to the list (add / update / remove)
+            onSort: (event: any) => {
+              let { oldIndex, newIndex } = event;
+              const data: any = cloneDeep(this.tableParams.data);
+              let temp = data[oldIndex];
+              data[oldIndex] = data[newIndex];
+              data[newIndex] = temp;
+              for (let i = 0; i < data.length; i++) {
+                data[i].pos = i + 1;
+              }
+              this.tableParams.data = data;
+            },
+          });
+        });
+      } else {
+        this.tableParams.data = [];
+      }
+      this.tableParams.loading = false;
+    } catch (error) {
+      this.tableParams.loading = false;
+    } finally {
+      return Promise.resolve();
+    }
+  }
+  private async handleClickSave() {
+    const diff = differenceWith(this.tableParams.data, this.tableParams.oldData, isEqual);
+    if (diff.length > 0) {
+      try {
+        const result = await this.$globalConfirm.show({
+          title: '💕💕💕 提示',
+          color: 'primary',
+          content: '确定要执行该操作吗 :) ?',
+          confirmButtonText: '嗯，是的',
+        });
+        if (result) {
+          await BlogPostModule.updateChannelPos({
+            diff,
+          });
+          this.$globalMessage.show({
+            type: 'success',
+            content: this.$t('messages.success'),
+          });
+          this.getData();
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+  public async textToInputConfirmForEmail({ value, that }: { value: string; that: any }) {
+    let showEdit: any = this.dialogAddParams.showEdit;
+    let param: any = this.dialogAddParams.param;
+    let loading: any = this.dialogAddParams.loading;
+    loading[that] = true;
+    try {
+      await BlogPostModule.updateChannelName({
+        id: that,
+        name: value,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.getData();
+    } catch (error) {
+      console.log(error);
+    }
+    loading[that] = false;
+    showEdit[that] = false;
+  }
+  public textToInputCloseForEmail({ value, that }: { value: string; that: any }) {
+    let showEdit: any = this.dialogAddParams.showEdit;
+    let param: any = this.dialogAddParams.param;
+    let loading: any = this.dialogAddParams.loading;
+    showEdit[that] = false;
+  }
+  private async handlerClickDelete(row: any) {
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
+      });
+      if (result) {
+        await BlogPostModule.removeChannel({
+          id: row.id,
+        });
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+        this.getData();
+      }
+    } catch (error) {}
+  }
+  private async dialogAddConfirmEvent() {
+    try {
+      this.dialogAddParams.clickLoading = true;
+      await BlogPostModule.addChannel({
+        name: this.dialogAddParams.params.name,
+      });
+      this.dialogAddParams.clickLoading = false;
+      this.dialogAddParams.visiable = false;
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.getData();
+    } catch (error) {
+      this.dialogAddParams.clickLoading = false;
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+.body--dark {
+  .my-table th:last-child,
+  .my-table td:last-child {
+    box-shadow: rgba($color: #ffffff, $alpha: 0.05) 0px 20px 27px 0px;
+  }
+}
+.body--light {
+  .my-table th:last-child,
+  .my-table td:last-child {
+    box-shadow: rgba($color: #000000, $alpha: 0.05) 0px 20px 27px 0px;
+  }
+}
+.my-table {
+  /* specifying max-width so the example can
+    highlight the sticky column on any browser window */
+  max-width: 100%;
+}
+.my-table thead tr:last-child th:last-child {
+  /* bg color is important for th; just specify one */
+  background-color: var(--my-white);
+}
+.my-table td:last-child {
+  background-color: var(--my-white);
+}
+.my-table th:last-child,
+.my-table td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+}
+</style>
+<style lang="scss" scoped></style>

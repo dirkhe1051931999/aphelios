@@ -5,6 +5,10 @@ export default {
   routes: {
     dashboard: '运行面板',
     'blog-post': '博文文章管理',
+    'blog-post-list': '博文列表',
+    'blog-post-channel': '博文频道',
+    'blog-post-directory': '博文目录',
+    'blog-post-author': '博文作者',
     account: '账号管理',
     'account-role': '角色',
     'account-user': '用户',
@@ -113,9 +117,9 @@ export default {
     total: '共计',
   },
   messages: {
-    failed: '操作失败',
-    success: '操作成功',
-    tishi: '提示',
+    failed: '😔😔😔 真不幸，失败了!',
+    success: '🎉🎉🎉 恭喜，成功了!',
+    tishi: '💕💕💕 提示',
     addConfirm: '确定要新增吗？',
     deleteConfirm: '确定要删除吗？',
     updateConfirm: '确定要更新吗？',

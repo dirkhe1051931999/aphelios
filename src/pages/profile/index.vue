@@ -69,8 +69,8 @@
               >
               </TextToInput>
               <span class="link-type q-ml-md" v-if="!profileInfomation.showEdit.email && canEdit" @click="(profileInfomation.showEdit.email = true), (profileInfomation.params.email = email || '')"
-                >修改</span
-              >
+                >修改
+              </span>
             </li>
             <li class="q-mb-md h-40 lh-40">
               <span class="q-pr-md f-bold bold fs-16">手机：</span>

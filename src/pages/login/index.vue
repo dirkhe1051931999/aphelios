@@ -411,7 +411,7 @@ export default class LoginPage2 extends Vue {
         if (['112'].includes(String(code))) {
           this.$q
             .dialog({
-              title: '提示',
+              title: '💕💕💕 提示',
               message: '链接过期，请重新申请链接',
               persistent: true,
               cancel: false,
@@ -429,7 +429,7 @@ export default class LoginPage2 extends Vue {
       } catch (error) {
         this.$q
           .dialog({
-            title: '提示',
+            title: '💕💕💕 提示',
             message: '链接过期，请重新申请链接',
             persistent: true,
             cancel: false,

@@ -14,7 +14,7 @@
       >
         <template #top>
           <div class="full-width justify-end row">
-            <q-btn color="primary" icon="o_add" label="Add" no-caps class="m-r-15" @click="handleClickAdd" />
+            <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
           </div>
         </template>
         <template v-slot:header="props">
@@ -158,7 +158,7 @@ export default class AccountRoleComponent extends Vue {
   }
   get permissionList() {
     return (data: any) => {
-      return data ? JSON.parse(data) : [];
+      return data ? data : [];
     };
   }
   @Watch('dialogAddUpdateParams.ticked', { deep: true })
@@ -291,7 +291,7 @@ export default class AccountRoleComponent extends Vue {
     this.$nextTick(() => {
       this.$refs['addUpdatePannel'].isOpened = true;
     });
-    this.dialogAddUpdateParams.ticked = row.permissionList ? JSON.parse(row.permissionList) : [];
+    this.dialogAddUpdateParams.ticked = row.permissionList ? row.permissionList : [];
     this.dialogAddUpdateParams.params.name = row.name;
     this.dialogAddUpdateParams.params.description = row.description;
   }
@@ -413,10 +413,10 @@ export default class AccountRoleComponent extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: this.$t('messages.tishi'),
+        title: '💕💕💕 提示',
         color: 'primary',
-        content: this.$t('messages.areYouSure'),
-        confirmButtonText: this.$t('action.yes'),
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
       });
       if (result) {
         await AccountModule.deleteRole({

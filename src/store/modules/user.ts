@@ -11,7 +11,7 @@ import setting from 'src/setting.json';
 import { getUserinfo, removeUserinfo, setUserinfo } from 'src/utils/localStorage';
 import { PermissionModule } from './permission';
 
-export interface IUserState { }
+export interface IUserState {}
 
 @Module({ dynamic: true, store, name: 'User', namespaced: true })
 class User extends VuexModule implements IUserState {
@@ -49,7 +49,6 @@ class User extends VuexModule implements IUserState {
     if (errorCode && errorCode === '119') {
       return Promise.resolve(errorCode);
     }
-    pagePermissionId = JSON.parse(pagePermissionId);
     const userinfo = {
       token,
       username,

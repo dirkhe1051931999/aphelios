@@ -16,8 +16,8 @@
         </div>
         <div class="split-line h-1" v-show="myDialogParams.showAction"></div>
         <div class="text-center q-pa-md row justify-end" v-show="myDialogParams.showAction">
-          <q-btn :label="$t(`action.cancel`)" :disable="myDialogParams.clickLoading" @click="handlerClickCancel()" outline no-caps class="w-80" color="primary" />
-          <q-btn :label="$t(`action.confirm`)" color="primary" no-caps class="w-80 q-ml-md" @click="handlerClickDialogConfirmButton()" :loading="myDialogParams.clickLoading" />
+          <q-btn :label="$t(`action.cancel`)" :disable="myDialogParams.clickLoading" @click="handlerClickCancel()" outline no-caps color="primary" />
+          <q-btn :label="$t(`action.confirm`)" color="primary" no-caps class="q-ml-md" @click="handlerClickDialogConfirmButton()" :loading="myDialogParams.clickLoading" />
         </div>
       </q-card>
     </q-dialog>
@@ -119,10 +119,10 @@ export default class MyDialogComponent extends Vue {
       this.$refs[this.myDialogParams.id].validate().then(async (valid: boolean) => {
         if (valid) {
           const result = await this.$globalConfirm.show({
-            title: this.$t('messages.tishi'),
+            title: '💕💕💕 提示',
             color: 'primary',
-            content: this.$t('messages.areYouSure'),
-            confirmButtonText: this.$t('action.yes'),
+            content: '确定要执行该操作吗 :) ?',
+            confirmButtonText: '嗯，是的',
           });
           if (result) {
             this.$emit('confirm', { type: this.myDialogParams.dialogType });
@@ -141,11 +141,10 @@ export default class MyDialogComponent extends Vue {
     });
   }
   public validForm() {
-    this.$refs[this.myDialogParams.id].validate();
+    return this.$refs[this.myDialogParams.id].validate();
   }
 }
 </script>
-
 
 <style lang="scss" scoped>
 .body--dark {

@@ -63,7 +63,7 @@
       >
         <template #top>
           <div class="full-width justify-end row">
-            <q-btn color="primary" icon="o_add" label="Add" no-caps class="m-r-15" @click="handleClickAdd" />
+            <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
           </div>
         </template>
         <template v-slot:header="props">
@@ -85,7 +85,7 @@
               <div class="text-left" v-else>
                 <!-- title -->
                 <div v-if="col.name === 'title'">
-                  <span class="link-type">{{ props.row.title }}</span>
+                  <span class="link-type" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
                 </div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
@@ -113,9 +113,8 @@
                 </div>
                 <!-- action -->
                 <div v-if="col.name === 'action'">
-                  <span class="in-table-link-button" @click="handlerClickUpdate(props.row)">编辑 </span>
-                  <span class="in-table-link-button m-l-10">上线 </span>
-                  <span class="in-table-delete-button m-l-10">下线 </span>
+                  <span class="in-table-link-button" v-if="canOnline(props.row)" @click="handlerClickOnline(props.row)">上线 </span>
+                  <span class="in-table-delete-button" v-if="canOffline(props.row)" @click="handlerClickOffline(props.row)" :class="{ ' m-l-10': !canOffline(props.row) }">下线 </span>
                   <span class="in-table-delete-button m-l-10" @click="handlerClickDelete(props.row)">删除 </span>
                 </div>
               </div>
@@ -176,7 +175,7 @@
         <q-splitter v-model="dialogAddUpdateParams.splitterModel" class="splitter">
           <template v-slot:before>
             <div class="q-pa-md" style="height: 100%">
-              <div class="text-h5 row items-center">
+              <div class="text-h5 h-40 row items-center">
                 <span v-if="!dialogAddUpdateParams.showEdit.title"> {{ dialogAddUpdateParams.row.title }}</span>
                 <TextToInput
                   class="full-width"
@@ -234,16 +233,22 @@
                 />
               </div>
               <div class="poster q-my-lg relative thin-shadow q-pa-md">
-                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px">
+                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" v-if="dialogAddUpdateParams.row.poster" fit="contain">
                   <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
                 </q-img>
-                <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click="handleOpenUploadPosterContainer">修改</span>
+                <div v-else class="h-300 row items-center justify-center">
+                  <div class="text-center cursor-pointer" @click="handleOpenUploadPosterContainer">
+                    <q-icon name="o_add" size="80px"></q-icon>
+                    <p class="q-mt-md">上传封面</p>
+                  </div>
+                </div>
+                <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click="handleOpenUploadPosterContainer" v-if="dialogAddUpdateParams.row.poster">修改</span>
               </div>
               <q-editor
                 v-model="dialogAddUpdateParams.row.content"
-                height="100%"
                 ref="qEditor"
-                min-height="100%"
+                class="thin-shadow"
+                style="min-height: 500px"
                 :definitions="{
                   upload: {
                     icon: 'o_cloud_upload',
@@ -260,6 +265,8 @@
                       list: 'only-icons',
                       options: ['left', 'center', 'right', 'justify'],
                     },
+                    'undo',
+                    'redo',
                   ],
                   ['upload', 'input_code'],
                   ['bold', 'italic', 'strike', 'underline', 'subscript', 'superscript'],
@@ -288,9 +295,6 @@
                     },
                     'removeFormat',
                   ],
-                  ['quote', 'unordered', 'ordered', 'outdent', 'indent'],
-                  ['undo', 'redo'],
-                  ['viewsource'],
                 ]"
                 :fonts="{
                   arial: 'Arial',
@@ -313,11 +317,16 @@
                   </q-btn-dropdown>
                 </template>
               </q-editor>
+              <div class="row items-center justify-center q-mt-xl">
+                <q-btn color="primary" outline class="w-200">存为草稿</q-btn>
+                <q-btn color="primary" @click="dialogAddUpdateConfirmEvent" class="w-200 q-ml-md">保存</q-btn>
+              </div>
             </div>
           </template>
           <template v-slot:after>
             <div class="q-pa-md">
-              <div class="text-h5">{{ dialogAddUpdateParams.row.title }}</div>
+              <div class="text-h5 h-40 lh-40" v-if="dialogAddUpdateParams.row.title">{{ dialogAddUpdateParams.row.title }}</div>
+              <div class="h-40 lh-40 text-grey" v-else>请输入标题</div>
               <div class="split-line h-1 q-my-md"></div>
               <ul class="row">
                 <li class="q-mr-md">
@@ -328,11 +337,11 @@
                   <span>分类：</span>
                   <span>{{ postCategory(dialogAddUpdateParams.row) }}</span>
                 </li>
-                <li class="q-mr-md">
+                <li class="q-mr-md" v-if="dialogAddUpdateParams.dialogType === 'update'">
                   <span>评论：</span>
                   <span>{{ defaultFill(dialogAddUpdateParams.row.comment) }}</span>
                 </li>
-                <li>
+                <li v-if="dialogAddUpdateParams.dialogType === 'update'">
                   <span>阅读：</span>
                   <span>{{ defaultFill(dialogAddUpdateParams.row.view) }}</span>
                 </li>
@@ -340,12 +349,19 @@
                   {{ parseTime(dialogAddUpdateParams.row.updateTime) }}
                 </div>
               </ul>
-              <div class="poster q-my-xl thin-shadow q-pa-md">
-                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px">
+              <div class="poster q-my-xl thin-shadow q-pa-md" v-if="dialogAddUpdateParams.row.poster">
+                <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" fit="contain">
                   <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
                 </q-img>
               </div>
-              <div class="post-content lh-30 fs-16 thin-shadow q-pa-md" v-html="viewPostHTML(dialogAddUpdateParams.row.content)" ref="postContent"></div>
+              <div class="poster q-mt-xl q-mb-lg thin-shadow q-pa-md h-332 text-grey fs-16 1h-30" v-if="!dialogAddUpdateParams.row.poster">请上传封面</div>
+              <div
+                class="post-content lh-30 fs-16 thin-shadow q-pa-md min-h-500"
+                v-html="viewPostHTML(dialogAddUpdateParams.row.content)"
+                ref="postContent"
+                v-if="dialogAddUpdateParams.row.content"
+              ></div>
+              <div class="post-content lh-30 fs-16 thin-shadow q-pa-md min-h-500 text-grey" v-else>请输入内容</div>
             </div>
           </template>
         </q-splitter>
@@ -405,28 +421,33 @@ export default class BlogPostComponent extends Vue {
     };
   }
   get viewPostHTML() {
-    function removeDOMByPartialId(html: string, id: string) {
-      const regex = new RegExp(`<[^>]*id=['"].*${id}.*['"][^>]*>(.*?)<\/[^>]*>`, 'gi');
-      return html.replace(regex, '');
-    }
-    function replaceClassByPartialId(html: string, partialId: string, newClass: string) {
-      const regex = new RegExp(`(?<=<[^>]*id=['"].*${partialId}.*['"][^>]*class=['"])[^'"]*(?=['"])`, 'gi');
-      return html.replace(regex, newClass);
-    }
     return (html: any) => {
-      const result1 = removeDOMByPartialId(html, this.dialogAddUpdateParams.addCode.deleteId);
-      const result2 = removeDOMByPartialId(result1, this.dialogAddUpdateParams.addCode.editId);
-      const regex = /(?<=class="[^"]*\s)(.*\s)?right-50(\s.*)?(?=\s.*top-10.*)/g;
-      const result3 = result2.replace(regex, '$1right-30$2');
-      const regex2 = new RegExp(`id="${this.dialogAddUpdateParams.addCode.copyId}\\d+"`, 'g');
-      const result = result3.replace(regex2, (match) => {
-        return `${match.slice(0, -1)}-view"`;
-      });
-      return result;
+      return this._viewPostHTML(html);
     };
   }
   get canUploadImg() {
     return this.dialogUpload.params.fileBase64.length < this.dialogUpload.maxCount;
+  }
+  get canOnline() {
+    return (row: any) => {
+      return row.status === 'OFFLINE';
+    };
+  }
+  get canOffline() {
+    return (row: any) => {
+      return row.status === 'PUBLISHED' || row.status === 'DRAFT';
+    };
+  }
+  @Watch('dialogAddUpdateParams.row.content')
+  onContentChange(newVal: any, oldValue: any) {
+    this.$nextTick(() => {
+      if (newVal && !oldValue) {
+        this.$refs.qEditor.caret.el.removeEventListener('click', this.handlerActionCode);
+        this.$refs.qEditor.caret.el.addEventListener('click', this.handlerActionCode);
+        this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
+        this.$refs.postContent.addEventListener('click', this.handlerActionCode);
+      }
+    });
   }
   mounted() {
     this.getData();
@@ -558,7 +579,7 @@ export default class BlogPostComponent extends Vue {
       visiable: false,
       title: '',
       content: '',
-      type: '',
+      lang: '',
       deleteId: 'blog-post-editor-add-code-delete-button-',
       copyId: 'blog-post-editor-add-code-copy-button-',
       editId: 'blog-post-editor-add-code-edit-button-',
@@ -577,16 +598,15 @@ export default class BlogPostComponent extends Vue {
       { label: 'XML', value: 'xml' },
       { label: 'YAML', value: 'yaml' },
     ],
-    htmlImg: [],
-    htmlImgKey: [],
-    posterImg: [],
-    posterImgKey: [],
     splitterModel: 50,
     codeNum: 0,
     row: {
+      id: null,
       content: '',
       title: '',
       poster: '',
+      authorId: null,
+      categoryId: null,
     },
   };
   private dialogUpload = {
@@ -599,6 +619,10 @@ export default class BlogPostComponent extends Vue {
     title: '',
     type: 'html',
     accept: '.png,.jpg',
+    posterBase64: [],
+    posterFile: [],
+    htmlImgBase64: [],
+    htmlImgFile: [],
     params: { file: [], fileName: [], fileBase64: [] },
   };
   /**event */
@@ -623,11 +647,28 @@ export default class BlogPostComponent extends Vue {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
+    this.dialogAddUpdateParams.row = {
+      content: '',
+      title: '',
+      poster: '',
+      authorId: null,
+      categoryId: null,
+      id: null,
+    };
+    this.dialogAddUpdateParams.codeNum = 0;
+    this.dialogAddUpdateParams.showEdit.title = true;
+    this.dialogUpload.params.file = [];
+    this.dialogUpload.params.fileBase64 = [];
+    this.dialogUpload.params.fileName = [];
+    this.dialogUpload.posterBase64 = [];
+    this.dialogUpload.posterFile = [];
+    this.dialogUpload.htmlImgBase64 = [];
+    this.dialogUpload.htmlImgFile = [];
   }
   private addCode(type: any) {
     this.dialogAddUpdateParams.addCode.visiable = true;
     this.dialogAddUpdateParams.addCode.title = type.label;
-    this.dialogAddUpdateParams.addCode.type = type.value;
+    this.dialogAddUpdateParams.addCode.lang = type.value;
     this.dialogAddUpdateParams.addCode.action = 'add';
     this.dialogAddUpdateParams.addCode.curContentId = '';
     this.$nextTick(() => {
@@ -658,7 +699,7 @@ export default class BlogPostComponent extends Vue {
               `&nbsp;
             <div contenteditable="false" class="relative">
             <pre><code class="language-js" id="${this.dialogAddUpdateParams.addCode.contentId}${this.dialogAddUpdateParams.codeNum + 1}">${code}</code></pre>
-            <span class="link-type fs-12 absolute right-90 top-10" lang="${this.dialogAddUpdateParams.addCode.type}" cId="${this.dialogAddUpdateParams.addCode.contentId}${
+            <span class="link-type fs-12 absolute right-90 top-10" lang="${this.dialogAddUpdateParams.addCode.lang}" cId="${this.dialogAddUpdateParams.addCode.contentId}${
                 this.dialogAddUpdateParams.codeNum + 1
               }" id="${this.dialogAddUpdateParams.addCode.editId}${this.dialogAddUpdateParams.codeNum + 1}">编辑</span> 
             <span class="link-type fs-12 absolute right-50 top-10" id="${this.dialogAddUpdateParams.addCode.copyId}${this.dialogAddUpdateParams.codeNum + 1}">复制</span> 
@@ -709,7 +750,7 @@ export default class BlogPostComponent extends Vue {
       this.dialogAddUpdateParams.addCode.visiable = true;
       this.dialogAddUpdateParams.addCode.title = 'Edit';
       this.dialogAddUpdateParams.addCode.action = 'update';
-      this.dialogAddUpdateParams.addCode.type = event.target.getAttribute('lang');
+      this.dialogAddUpdateParams.addCode.lang = event.target.getAttribute('lang');
       this.dialogAddUpdateParams.addCode.curContentId = event.target.getAttribute('cId');
       this.$nextTick(() => {
         this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].initEditor({
@@ -731,10 +772,12 @@ export default class BlogPostComponent extends Vue {
     this.dialogAddUpdateParams.showEdit.title = false;
   }
   private saveBase64ImgInHTML() {
+    if (!this.dialogUpload.params.fileBase64.length) {
+      this.$globalMessage.show({ type: 'error', content: '请上传图片' });
+      return;
+    }
     if (this.dialogUpload.type === 'poster') {
       this.dialogAddUpdateParams.row.poster = this.dialogUpload.params.fileBase64[0];
-      this.dialogAddUpdateParams.posterImg.push(this.dialogUpload.params.file[0]);
-      this.dialogAddUpdateParams.posterImgKey.push;
       this.dialogUpload.visiable = false;
     } else if (this.dialogUpload.type === 'html') {
       let html = '';
@@ -749,7 +792,6 @@ export default class BlogPostComponent extends Vue {
       &nbsp;`
       );
       this.$refs.qEditor.focus();
-      this.dialogAddUpdateParams.htmlImg.push(...this.dialogUpload.params.file);
       this.dialogUpload.visiable = false;
     }
   }
@@ -779,7 +821,7 @@ export default class BlogPostComponent extends Vue {
       this.$refs[this.dialogUpload.fileID].click();
     }, 100);
   }
-  private uploadFileSuccess() {
+  private async uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -795,12 +837,17 @@ export default class BlogPostComponent extends Vue {
         };
       });
     }
-    postFiles.forEach(async (rawFile: any) => {
-      (this.dialogUpload.params.fileName as any).push(rawFile.name);
-      (this.dialogUpload.params.file as any).push(rawFile);
-      const base64 = await getBase64(rawFile);
-      (this.dialogUpload.params.fileBase64 as any).push(base64);
-    });
+    (this.dialogUpload.params.fileName as any).push(postFiles[0].name);
+    (this.dialogUpload.params.file as any).push(postFiles[0]);
+    const base64 = await getBase64(postFiles[0]);
+    (this.dialogUpload.params.fileBase64 as any).push(base64);
+    if (this.dialogUpload.type === 'html') {
+      (this.dialogUpload.htmlImgBase64 as any).push(base64);
+      (this.dialogUpload.htmlImgFile as any).push(postFiles[0]);
+    } else {
+      (this.dialogUpload.posterBase64 as any).push(base64);
+      (this.dialogUpload.posterFile as any).push(postFiles[0]);
+    }
   }
   private removeCurrentImg(index: number) {
     (this.dialogUpload.params.fileName as any).splice(index, 1);
@@ -809,7 +856,26 @@ export default class BlogPostComponent extends Vue {
   }
   private handlerDialogBeforeHide() {
     this.$refs.qEditor.caret.el.removeEventListener('click', this.handlerActionCode);
-    this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
+    this.$refs.postContent && this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
+  }
+  private _viewPostHTML(html: any) {
+    function removeDOMByPartialId(html: string, id: string) {
+      const regex = new RegExp(`<[^>]*id=['"].*${id}.*['"][^>]*>(.*?)<\/[^>]*>`, 'gi');
+      return html.replace(regex, '');
+    }
+    function replaceClassByPartialId(html: string, partialId: string, newClass: string) {
+      const regex = new RegExp(`(?<=<[^>]*id=['"].*${partialId}.*['"][^>]*class=['"])[^'"]*(?=['"])`, 'gi');
+      return html.replace(regex, newClass);
+    }
+    const result1 = removeDOMByPartialId(html, this.dialogAddUpdateParams.addCode.deleteId);
+    const result2 = removeDOMByPartialId(result1, this.dialogAddUpdateParams.addCode.editId);
+    const regex = /(?<=class="[^"]*\s)(.*\s)?right-50(\s.*)?(?=\s.*top-10.*)/g;
+    const result3 = result2.replace(regex, '$1right-30$2');
+    const regex2 = new RegExp(`id="${this.dialogAddUpdateParams.addCode.copyId}\\d+"`, 'g');
+    const result = result3.replace(regex2, (match) => {
+      return `${match.slice(0, -1)}-view"`;
+    });
+    return result;
   }
   /**http */
   private async getData() {
@@ -881,35 +947,149 @@ export default class BlogPostComponent extends Vue {
     const result = await BlogPostModule.getPostById({ id: row.id });
     row.content = result;
     this.dialogAddUpdateParams.row = row;
+    this.dialogAddUpdateParams.codeNum = row.codeCount;
     this.dialogAddUpdateParams.getDataLoading = false;
+    this.dialogAddUpdateParams.showEdit.title = false;
+    this.dialogUpload.params.file = [];
+    this.dialogUpload.params.fileBase64 = [];
+    this.dialogUpload.params.fileName = [];
+    this.dialogUpload.posterBase64 = [];
+    this.dialogUpload.posterFile = [];
+    this.dialogUpload.htmlImgBase64 = [];
+    this.dialogUpload.htmlImgFile = [];
     this.$refs.qEditor.caret.el.addEventListener('click', this.handlerActionCode);
-    this.$refs.postContent.addEventListener('click', this.handlerActionCode);
+    this.$refs.postContent && this.$refs.postContent.addEventListener('click', this.handlerActionCode);
+    setTimeout(() => {
+      Prism.highlightAll();
+    }, 100);
   }
   private async dialogAddUpdateConfirmEvent() {
-    try {
-      this.dialogAddUpdateParams.clickLoading = true;
-      // await HTTP_REQUEST()
-      this.dialogAddUpdateParams.clickLoading = false;
-      this.dialogAddUpdateParams.visiable = false;
+    console.log(this.dialogAddUpdateParams.row);
+    if (!this.dialogAddUpdateParams.row.title) {
       this.$globalMessage.show({
-        type: 'success',
-        content: this.$t('messages.success'),
+        type: 'error',
+        content: '请输入标题',
       });
-      this.getData();
-    } catch (error) {
-      this.dialogAddUpdateParams.clickLoading = false;
+      return;
+    } else if (!this.dialogAddUpdateParams.row.authorId) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请选择作者',
+      });
+      return;
+    } else if (!this.dialogAddUpdateParams.row.categoryId) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请选择分类',
+      });
+      return;
+    } else if (!this.dialogAddUpdateParams.row.content) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请输入内容',
+      });
+      return;
+    } else if (!this.dialogAddUpdateParams.row.poster) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请上传封面',
+      });
+      return;
+    }
+    const result = await this.$globalConfirm.show({
+      title: '💕💕💕 提示',
+      color: 'primary',
+      content: '确定要执行该操作吗 :) ?',
+      confirmButtonText: '嗯，是的',
+    });
+    if (result) {
+      const htmlImgFile = this.dialogUpload.htmlImgFile;
+      const htmlImgBase64 = this.dialogUpload.htmlImgBase64;
+      const htmlimgform = new FormData();
+      this.$q.loading.show();
+      for (let i = 0; i < htmlImgFile.length; i++) {
+        try {
+          htmlimgform.append('file', htmlImgFile[i]);
+          const res = await BlogPostModule.uploadPostImgs(htmlimgform);
+          this.dialogAddUpdateParams.row.content = this.dialogAddUpdateParams.row.content.replace(htmlImgBase64[i], res[0]);
+        } catch (error) {
+          this.$q.loading.hide();
+          this.$globalMessage.show({
+            type: 'error',
+            content: '上传图片失败',
+          });
+        }
+      }
+      const posterFile = this.dialogUpload.posterFile;
+      const posterBase64 = this.dialogUpload.posterBase64;
+      const posterform = new FormData();
+      for (let i = 0; i < posterFile.length; i++) {
+        try {
+          posterform.append('file', posterFile[i]);
+          const res = await BlogPostModule.uploadPostImgs(posterform);
+          // 判断poster是不是base64
+          this.dialogAddUpdateParams.row.poster = res[0];
+        } catch (error) {
+          this.$q.loading.hide();
+          this.$globalMessage.show({
+            type: 'error',
+            content: '上传图片失败',
+          });
+        }
+      }
+      let postParams: any = {
+        title: this.dialogAddUpdateParams.row.title,
+        content: this.dialogAddUpdateParams.row.content,
+        poster: this.dialogAddUpdateParams.row.poster,
+        authorId: this.dialogAddUpdateParams.row.authorId,
+        categoryId: this.dialogAddUpdateParams.row.categoryId,
+        codeCount: this.dialogAddUpdateParams.codeNum,
+      };
+      if (this.dialogAddUpdateParams.dialogType === 'add') {
+        postParams['postType'] = 1; //1 文章 2 视频
+        try {
+          await BlogPostModule.addPost(postParams);
+          this.dialogAddUpdateParams.visiable = false;
+          this.$globalMessage.show({
+            type: 'success',
+            content: this.$t('messages.success'),
+          });
+          this.getData();
+        } catch (error) {
+          this.$q.loading.hide();
+        }
+      } else if (this.dialogAddUpdateParams.dialogType === 'update') {
+        postParams['id'] = this.dialogAddUpdateParams.row.id;
+        try {
+          await BlogPostModule.updatePost(postParams);
+          this.dialogAddUpdateParams.visiable = false;
+          this.$globalMessage.show({
+            type: 'success',
+            content: this.$t('messages.success'),
+          });
+          this.getData();
+        } catch (error) {
+          this.$q.loading.hide();
+        }
+      }
+      setTimeout(() => {
+        this.$q.loading.hide();
+        Prism.highlightAll();
+      }, 100);
     }
   }
   private async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: this.$t('messages.tishi'),
+        title: '💕💕💕 提示',
         color: 'primary',
-        content: this.$t('messages.areYouSure'),
-        confirmButtonText: this.$t('action.yes'),
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
       });
       if (result) {
-        // await HTTP_REQUEST()
+        await BlogPostModule.deletePost({
+          id: row.id,
+        });
         this.$globalMessage.show({
           type: 'success',
           content: this.$t('messages.success'),
@@ -918,29 +1098,52 @@ export default class BlogPostComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async hanleClickUploadConfirm() {
+  private async handlerClickOnline(row: any) {
     try {
-      const form = new FormData();
-      for (let i = 0; i < this.dialogUpload.params.file.length; i++) {
-        form.append(`file-${i}`, this.dialogUpload.params.file[i]);
-        form.append(`file-${i + 1}`, this.dialogUpload.params.file[i]);
-      }
-      this.dialogUpload.clickLoading = true;
-      await BlogPostModule.uploadPostImgs(form);
-      this.$globalMessage.show({
-        type: 'success',
-        content: this.$t('messages.success'),
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
       });
-      this.dialogUpload.clickLoading = false;
-      this.dialogUpload.visiable = false;
-      this.getData();
-    } catch (error) {
-      this.dialogUpload.clickLoading = false;
-    }
+      if (result) {
+        await BlogPostModule.publishPost({
+          id: row.id,
+        });
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+        this.getData();
+      }
+    } catch (error) {}
+  }
+  private async handlerClickOffline(row: any) {
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
+      });
+      if (result) {
+        await BlogPostModule.offlinePost({
+          id: row.id,
+        });
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+        this.getData();
+      }
+    } catch (error) {}
   }
 }
 </script>
 <style lang="scss">
+pre[class*='language-'] {
+  padding: 1.5em 1em;
+}
 pre[class*='language-'] code {
   white-space: pre-wrap;
 }

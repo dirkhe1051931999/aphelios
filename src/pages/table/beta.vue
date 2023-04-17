@@ -67,7 +67,7 @@
       >
         <template #top>
           <div class="full-width justify-end row">
-            <q-btn color="primary" icon="o_add" label="Add" no-caps class="m-r-15" @click="handleClickAdd" />
+            <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
             <q-btn icon="o_upload" label="Upload" outline color="primary" no-caps @click="handleClickUpload" />
           </div>
         </template>
@@ -835,10 +835,10 @@ export default class myComponentTableBeta extends Vue {
   private async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: this.$t('messages.tishi'),
+        title: '💕💕💕 提示',
         color: 'primary',
-        content: this.$t('messages.areYouSure'),
-        confirmButtonText: this.$t('action.yes'),
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
       });
       if (result) {
         // await HTTP_REQUEST()

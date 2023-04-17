@@ -33,3 +33,4 @@ declare module 'prettier/parser-babylon';
 declare module 'prettier/parser-angular';
 declare module 'prettier/parser-java';
 declare module 'prettier-plugin-java';
+declare module 'sortablejs';

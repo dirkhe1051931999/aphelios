@@ -1,11 +1,8 @@
 <template>
-  <q-dialog ref="dialogRef" transition-show="jump-up" transition-hide="jump-down">
+  <q-dialog ref="dialogRef" transition-show="jump-up" transition-hide="jump-down" persistent>
     <q-card class="q-dialog-confirm-plugin">
       <div class="title f-bold">
         {{ title }}
-        <div class="close">
-          <q-icon name="app:navigation-close" class="icon" @click="onCancelClick"></q-icon>
-        </div>
       </div>
       <div class="content">
         {{ getJsx(content) }}
@@ -52,7 +49,6 @@ export default class dialogConfirmComponent extends Vue {
   }
 }
 </script>
-
 
 <style lang="scss" scoped>
 .body--dark {
