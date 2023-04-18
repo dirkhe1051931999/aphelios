@@ -3,19 +3,19 @@ import { uploadImage } from 'src/util/helper';
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { categoryId, status, page, rowsPerPage } = ctx.request.body;
-  categoryId = categoryId || null;
-  status = status || null;
+  let { channelId, status, page, rowsPerPage } = ctx.request.body;
+  channelId = channelId || '';
+  status = status || '';
   page = page || 1;
   rowsPerPage = rowsPerPage || 20;
   try {
     let results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM post_list;`,
+      `SELECT COUNT(*) as total FROM sm_board_post_list;`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId,  commentId, categoryId, codeCount, postType
-          FROM post_list 
-          WHERE (categoryId = ${categoryId} OR ${categoryId} IS NULL) 
-          AND (status = ${status} OR ${status} IS NULL)
+          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
+          FROM sm_board_post_list 
+          WHERE (channelId = '${channelId}' OR '${channelId}' = '') 
+          AND (status = '${status}' OR '${status}'  = '')
           ORDER BY createTime DESC 
           LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
@@ -35,7 +35,7 @@ export const getPostById = async (ctx) => {
     ctx.error(ctx, '404#id');
   }
   try {
-    let result = await ctx.execSql(`SELECT content FROM post_list WHERE id = ${id}`);
+    let result = await ctx.execSql(`SELECT content FROM sm_board_post_list WHERE id = ${id}`);
     ctx.success(ctx, result[0].content);
   } catch (error) {
     console.log(error);
@@ -65,7 +65,7 @@ export const addPost = async (ctx) => {
   }
   try {
     let results = await ctx.execSql([
-      `INSERT INTO post_list (title, content,poster, authorId, categoryId, codeCount, postType, status, createTime, updateTime, view, comment) 
+      `INSERT INTO sm_board_post_list (title, content,poster, authorId, categoryId, codeCount, postType, status, createTime, updateTime, view, comment) 
       VALUES ('${title}', '${content}','${poster}', ${authorId}, ${categoryId}, ${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
     ]);
     if (results[0].affectedRows > 0) {
@@ -86,7 +86,7 @@ export const deletePost = async (ctx) => {
     return;
   }
   try {
-    let results = await ctx.execSql(`DELETE FROM post_list WHERE id = ?`, id);
+    let results = await ctx.execSql(`DELETE FROM sm_board_post_list WHERE id = ?`, id);
     ge: ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
@@ -103,7 +103,7 @@ export const updatePost = async (ctx) => {
   }
   try {
     ctx.execSql([
-      `UPDATE post_list SET
+      `UPDATE sm_board_post_list SET
       title = '${title}',
       content = '${content}',
       poster = '${poster}',
@@ -127,7 +127,7 @@ export const offlinePost = async (ctx) => {
     return;
   }
   try {
-    await ctx.execSql(`UPDATE post_list SET status = 'OFFLINE' WHERE id = ?`, id);
+    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'OFFLINE' WHERE id = ?`, id);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
@@ -142,7 +142,7 @@ export const publishPost = async (ctx) => {
     return;
   }
   try {
-    await ctx.execSql(`UPDATE post_list SET status = 'PUBLISHED' WHERE id = ?`, id);
+    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'PUBLISHED' WHERE id = ?`, id);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);

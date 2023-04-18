@@ -13,7 +13,7 @@ import {
   updateChildDirectory,
   updateDirectory,
   updateSheet,
-} from 'src/controllers/management/blog/sheet.directory.controller';
+} from 'src/controllers/management/blog/post.sheet.directory.controller';
 export class ManagementBlogSheetDirectoryAPIController {
   @Route('/getAllSheet', HTTP_METHODS.POST)
   async getAllSheet(ctx: Koa.Context, next: Koa.Next) {

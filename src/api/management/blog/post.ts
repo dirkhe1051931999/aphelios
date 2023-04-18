@@ -1,8 +1,6 @@
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
 import { addPost, deletePost, getPostById, getPostList, offlinePost, publishPost, updatePost, uploadPostImgs } from 'src/controllers/management/blog/post.controller';
-import { getPostsByTagId } from 'src/controllers/management/blog/tag.controller';
-import { getPostsByCategoryId } from 'src/controllers/management/blog/category.controller';
 export class ManagementBlogPostAPIController {
   @Route('/getPostById', HTTP_METHODS.POST)
   async getPostById(ctx: Koa.Context, next: Koa.Next) {
@@ -35,13 +33,5 @@ export class ManagementBlogPostAPIController {
   @Route('/publishPost', HTTP_METHODS.POST)
   async publishPost(ctx: Koa.Context, next: Koa.Next) {
     return publishPost(ctx);
-  }
-  @Route('/getPostsByCategoryId/:id', HTTP_METHODS.GET)
-  async getPostsByCategoryId(ctx: Koa.Context, next: Koa.Next) {
-    return getPostsByCategoryId(ctx);
-  }
-  @Route('/getPostsByTagId/:id', HTTP_METHODS.GET)
-  async getPostsByTagId(ctx: Koa.Context, next: Koa.Next) {
-    return getPostsByTagId(ctx);
   }
 }

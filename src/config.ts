@@ -51,7 +51,7 @@ interface Config {
 const config: Config = {
   db: {
     mysql: {
-      host: "192.168.200.128",
+      host: "192.168.200.129",
       user: "root",
       password: "123456",
       port: 3310,
@@ -60,7 +60,7 @@ const config: Config = {
     },
     redis: {
       port: 6380,
-      host: "192.168.200.128",
+      host: "192.168.200.129",
       db: 3,
       options: {
         return_buffers: false,
@@ -77,19 +77,19 @@ const config: Config = {
     wechat: {
       appId: 'wx48f0181992fa8676',
       appSecret: 'd581afc54ddedf1a6ffef37d8b6d2c18',
-      auth_callback_url: 'http://192.168.200.128:3000/oauth/wechat/callback',
+      auth_callback_url: 'http://192.168.200.129:3000/oauth/wechat/callback',
     }
   },
   root: path.normalize(__dirname + "/.."),
   appPath: "src/static",
-  resetPasswordUrl: "http://192.168.200.128:9002/index.html#/login?token=",
-  defaultCdnUrl: "http://192.168.200.128:3000/cdn",
+  resetPasswordUrl: "http://192.168.200.129:9002/index.html#/login?token=",
+  defaultCdnUrl: "http://192.168.200.129:3000/cdn",
   tempUploads: "tempUploads",
   uploads: "uploads",
   port: 3000,
   tokenSecret: "test",
   isUpdateAdmin: false,
-  accessControlAllowOrigin: "http://192.168.200.128:3000",
+  accessControlAllowOrigin: "http://192.168.200.129:3000",
   adminName: "admin",
   adminPassword: "123456",
   socketioPath: "/testsocketiopath",

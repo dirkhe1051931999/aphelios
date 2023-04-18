@@ -1,6 +1,6 @@
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
-import { addChannel, getAllChannel, removeChannel, updateChannelName, updateChannelPos } from 'src/controllers/management/blog/channel.controller';
+import { addChannel, getAllChannel, removeChannel, updateChannelName, updateChannelPos } from 'src/controllers/management/blog/post.channel.controller';
 export class ManagementBlogChannelAPIController {
   @Route('/getAllChannel', HTTP_METHODS.POST)
   async getAllChannel(ctx: Koa.Context, next: Koa.Next) {

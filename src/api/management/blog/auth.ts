@@ -7,7 +7,7 @@ import {
   forgotPassword,
   checkToken,
   changePasswordWithOutOld,
-} from "src/controllers/management/blog/admin.controller";
+} from "src/controllers/management/blog/auth.controller";
 import { HTTP_METHODS, Route } from "src/util/route.decorator";
 import Koa from "koa";
 export class ManagementBlogAuthAPIController {

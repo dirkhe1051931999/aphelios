@@ -5,8 +5,9 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import * as formidable from 'formidable';
 import { mkdirsSync, uploadPDF } from 'src/util/helper';
+// 查询所有作者
 export const getAllPostAuthor = async (ctx): Promise<void> => {
-  let sql = `SELECT id, name, coverUrl, followCount, status, avatarUrl, articleCount, fansCount, type, nick, score, createTime,updateTime,loginTime,companyVerifyInfoId, description 
+  let sql = `SELECT id, name, coverUrl, followCount, status, avatarUrl, articleCount, fansCount, type, nick, score, createTime,updateTime,loginTime,companyVerifyInfoId, defaultUser,description 
   FROM sm_board_author 
   ORDER BY createTime DESC;`;
   try {
@@ -19,6 +20,7 @@ export const getAllPostAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, 402);
   }
 };
+// 添加作者
 export const addPostAuthor = async (ctx): Promise<void> => {
   let { name, nick, avatar, cover, description, type, managementPassword, appPassword } = ctx.request.body;
   if (ctx.isFalsy([name, nick, avatar, description, type, managementPassword, appPassword])) {
@@ -77,6 +79,7 @@ export const addPostAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, 405);
   }
 };
+// 更新作者
 export const updatePostAuthor = async (ctx): Promise<void> => {
   let { id, nick, avatar, cover, description } = ctx.request.body;
   if (ctx.isFalsy([id, nick, avatar, description])) {
@@ -143,6 +146,7 @@ export const updatePostAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, 405);
   }
 };
+// 删除作者
 export const removePostAuthor = async (ctx): Promise<void> => {
   let { id } = ctx.request.body;
   if (ctx.isFalsy([id])) {
@@ -150,14 +154,30 @@ export const removePostAuthor = async (ctx): Promise<void> => {
     return;
   }
   try {
-    let sql = `DELETE FROM sm_board_author WHERE id = '${id}'`;
+    let sql = `
+    
+    CREATE PROCEDURE delete_author(IN author_id CHAR(36))
+    BEGIN
+        DECLARE author_type INT;
+        SELECT type INTO author_type FROM sm_board_author WHERE id = author_id;
+        IF author_type = 1 THEN
+            DELETE FROM sm_board_author WHERE id = author_id;
+        ELSE
+            DELETE FROM sm_board_company_verify_info WHERE authorId = author_id;
+            DELETE FROM sm_board_author WHERE id = author_id;
+        END IF;
+    END
+    `;
+    await ctx.execSql('DROP PROCEDURE IF EXISTS delete_author;');
     await ctx.execSql(sql);
+    await ctx.execSql(`CALL delete_author('${id}')`);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 405);
   }
 };
+// 进行企业认证
 export const verifyCompanyAuthor = async (ctx): Promise<void> => {
   try {
     const result = await uploadPDF(ctx);
@@ -180,6 +200,7 @@ export const verifyCompanyAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, 405);
   }
 };
+// 获取企业认证信息
 export const getCompanyAuthorVerifyInfo = async (ctx): Promise<void> => {
   try {
     const { authorId } = ctx.request.body;
@@ -189,6 +210,25 @@ export const getCompanyAuthorVerifyInfo = async (ctx): Promise<void> => {
     }
     const result = await ctx.execSql(`SELECT * FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
     ctx.success(ctx, result[0]);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+// 删除企业认证申请
+export const removeCompanyAuthorVerify = async (ctx): Promise<void> => {
+  try {
+    const { authorId } = ctx.request.body;
+    if (ctx.isFalsy([authorId])) {
+      ctx.error(ctx, '404#authorId');
+      return;
+    }
+    const result = await ctx.execSql(`SELECT * FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+    if (result[0]) {
+      await ctx.execSql(`DELETE FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+      await ctx.execSql(`UPDATE sm_board_author SET companyVerifyInfoId = NULL, status = 2 WHERE id = '${authorId}';`);
+    }
+    ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 402);
