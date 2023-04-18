@@ -70,7 +70,6 @@
     top: 50%;
     width: 14px;
     height: 14px;
-    font-size: 14px;
     transform: translateY(-50%);
   }
 }
@@ -253,7 +252,6 @@
 }
 .my-status {
   padding: 0 16px;
-  font-size: 14px;
   position: relative;
   color: $dark;
   &::before {

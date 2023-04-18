@@ -31,6 +31,9 @@ const api = {
   getAllPostAuthor: 'management/blog/post_author/getAllPostAuthor',
   addPostAuthor: 'management/blog/post_author/addPostAuthor',
   removePostAuthor: 'management/blog/post_author/removePostAuthor',
+  updatePostAuthor: 'management/blog/post_author/updatePostAuthor',
+  verifyCompanyAuthor: 'management/blog/post_author/verifyCompanyAuthor',
+  getCompanyAuthorVerifyInfo: 'management/blog/post_author/getCompanyAuthorVerifyInfo',
 };
 
 export const getPostList = (data: any): any =>
@@ -211,6 +214,24 @@ export const addPostAuthor = (data: any): any =>
 export const removePostAuthor = (data: any): any =>
   request({
     url: api.removePostAuthor,
+    method: 'post',
+    data,
+  });
+export const updatePostAuthor = (data: any): any =>
+  request({
+    url: api.updatePostAuthor,
+    method: 'post',
+    data,
+  });
+export const verifyCompanyAuthor = (data: any): any =>
+  request({
+    url: api.verifyCompanyAuthor,
+    method: 'post',
+    data,
+  });
+export const getCompanyAuthorVerifyInfo = (data: any): any =>
+  request({
+    url: api.getCompanyAuthorVerifyInfo,
     method: 'post',
     data,
   });

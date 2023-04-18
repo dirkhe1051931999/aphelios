@@ -244,11 +244,11 @@
                 color="primary"
                 :label="`点击上传图片（${dialogAddUpdateParams.upload.accept}，size: 10KB）`"
                 outline
-                :style="this.dialogAddUpdateParams.upload.params.file ? 'width: 90%' : 'width:100%'"
+                :style="this.dialogAddUpdateParams.upload.params.file ? 'width: 92%' : 'width:100%'"
                 no-caps
                 @click="handleClickUploadFile"
               ></q-btn>
-              <div v-if="this.dialogAddUpdateParams.upload.params.file" class="q-ml-md q-pa-xs b-r-8" style="border: solid 1px var(--q-primary)">
+              <div v-if="this.dialogAddUpdateParams.upload.params.file" class="q-pa-xs b-r-8 thin-shadow">
                 <q-img :src="this.dialogAddUpdateParams.upload.params.file" fit="contain" width="32px"></q-img>
               </div>
             </div>

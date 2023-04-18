@@ -15,6 +15,7 @@ import {
   getAllSheet,
   getAuthor,
   getCategories,
+  getCompanyAuthorVerifyInfo,
   getPostById,
   getPostList,
   offlinePost,
@@ -29,8 +30,10 @@ import {
   updateChildDirectory,
   updateDirectory,
   updatePost,
+  updatePostAuthor,
   updateSheet,
   uploadPostImgs,
+  verifyCompanyAuthor,
 } from 'src/api/blog-post';
 
 interface IBlogPost {}
@@ -189,6 +192,21 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async removePostAuthor(data: any) {
     const result = await removePostAuthor(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updatePostAuthor(data: any) {
+    const result = await updatePostAuthor(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async verifyCompanyAuthor(data: any) {
+    const result = await verifyCompanyAuthor(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getCompanyAuthorVerifyInfo(data: any) {
+    const result = await getCompanyAuthorVerifyInfo(data);
     return Promise.resolve(result);
   }
 }

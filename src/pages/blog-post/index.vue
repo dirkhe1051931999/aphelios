@@ -964,7 +964,6 @@ export default class BlogPostComponent extends Vue {
     }, 100);
   }
   private async dialogAddUpdateConfirmEvent() {
-    console.log(this.dialogAddUpdateParams.row);
     if (!this.dialogAddUpdateParams.row.title) {
       this.$globalMessage.show({
         type: 'error',

@@ -104,7 +104,6 @@ class User extends VuexModule implements IUserState {
   public async getUserInfo(data: any) {
     const { id } = data;
     const result = await getUserInfo({ id });
-    console.log(result);
     this.SET_INTRODUCTION('introduction');
     return Promise.resolve();
   }
