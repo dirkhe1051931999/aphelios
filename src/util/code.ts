@@ -32,4 +32,5 @@ export const errorCode = {
   305: ['手机号已存在', 'Phone number already exists'],
   606: ['图片上传异常', 'Image upload exception'],
   607: ['名称重复', 'Name already exists'],
+  608: ['该企业已提交认证', 'The enterprise has been verified'],
 };

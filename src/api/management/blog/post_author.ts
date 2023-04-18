@@ -1,6 +1,6 @@
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
-import { addPostAuthor, getAllPostAuthor, removePostAuthor } from 'src/controllers/management/blog/post.author.controller';
+import { addPostAuthor, getAllPostAuthor, getCompanyAuthorVerifyInfo, removePostAuthor, updatePostAuthor, verifyCompanyAuthor } from 'src/controllers/management/blog/post.author.controller';
 export class ManagementBlogPostAuthorAPIController {
   @Route('/getAllPostAuthor', HTTP_METHODS.POST)
   async getAllPostAuthor(ctx: Koa.Context, next: Koa.Next) {
@@ -13,5 +13,17 @@ export class ManagementBlogPostAuthorAPIController {
   @Route('/removePostAuthor', HTTP_METHODS.POST)
   async removePostAuthor(ctx: Koa.Context, next: Koa.Next) {
     return removePostAuthor(ctx);
+  }
+  @Route('/updatePostAuthor', HTTP_METHODS.POST)
+  async updatePostAuthor(ctx: Koa.Context, next: Koa.Next) {
+    return updatePostAuthor(ctx);
+  }
+  @Route('/verifyCompanyAuthor', HTTP_METHODS.POST)
+  async verifyCompanyAuthor(ctx: Koa.Context, next: Koa.Next) {
+    return verifyCompanyAuthor(ctx);
+  }
+  @Route('/getCompanyAuthorVerifyInfo', HTTP_METHODS.POST)
+  async getCompanyAuthorVerifyInfo(ctx: Koa.Context, next: Koa.Next) {
+    return getCompanyAuthorVerifyInfo(ctx);
   }
 }

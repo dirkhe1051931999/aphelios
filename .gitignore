@@ -8,3 +8,4 @@ src/static/cdn/post_author_cover/*
 !src/static/cdn/post_author_cover/default.png
 src/static/cdn/sheet_directory
 src/static/cdn/sheet_directory_image
+src/static/cdn/post_author_verify_pdf
