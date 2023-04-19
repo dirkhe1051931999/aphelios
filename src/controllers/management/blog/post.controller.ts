@@ -53,20 +53,20 @@ export const uploadPostImgs = async (ctx) => {
 };
 // 添加文章
 export const addPost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, codeCount, postType } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId, codeCount, postType } = ctx.request.body;
   let status = 'OFFLINE';
   let createTime = new Date().getTime();
   let updateTime = createTime;
   let view = 0;
   let comment = 0;
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, codeCount, postType])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, codeCount, postType');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, codeCount, postType])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId, codeCount, postType');
     return;
   }
   try {
     let results = await ctx.execSql([
-      `INSERT INTO sm_board_post_list (title, content,poster, authorId, categoryId, codeCount, postType, status, createTime, updateTime, view, comment) 
-      VALUES ('${title}', '${content}','${poster}', ${authorId}, ${categoryId}, ${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
+      `INSERT INTO sm_board_post_list (title, content,poster, authorId, categoryId,channelId, codeCount, postType, status, createTime, updateTime, view, comment) 
+      VALUES ('${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}',${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
     ]);
     if (results[0].affectedRows > 0) {
       ctx.success(ctx, null);
@@ -95,10 +95,10 @@ export const deletePost = async (ctx) => {
 };
 // 更新文章
 export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, codeCount, id } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId,channelId, codeCount, id } = ctx.request.body;
   let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, codeCount, id])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, codeCount, postType,id');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId,codeCount, id])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,codeCount, postType,id');
     return;
   }
   try {
@@ -107,8 +107,9 @@ export const updatePost = async (ctx) => {
       title = '${title}',
       content = '${content}',
       poster = '${poster}',
-      authorId = ${authorId},
-      categoryId = ${categoryId},
+      authorId = '${authorId}',
+      categoryId = '${categoryId}',
+      channelId = '${channelId}',
       codeCount = ${codeCount},
       updateTime = ${updateTime}
       WHERE id = ${id};`,
