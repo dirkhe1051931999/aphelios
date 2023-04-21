@@ -1,0 +1,20 @@
+{
+    "public": {
+        "description": " "
+    },
+    "src/pages/blog-post/author.vue": {
+        "description": "作者"
+    },
+    "src/pages/blog-post/channel.vue": {
+        "description": "频道"
+    },
+    "src/pages/blog-post/directory.vue": {
+        "description": "分类"
+    },
+    "src/pages/blog-post/index.vue": {
+        "description": "文章"
+    },
+    "src/pages/audit": {
+        "description": "审计"
+    }
+}

@@ -116,6 +116,36 @@ export const asyncRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/audit',
+    component: shallowRef(Layout),
+    name: 'Audit0',
+    meta: {
+      pagePermissionId: ['Audit', 'AuditCompanyCertification', 'AuditComment'],
+      icon: 'o_how_to_reg',
+      title: 'audit',
+    },
+    children: [
+      {
+        path: 'company-certification',
+        component: () => import(/* webpackChunkName: "audit-company-certification" */ 'src/pages/audit/company-certification.vue'),
+        name: 'AuditCompanyCertification',
+        meta: {
+          title: 'audit-company-certification',
+          pagePermissionId: ['AuditCompanyCertification'],
+        },
+      },
+      {
+        path: 'comment',
+        component: () => import(/* webpackChunkName: "audit-comment" */ 'src/pages/audit/comment.vue'),
+        name: 'AuditComment',
+        meta: {
+          title: 'audit-comment',
+          pagePermissionId: ['AuditComment'],
+        },
+      },
+    ],
+  },
+  {
     path: '/account',
     component: shallowRef(Layout),
     name: 'Account',

@@ -78,7 +78,6 @@ axios.interceptors.response.use(
       }
     };
     const successFuc = (response: any) => {
-      Loading.hide();
       if (response.config.getResHeader) {
         if (response.data instanceof Blob) {
           // 如果是blob获取header头内容

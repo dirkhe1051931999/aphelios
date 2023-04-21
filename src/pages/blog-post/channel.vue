@@ -7,24 +7,23 @@
     <q-inner-loading style="min-height: 300px" :showing="tableParams.loading"></q-inner-loading>
     <div id="listWithHandle" class="list-group" v-if="!tableParams.loading && tableParams.data.length">
       <div class="list-group-item row thin-shadow q-mb-md q-pa-sm items-center h-60" v-for="item in tableParams.data" :key="item.name">
-        <div>
-          <q-icon name="drag_indicator" class="move" size="20px"></q-icon>
-          <span v-if="!dialogAddParams.showEdit[item.id]" class="q-ml-md">{{ item.name }}</span>
-          <TextToInput
-            class="inline-block w-300 q-ml-md"
-            v-if="dialogAddParams.showEdit[item.id]"
-            :value="dialogAddParams.param[item.id]"
-            :that="item.id"
-            :loading="dialogAddParams.loading[item.id]"
-            @confirm="textToInputConfirmForEmail"
-            @close="textToInputCloseForEmail"
-          >
-          </TextToInput>
-          <span class="link-type q-ml-md" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
-        </div>
-        <div class="q-ml-auto">
-          <span class="in-table-delete-button" @click="handlerClickDelete(item)">{{ $t(`action.delete`) }} </span>
-        </div>
+        <q-icon name="drag_indicator" class="move" size="20px"></q-icon>
+        <span v-if="!dialogAddParams.showEdit[item.id]" class="q-ml-md">{{ item.name }}</span>
+        <TextToInput
+          class="inline-block w-300 q-ml-md"
+          v-if="dialogAddParams.showEdit[item.id]"
+          :value="dialogAddParams.param[item.id]"
+          :that="item.id"
+          :loading="dialogAddParams.loading[item.id]"
+          @confirm="textToInputConfirmForEmail"
+          @close="textToInputCloseForEmail"
+        >
+        </TextToInput>
+        <span class="link-type q-ml-md" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
+        <span class="delete-type q-ml-md" @click="handlerClickDelete(item)">{{ $t(`action.delete`) }} </span>
+        <p class="q-ml-md">
+          共计：<span class="link-type q-ml-sm" @click="toPostList(item)">{{ item.count }}</span>
+        </p>
       </div>
     </div>
     <div v-else>暂无数据</div>
@@ -154,6 +153,9 @@ export default class BlogPostChannelComponent extends Vue {
     if (data.params) {
       this.dialogAddParams.params = data.params;
     }
+  }
+  private toPostList(item: any) {
+    this.$router.push(`/blog-post/list?channelId=${item.id}`);
   }
   /* http */
   private async getData() {

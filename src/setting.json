@@ -6,7 +6,7 @@
   "pro": "",
   "version": "V1.0.0",
   "devServerPort": 9002,
-  "ip": "http://192.168.200.128:3000",
+  "ip": "http://192.168.200.129:3000",
   "github_oauth_url": "https://github.com/login/oauth/authorize?client_id=b0fbc6a7d4ff2b320158",
   "adminName": ["admin"],
   "errorCode": [],
@@ -17,6 +17,7 @@
     "Include upper and lower case letters, include numbers and special characters (#?!) @+. $%^&*-,:;\")",
     "Can not contain spaces, Chinese and Chinese special characters"
   ],
+  "simplePasswordRules": ["包含10 - 20个字符", "不能包含空格、中文和中文特殊字符"],
   "pagePermissionId": [],
   "layoutSetting": {
     "showSettings": true,

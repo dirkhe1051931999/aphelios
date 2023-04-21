@@ -16,7 +16,7 @@
                 alt=""
                 srcset=""
                 style="width: 18px"
-                v-if="item.type === 0"
+                v-if="item.type === 0 && (item.status === 3 || item.status === 2 || item.status === 4)"
                 class="q-mr-xs"
                 :class="{ 'process-verify': item.status === 3, 'not-verify': item.status === 2 }"
               />
@@ -65,13 +65,13 @@
             <q-btn color="primary" flat label="企业认证" outline v-if="(item.status === 2 || item.status === 3 || item.status === 4 || item.status === 5) && item.type === 0" class="fs-12" dense>
               <q-menu class="fs-12" style="box-shadow: none">
                 <q-list dense bordered>
-                  <q-item clickable v-close-popup v-if="item.status === 2 || item.status === 5" @click="handlerClickVerify(item)" dense>
+                  <q-item clickable v-close-popup v-if="item.status === 2" @click="handlerClickVerify(item)" dense>
                     <q-item-section>认证</q-item-section>
                   </q-item>
-                  <q-item clickable v-close-popup v-if="item.status === 4 || item.status === 3" dense>
-                    <q-item-section @click="handlerClickViewVerify(item)">查看认证</q-item-section>
+                  <q-item clickable v-close-popup v-if="item.status === 4 || item.status === 3 || item.status === 5" dense @click="handlerClickViewVerify(item)">
+                    <q-item-section>查看认证</q-item-section>
                   </q-item>
-                  <q-item clickable v-close-popup v-if="item.status === 3 || item.status === 4" dense>
+                  <q-item clickable v-close-popup v-if="item.status === 3 || item.status === 4 || item.status === 5" dense @click="handlerClickRemoveVerify(item)">
                     <q-item-section class="text-negative">删除认证/申请</q-item-section>
                   </q-item>
                 </q-list>
@@ -83,7 +83,7 @@
                   <q-item clickable v-close-popup @click="handlerClickUpdate(item)" dense>
                     <q-item-section>编辑</q-item-section>
                   </q-item>
-                  <q-item clickable v-close-popup dense @click="handlerClickDelete(item)">
+                  <q-item clickable v-close-popup dense @click="handlerClickDelete(item)" v-if="!item.defaultUser">
                     <q-item-section class="text-negative">删除</q-item-section>
                   </q-item>
                 </q-list>
@@ -114,7 +114,7 @@
           </div>
         </q-slide-transition>
       </q-card>
-      <q-card class="thin-shadow w-340 row items-center justify-center min-h-419">
+      <q-card class="thin-shadow w-340 row items-center justify-center min-h-415">
         <q-card-section class="row justify-center">
           <q-btn color="primary" round icon="o_add" style="height: 56px" @click="handleClickAdd" />
         </q-card-section>
@@ -349,7 +349,7 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { getCurrentInstance } from 'vue';
 import { Component, Vue } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
-import { isValidPassword } from 'src/utils/validate';
+import { isValidSimplePassword } from 'src/utils/validate';
 import setting from 'src/setting.json';
 import { enCrypty } from 'src/utils/tools';
 import { getAuthorLevelName, getAuthorLevel, companyType } from './utils';
@@ -388,7 +388,7 @@ export default class BlogPostAuthorComponent extends Vue {
     visiable: false,
     title: '',
     params: cloneDeep(CONST_PARAMS.dialog_add_update),
-    passwordRules: setting.passwordRules,
+    passwordRules: setting.simplePasswordRules,
     upload: {
       avatarID: 'dialog_upload_avatar',
       coverID: 'dialog_upload_cover',
@@ -439,7 +439,7 @@ export default class BlogPostAuthorComponent extends Vue {
             return (val && String(val).length > 0) || this.globals.$t('messages.required');
           },
           (val: string) => {
-            return isValidPassword(val) || '无效密码';
+            return isValidSimplePassword(val) || '无效密码';
           },
         ],
         classes: 'input-password',
@@ -454,7 +454,7 @@ export default class BlogPostAuthorComponent extends Vue {
             return (val && String(val).length > 0) || this.globals.$t('messages.required');
           },
           (val: string) => {
-            return isValidPassword(val) || '无效密码';
+            return isValidSimplePassword(val) || '无效密码';
           },
         ],
         classes: 'input-password',
@@ -715,6 +715,7 @@ export default class BlogPostAuthorComponent extends Vue {
         return;
       }
       if (rawFile.size <= 1024 * 1024 * 10) {
+        console.log(rawFile);
         const src = window.URL.createObjectURL(rawFile);
         let embedNode = document.createElement('embed');
         embedNode.src = src;
@@ -732,14 +733,21 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
+  /* 关闭dialog */
   private dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
+  /* 新增或编辑dialog隐藏时 */
   private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
+      this.dialogAddUpdateParams.upload.params.avatar = '';
+      this.dialogAddUpdateParams.upload.params.avatarName = '';
+      this.dialogAddUpdateParams.upload.params.cover = '';
+      this.dialogAddUpdateParams.upload.params.coverName = '';
     }
   }
+  /* 认证dialog隐藏时 */
   private dialogVerifyParamsHide() {
     this.dialogVerifyParams.step = 1;
     this.dialogVerifyParams.result = 0;
@@ -750,6 +758,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogVerifyParams.params = cloneDeep(CONST_PARAMS.verify);
   }
   /* http */
+  /* 获取所有用户 */
   private async getAllPostAuthor() {
     try {
       this.$q.loading.show();
@@ -764,6 +773,7 @@ export default class BlogPostAuthorComponent extends Vue {
     } catch (error) {}
     this.$q.loading.hide();
   }
+  /* 确定新增或更新用户 */
   private async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.upload.params.avatar) {
       this.$globalMessage.show({
@@ -806,6 +816,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.getAllPostAuthor();
     } catch (error) {}
   }
+  /* 删除用户 */
   private async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -826,6 +837,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     } catch (error) {}
   }
+  /* 提交认证信息或执行下一步 */
   private async handleClickStepNextButton() {
     if (this.dialogVerifyParams.step === 1) {
       if (!this.dialogVerifyParams.upload.params.pdf) {
@@ -862,6 +874,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.$refs.stepper.next();
     }
   }
+  /* 查看认证详情 */
   private async handlerClickViewVerify(item: any) {
     this.$q.loading.show();
     this.dialogVerifyParams.visiable = true;
@@ -889,6 +902,27 @@ export default class BlogPostAuthorComponent extends Vue {
       this.dialogVerifyParams.result = 1;
     }
     this.$q.loading.hide();
+  }
+  /* 移除认证 */
+  private async handlerClickRemoveVerify(item: any) {
+    const result = await this.$globalConfirm.show({
+      title: '💕💕💕 提示',
+      color: 'primary',
+      content: '确定要执行该操作吗 :) ?',
+      confirmButtonText: '嗯，是的',
+    });
+    if (result) {
+      this.$q.loading.show();
+      await BlogPostModule.removeCompanyAuthorVerify({
+        authorId: item.id,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.getAllPostAuthor();
+      this.$q.loading.hide();
+    }
   }
 }
 </script>

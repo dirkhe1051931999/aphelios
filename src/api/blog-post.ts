@@ -2,6 +2,7 @@ import { request } from 'src/boot/axios';
 
 const api = {
   getPostList: '/management/blog/post/getPostList',
+  getPostListByCategoryId: 'management/blog/post/getPostListByCategoryId',
   getPostById: 'management/blog/post/getPostById',
   uploadPostImgs: '/management/blog/post/uploadPostImgs',
   addPost: '/management/blog/post/addPost',
@@ -9,36 +10,41 @@ const api = {
   updatePost: 'management/blog/post/updatePost',
   offlinePost: 'management/blog/post/offlinePost',
   publishPost: 'management/blog/post/publishPost',
-  getAuthor: 'management/blog/author/getAuthor',
-  getCategories: '/management/blog/category/getCategories',
-  getAllChannel: 'management/blog/channel/getAllChannel',
-  updateChannelPos: 'management/blog/channel/updateChannelPos',
-  updateChannelName: 'management/blog/channel/updateChannelName',
-  addChannel: 'management/blog/channel/addChannel',
-  removeChannel: 'management/blog/channel/removeChannel',
-  getAllSheet: 'management/blog/sheet_directory/getAllSheet',
-  getAllDirectory: 'management/blog/sheet_directory/getAllDirectory',
-  getAllChildDirectory: 'management/blog/sheet_directory/getAllChildDirectory',
-  addSheet: 'management/blog/sheet_directory/addSheet',
-  addDirectory: 'management/blog/sheet_directory/addDirectory',
-  addChildDirectory: 'management/blog/sheet_directory/addChildDirectory',
-  removeSheet: 'management/blog/sheet_directory/removeSheet',
-  removeDirectory: 'management/blog/sheet_directory/removeDirectory',
-  removeChildDirectory: 'management/blog/sheet_directory/removeChildDirectory',
-  updateSheet: 'management/blog/sheet_directory/updateSheet',
-  updateDirectory: 'management/blog/sheet_directory/updateDirectory',
-  updateChildDirectory: 'management/blog/sheet_directory/updateChildDirectory',
+  getAllChannel: 'management/blog/post_channel/getAllChannel',
+  updateChannelPos: 'management/blog/post_channel/updateChannelPos',
+  updateChannelName: 'management/blog/post_channel/updateChannelName',
+  addChannel: 'management/blog/post_channel/addChannel',
+  removeChannel: 'management/blog/post_channel/removeChannel',
+  getAllSheet: 'management/blog/post_sheet_directory/getAllSheet',
+  getAllDirectory: 'management/blog/post_sheet_directory/getAllDirectory',
+  getAllChildDirectory: 'management/blog/post_sheet_directory/getAllChildDirectory',
+  addSheet: 'management/blog/post_sheet_directory/addSheet',
+  addDirectory: 'management/blog/post_sheet_directory/addDirectory',
+  addChildDirectory: 'management/blog/post_sheet_directory/addChildDirectory',
+  removeSheet: 'management/blog/post_sheet_directory/removeSheet',
+  removeDirectory: 'management/blog/post_sheet_directory/removeDirectory',
+  removeChildDirectory: 'management/blog/post_sheet_directory/removeChildDirectory',
+  updateSheet: 'management/blog/post_sheet_directory/updateSheet',
+  updateDirectory: 'management/blog/post_sheet_directory/updateDirectory',
+  updateChildDirectory: 'management/blog/post_sheet_directory/updateChildDirectory',
   getAllPostAuthor: 'management/blog/post_author/getAllPostAuthor',
   addPostAuthor: 'management/blog/post_author/addPostAuthor',
   removePostAuthor: 'management/blog/post_author/removePostAuthor',
   updatePostAuthor: 'management/blog/post_author/updatePostAuthor',
   verifyCompanyAuthor: 'management/blog/post_author/verifyCompanyAuthor',
   getCompanyAuthorVerifyInfo: 'management/blog/post_author/getCompanyAuthorVerifyInfo',
+  removeCompanyAuthorVerify: 'management/blog/post_author/removeCompanyAuthorVerify',
 };
 
 export const getPostList = (data: any): any =>
   request({
     url: api.getPostList,
+    method: 'post',
+    data,
+  });
+export const getPostListByCategoryId = (data: any): any =>
+  request({
+    url: api.getPostListByCategoryId,
     method: 'post',
     data,
   });
@@ -82,18 +88,6 @@ export const offlinePost = (data: any): any =>
 export const publishPost = (data: any): any =>
   request({
     url: api.publishPost,
-    method: 'post',
-    data,
-  });
-export const getAuthor = (data: any): any =>
-  request({
-    url: api.getAuthor,
-    method: 'post',
-    data,
-  });
-export const getCategories = (data: any): any =>
-  request({
-    url: api.getCategories,
     method: 'post',
     data,
   });
@@ -232,6 +226,12 @@ export const verifyCompanyAuthor = (data: any): any =>
 export const getCompanyAuthorVerifyInfo = (data: any): any =>
   request({
     url: api.getCompanyAuthorVerifyInfo,
+    method: 'post',
+    data,
+  });
+export const removeCompanyAuthorVerify = (data: any): any =>
+  request({
+    url: api.removeCompanyAuthorVerify,
     method: 'post',
     data,
   });

@@ -1,16 +1,17 @@
 <template>
-  <section class="app-main" :style="[calcStyle1, calcStyle2]" ref="appMain">
+  <section class="app-main" :style="[calcStyle1, calcStyle2]" ref="appMain" @scroll="watchAppMainScroll">
     <div class="hide">{{ scrollTop }}</div>
     <router-view v-slot="{ Component }" v-if="refreshPage">
       <transition name="fade-transform" mode="out-in">
-        <keep-alive>
-          <component :is="Component" :key="key" />
-        </keep-alive>
+        <!-- <keep-alive> -->
+        <component :is="Component" :key="key" />
+        <!-- </keep-alive> -->
       </transition>
     </router-view>
   </section>
 </template>
 <script lang="ts">
+import { debounce } from 'quasar';
 import { AppModule } from 'src/store/modules/app';
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { getCurrentInstance } from 'vue';
@@ -60,6 +61,16 @@ export default class AppMainComponent extends Vue {
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
   private calcStyle1 = '';
   private calcStyle2 = '';
+  /* event */
+  private watchAppMainScroll(e: any) {
+    const offsetTop = e.target.offsetTop;
+    const scrollTop = e.target.scrollTop;
+    if (scrollTop > offsetTop) {
+      BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(true);
+    } else {
+      BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(false);
+    }
+  }
 }
 </script>
 

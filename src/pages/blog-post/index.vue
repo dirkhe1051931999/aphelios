@@ -89,18 +89,23 @@
                 </div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
-                  <span class="my-label w-50" :class="{ red: props.row.status === 'OFFLINE', grey: props.row.status === 'DRAFT', green: props.row.status === 'PUBLISHED' }">{{
+                  <span class="my-status" :class="{ red: props.row.status === 'OFFLINE', grey: props.row.status === 'DRAFT', green: props.row.status === 'PUBLISHED' }">{{
                     postStatus(props.row)
                   }}</span>
                 </div>
                 <!-- authorId -->
                 <div v-if="col.name === 'authorId'">
-                  <span class="link-type" v-if="props.row.authorId">{{ postAuthor(props.row) }}</span>
+                  <span v-if="props.row.authorId">{{ postAuthor(props.row) }}</span>
                   <span v-else>--</span>
                 </div>
                 <!-- categoryId -->
                 <div v-if="col.name === 'categoryId'">
-                  <span class="link-type" v-if="props.row.categoryId">{{ postCategory(props.row) }}</span>
+                  <span v-if="props.row.categoryId">{{ postCategory(props.row) }}</span>
+                  <span v-else>--</span>
+                </div>
+                <!-- channelId -->
+                <div v-if="col.name === 'channelId'">
+                  <span v-if="props.row.channelId">{{ postChannel(props.row) }}</span>
                   <span v-else>--</span>
                 </div>
                 <!-- count -->
@@ -194,12 +199,14 @@
                 </span>
               </div>
               <div class="split-line h-1 q-my-md"></div>
-              <div class="row q-my-md">
+              <div class="row q-my-md items-center">
                 <q-select
+                  outlined
+                  class="w-p-20 q-mr-md"
                   v-model="dialogAddUpdateParams.row.authorId"
                   :options="dialogAddUpdateParams.authorOptions"
-                  label="请选择作者"
-                  class="w-p-20 q-mr-md"
+                  label="选择作者"
+                  color="primary"
                   :spellcheck="false"
                   autocapitalize="off"
                   autocomplete="new-password"
@@ -207,16 +214,85 @@
                   clearable
                   dense
                   options-dense
-                  outlined
                   emit-value
                   dropdown-icon="app:topbar-arrow-bottom"
                   clear-icon="app:clear"
                   map-options
-                />
+                >
+                  <template v-slot:option="scope">
+                    <q-item v-bind="scope.itemProps">
+                      <q-item-section avatar>
+                        <q-avatar color="primary" text-color="white">
+                          <q-img :src="scope.opt.avatarUrl"> </q-img>
+                        </q-avatar>
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                        <q-item-label caption>{{ scope.opt.description }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+                <q-btn
+                  class="q-mr-md w-p-20"
+                  :label="postCategory(dialogAddUpdateParams.row) === '--' ? '选择主题' : '主题：' + postCategory(dialogAddUpdateParams.row)"
+                  icon-right="o_keyboard_arrow_down"
+                  outline
+                  align="left"
+                >
+                  <q-menu class="w-p-10">
+                    <q-list>
+                      <q-item clickable v-for="item in dialogAddUpdateParams.categoryOptions" :key="item.id" v-close-popup="!item.children.length">
+                        <q-item-section class="q-px-none">
+                          <q-item-label>{{ item.name }}</q-item-label>
+                          <q-item-label caption>{{ item.description }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side v-if="item.children.length">
+                          <q-icon name="keyboard_arrow_right" />
+                        </q-item-section>
+                        <q-menu anchor="top end" self="top start" v-if="item.children.length" class="w-p-10">
+                          <q-list>
+                            <q-item
+                              v-for="directory in item.children"
+                              :key="directory.id"
+                              clickable
+                              v-close-popup="!directory.children.length"
+                              @click="!directory.children.length ? (dialogAddUpdateParams.row.categoryId = directory.id) : () => 0"
+                            >
+                              <q-item-section>
+                                <q-item-label>{{ directory.name }}</q-item-label>
+                                <q-item-label caption>{{ directory.subName }}</q-item-label>
+                              </q-item-section>
+                              <q-item-section side v-if="directory.children.length">
+                                <q-icon name="keyboard_arrow_right" />
+                              </q-item-section>
+                              <q-menu auto-close anchor="top end" self="top start" v-if="directory.children.length" class="w-p-10">
+                                <q-list>
+                                  <q-item
+                                    v-for="childDirectory in directory.children"
+                                    :key="childDirectory"
+                                    clickable
+                                    v-close-popup="!childDirectory.children"
+                                    @click="dialogAddUpdateParams.row.categoryId = childDirectory.id"
+                                  >
+                                    <q-item-section>
+                                      <q-item-label>{{ childDirectory.name }}</q-item-label>
+                                      <q-item-label caption>{{ childDirectory.subName }}</q-item-label>
+                                    </q-item-section>
+                                  </q-item>
+                                </q-list>
+                              </q-menu>
+                            </q-item>
+                          </q-list>
+                        </q-menu>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-btn>
                 <q-select
-                  v-model="dialogAddUpdateParams.row.categoryId"
-                  :options="dialogAddUpdateParams.categoryOptions"
-                  label="请选择分类"
+                  v-model="dialogAddUpdateParams.row.channelId"
+                  :options="dialogAddUpdateParams.channelOptions"
+                  label="请选择频道"
                   class="w-p-20"
                   :spellcheck="false"
                   autocapitalize="off"
@@ -326,7 +402,7 @@
           <template v-slot:after>
             <div class="q-pa-md">
               <div class="text-h5 h-40 lh-40" v-if="dialogAddUpdateParams.row.title">{{ dialogAddUpdateParams.row.title }}</div>
-              <div class="h-40 lh-40 text-grey" v-else>请输入标题</div>
+              <div class="h-40 lh-40 text-grey" v-else>请在左侧输入框输入标题</div>
               <div class="split-line h-1 q-my-md"></div>
               <ul class="row">
                 <li class="q-mr-md">
@@ -336,6 +412,10 @@
                 <li class="q-mr-md">
                   <span>分类：</span>
                   <span>{{ postCategory(dialogAddUpdateParams.row) }}</span>
+                </li>
+                <li class="q-mr-md">
+                  <span>频道：</span>
+                  <span>{{ postChannel(dialogAddUpdateParams.row) }}</span>
                 </li>
                 <li class="q-mr-md" v-if="dialogAddUpdateParams.dialogType === 'update'">
                   <span>评论：</span>
@@ -354,14 +434,14 @@
                   <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
                 </q-img>
               </div>
-              <div class="poster q-mt-xl q-mb-lg thin-shadow q-pa-md h-332 text-grey fs-16 1h-30" v-if="!dialogAddUpdateParams.row.poster">请上传封面</div>
+              <div class="poster q-mt-xl q-mb-lg thin-shadow q-pa-md h-332 text-grey fs-16 1h-30" v-if="!dialogAddUpdateParams.row.poster">请点击左侧上传按钮上传封面</div>
               <div
                 class="post-content lh-30 fs-16 thin-shadow q-pa-md min-h-500"
                 v-html="viewPostHTML(dialogAddUpdateParams.row.content)"
                 ref="postContent"
                 v-if="dialogAddUpdateParams.row.content"
               ></div>
-              <div class="post-content lh-30 fs-16 thin-shadow q-pa-md min-h-500 text-grey" v-else>请输入内容</div>
+              <div class="post-content lh-30 fs-16 thin-shadow q-pa-md min-h-500 text-grey" v-else>请在左侧输入内容</div>
             </div>
           </template>
         </q-splitter>
@@ -383,7 +463,7 @@ import 'prismjs/themes/prism.css';
 import { copyToClipboard } from 'quasar';
 
 const CONST_PARAMS: any = {
-  query: { categoryId: '', status: '' },
+  query: { channelId: '', status: '' },
   dialog_add_update: { a: '', b: '', c: '', d: [], e: '', e_dateRange: { from: '', to: '' }, f: '', g: '', g_startModel: '', g_endModel: '', h: 10, i: 'true' },
 };
 
@@ -400,24 +480,60 @@ export default class BlogPostComponent extends Vue {
     return (row: any) => {
       const selectOption = this.queryParams.input.find((item: any) => item.id === 'status').selectOption;
       const item = selectOption.find((item: any) => item.value === row.status);
-      if (!item) return '--';
-      else return item.label;
+      this.dialogAddUpdateParams.row.authorName = item.label;
+      return item.label;
     };
   }
   get postCategory() {
     return (row: any) => {
-      const selectOption = this.queryParams.input.find((item: any) => item.id === 'categoryId').selectOption;
-      const item = selectOption.find((item: any) => item.value === row.categoryId);
-      if (!item) return '--';
-      return item.label;
+      if (!row.categoryId) return '--';
+      function findItemById(arr: any, id: any): any {
+        for (let item of arr) {
+          if (item.id === id) {
+            return item;
+          }
+          if (item.children) {
+            let foundItem = findItemById(item.children, id);
+            if (foundItem) {
+              return foundItem;
+            }
+          }
+        }
+        return null;
+      }
+      const item = findItemById(this.dialogAddUpdateParams.categoryOptions, row.categoryId);
+      if (item) {
+        this.dialogAddUpdateParams.row.categoryName = item.name;
+        return item.name;
+      } else {
+        return '--';
+      }
     };
   }
   get postAuthor() {
     return (row: any) => {
+      if (!row.authorId) return '--';
       const selectOption = this.queryParams.input.find((item: any) => item.id === 'authorId').selectOption;
       const item = selectOption.find((item: any) => item.value === row.authorId);
-      if (!item) return '--';
-      return item.label;
+      if (item) {
+        this.dialogAddUpdateParams.row.authorName = item.label;
+        return item.label;
+      } else {
+        return '--';
+      }
+    };
+  }
+  get postChannel() {
+    return (row: any) => {
+      if (!row.channelId) return '--';
+      const selectOption = this.queryParams.input.find((item: any) => item.id === 'channelId').selectOption;
+      const item = selectOption.find((item: any) => item.value === row.channelId);
+      if (item) {
+        this.dialogAddUpdateParams.row.channelName = item.label;
+        return item.label;
+      } else {
+        return '--';
+      }
     };
   }
   get viewPostHTML() {
@@ -450,9 +566,13 @@ export default class BlogPostComponent extends Vue {
     });
   }
   mounted() {
+    if (this.$route.query.channelId) {
+      this.queryParams.params.channelId = this.$route.query.channelId;
+    }
     this.getData();
     this.getAuthor();
     this.getCategories();
+    this.getChannel();
   }
   /**params */
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
@@ -463,11 +583,11 @@ export default class BlogPostComponent extends Vue {
     params: cloneDeep(CONST_PARAMS.query),
     input: [
       {
-        placeholder: '分类',
+        placeholder: '频道',
         type: 'select',
         class: 'w-250 m-r-15 m-b-15',
         selectOption: [],
-        id: 'categoryId',
+        id: 'channelId',
       },
       {
         placeholder: '状态',
@@ -532,6 +652,12 @@ export default class BlogPostComponent extends Vue {
         inSlot: true,
       },
       {
+        name: 'channelId',
+        label: '频道',
+        align: 'left',
+        inSlot: true,
+      },
+      {
         name: 'count',
         label: '评论数/阅读数',
         align: 'left',
@@ -569,6 +695,7 @@ export default class BlogPostComponent extends Vue {
     title: '',
     authorOptions: [],
     categoryOptions: [],
+    channelOptions: [],
     edit: {
       title: '',
     },
@@ -606,7 +733,11 @@ export default class BlogPostComponent extends Vue {
       title: '',
       poster: '',
       authorId: null,
+      authorName: null,
       categoryId: null,
+      categoryName: null,
+      channelId: null,
+      channelName: null,
     },
   };
   private dialogUpload = {
@@ -652,7 +783,11 @@ export default class BlogPostComponent extends Vue {
       title: '',
       poster: '',
       authorId: null,
+      authorName: null,
       categoryId: null,
+      categoryName: null,
+      channelId: null,
+      channelName: null,
       id: null,
     };
     this.dialogAddUpdateParams.codeNum = 0;
@@ -882,7 +1017,7 @@ export default class BlogPostComponent extends Vue {
     try {
       this.tableParams.loading = true;
       const { pageData, total } = await BlogPostModule.getPostList({
-        categoryId: this.queryParams.params.categoryId,
+        channelId: this.queryParams.params.channelId,
         status: this.queryParams.params.status,
         page: this.tableParams.pagination.page,
         rowsPerPage: this.tableParams.pagination.rowsPerPage,
@@ -903,15 +1038,12 @@ export default class BlogPostComponent extends Vue {
   }
   private async getAuthor() {
     try {
-      let { pageData } = await BlogPostModule.getAuthor({});
+      let { pageData } = await BlogPostModule.getAllPostAuthor({});
       if (pageData && pageData.length > 0) {
         const index = this.queryParams.input.findIndex((item: any) => item.id === 'authorId');
+        pageData = pageData.filter((item: any) => item.status === 0 || (item.status === 4 && item.type === 0));
         pageData = pageData.map((item: any) => {
-          return {
-            label: item.name,
-            value: item.id,
-            postId: item.postId,
-          };
+          return { ...item, label: item.name, value: item.id };
         });
         this.queryParams.input[index].selectOption = pageData;
         this.dialogAddUpdateParams.authorOptions = pageData;
@@ -922,18 +1054,39 @@ export default class BlogPostComponent extends Vue {
   }
   private async getCategories() {
     try {
-      let { pageData } = await BlogPostModule.getCategories({});
-      if (pageData && pageData.length > 0) {
-        const index = this.queryParams.input.findIndex((item: any) => item.id === 'categoryId');
-        pageData = pageData.map((item: any) => {
-          return {
-            label: item.name,
-            value: item.id,
-          };
-        });
-        this.queryParams.input[index].selectOption = pageData;
-        this.dialogAddUpdateParams.categoryOptions = pageData;
+      const allSheet = await BlogPostModule.getAllSheet({});
+      const allDirectory = await BlogPostModule.getAllDirectory({});
+      const allChildDirectory = await BlogPostModule.getAllChildDirectory({});
+      const sheets = allSheet.pageData;
+      const directorys = allDirectory.pageData;
+      const childDirectorys = allChildDirectory.pageData;
+      for (let item of sheets) {
+        item.children = [];
+        item.children = directorys.filter((directory: any) => directory.parent_id === item.id);
       }
+      for (let item of sheets) {
+        for (let child of item.children) {
+          child.children = [];
+          child.children = childDirectorys.filter((childDirectory: any) => childDirectory.parent_id === child.id);
+        }
+      }
+      allSheet.pageData = allSheet.pageData.map((item: any) => {
+        return { ...item, label: item.name, value: item.id };
+      });
+      this.dialogAddUpdateParams.categoryOptions = allSheet.pageData;
+    } finally {
+      return Promise.resolve();
+    }
+  }
+  private async getChannel() {
+    try {
+      let { pageData } = await BlogPostModule.getAllChannel({});
+      pageData = pageData.map((item: any) => {
+        return { ...item, label: item.name, value: item.id };
+      });
+      const index = this.queryParams.input.findIndex((item: any) => item.id === 'channelId');
+      this.queryParams.input[index].selectOption = pageData;
+      this.dialogAddUpdateParams.channelOptions = pageData;
     } finally {
       return Promise.resolve();
     }
@@ -1038,10 +1191,12 @@ export default class BlogPostComponent extends Vue {
       }
       let postParams: any = {
         title: this.dialogAddUpdateParams.row.title,
-        content: this.dialogAddUpdateParams.row.content,
+        content:
+          '<p><p>地理位置<strong>：</strong></p> <strong>：</strong>紧邻15号线清华东路西口站(六道口站)、13 号线五道口站， 交通便利，日常生活方便。 不临街，小区绿化率高，窗明几净，安静舒适。<p>户型情况<strong>：</strong></p> <strong>：</strong>南北通透格局，总共六层，在三层，采光较好，视野极佳。房子是正规3居室，其中朝北次卧转租。房间内配置有<strong>：</strong>单人床、空调、衣柜、书 桌。其它可用设备有冰箱、微波炉、洗衣机、宽带、不可做饭，24 小时热水，免费无线wifi。(长期出租)<p>交通情况<strong>：</strong></p> <strong>：</strong>地铁15号线清华东路西口站(步行5分钟)、地铁13号线五道 口站(步行10分钟)、附近有428、562、 438、355、110、 438、731等十多路公交，徒步仅需几分钟。<p>住户要求<strong>：</strong></p><strong>：</strong>限男、不限女孩，喜好干净，无不良嗜好，身心健康,有稳定工作。<p>租金<strong>：</strong></p> <strong>：</strong> 2300元/月，押一付三。<p>水电燃气费用<strong>：</strong></p> <strong>：</strong>水电燃气费用为月结本人不是中介、没有中介费  联系方式：188-1006-9511</p>',
         poster: this.dialogAddUpdateParams.row.poster,
         authorId: this.dialogAddUpdateParams.row.authorId,
         categoryId: this.dialogAddUpdateParams.row.categoryId,
+        channelId: this.dialogAddUpdateParams.row.channelId,
         codeCount: this.dialogAddUpdateParams.codeNum,
       };
       if (this.dialogAddUpdateParams.dialogType === 'add') {

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="thin-shadow q-pa-md">
+    <div class="thin-shadow q-pa-md relative" ref="quickButton">
       <q-btn color="primary" label="快速找到主题" icon-right="o_keyboard_arrow_right">
         <q-menu>
           <q-list>
@@ -53,7 +53,7 @@
       </q-btn>
     </div>
     <div class="thin-shadow q-pa-md">
-      <q-splitter v-model="splitterModel1">
+      <q-splitter v-model="splitterModel1" @update:model-value="watchSplitterChange">
         <template v-slot:before>
           <q-tabs v-model="sheetParams.tab" class="text-grey q-" active-color="primary" indicator-color="primary" align="left" inline-label vertical>
             <div class="text-left q-my-sm q-px-sm">
@@ -72,6 +72,7 @@
                     <div class="q-mb-sm">
                       <span class="q-mr-sm"> {{ item.name }}</span>
                       <q-icon name="o_folder" size="16px" v-if="item.children.length"></q-icon>
+                      <span class="fs-12" :class="{ bold: item.post_count }">（共计：{{ item.post_count }}）</span>
                     </div>
                     <span class="text-grey fs-12">{{ item.description }}</span>
                   </div>
@@ -84,7 +85,7 @@
         <template v-slot:after>
           <q-tab-panels v-model="sheetParams.tab" animated>
             <q-tab-panel :name="item.id" class="q-pa-none" v-for="item in sheetParams.data" :key="item.id">
-              <q-splitter v-model="splitterModel2">
+              <q-splitter v-model="splitterModel2" @update:model-value="watchSplitterChange">
                 <template v-slot:before>
                   <q-tabs v-model="sheetParams.directoryTab" active-color="primary" indicator-color="primary" vertical>
                     <div class="text-left q-my-sm q-px-sm">
@@ -113,9 +114,10 @@
                           <div>右滑编辑 <q-icon right name="o_edit_note"></q-icon></div>
                         </template>
                         <div class="row column items-start justify-start q-px-sm">
-                          <div class="q-mb-sm">
+                          <div class="q-mb-sm row items-center">
                             <span class="q-mr-sm"> {{ directory.name }}</span>
                             <q-icon name="o_folder" size="16px" v-if="directory.children.length" class="q-mr-md"></q-icon>
+                            <p class="fs-12" :class="{ bold: directory.post_count }">（共计：{{ directory.post_count }}）</p>
                           </div>
                           <span class="text-grey fs-12">{{ directory.subName }}</span>
                         </div>
@@ -126,7 +128,7 @@
                 <template v-slot:after>
                   <q-tab-panels v-model="sheetParams.directoryTab" animated transition-prev="slide-down" transition-next="slide-up">
                     <q-tab-panel :name="directory.id" class="q-pa-none" v-for="directory in item.children" :key="directory.id">
-                      <q-splitter v-model="splitterModel3" v-if="directory.children.length">
+                      <q-splitter v-model="splitterModel3" v-if="directory.children.length" @update:model-value="watchSplitterChange">
                         <template v-slot:before>
                           <q-tabs v-model="sheetParams.childDirectoryTab" active-color="primary" indicator-color="primary" vertical>
                             <div class="text-left q-my-sm q-px-sm">
@@ -153,8 +155,11 @@
                                 <template v-slot:left>
                                   <div>右滑编辑 <q-icon right name="o_edit_note"></q-icon></div>
                                 </template>
-                                <div class="row column items-start justify-start q-px-sm full-width">
-                                  <span class="q-mr-sm q-mb-sm"> {{ childDirectory.name }}</span>
+                                <div class="row column items-start justify-center q-px-sm full-width">
+                                  <div class="row items-center q-mb-sm">
+                                    <span class="q-mr-sm"> {{ childDirectory.name }}</span>
+                                    <p class="fs-12" :class="{ bold: childDirectory.post_count }">（共计：{{ childDirectory.post_count }} ）</p>
+                                  </div>
                                   <span class="text-grey fs-12">{{ childDirectory.subName }}</span>
                                 </div>
                               </q-slide-item>
@@ -162,23 +167,108 @@
                           </q-tabs>
                         </template>
                         <template v-slot:after>
-                          <q-tab-panels v-model="sheetParams.childDirectoryTab" animated transition-prev="slide-down" transition-next="slide-up">
-                            <q-tab-panel :name="childDirectory.id" class="q-pa-none" v-for="childDirectory in directory.children" :key="childDirectory.id">
-                              <div class="q-pa-md">
-                                Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima
-                                assumenda consectetur culpa fuga nulla ullam. In, libero.
-                              </div>
-                            </q-tab-panel>
-                          </q-tab-panels>
+                          <div class="absolute full-width" ref="childDirectoryRightPanelClientWidth" content="为了获取post list区域实际宽度"></div>
+                          <div ref="childDirectoryRightPanel" @scroll="watchChildDirectoryRightPanelScrollBottom">
+                            <q-tab-panels v-model="sheetParams.childDirectoryTab" animated transition-prev="slide-down" transition-next="slide-up">
+                              <q-tab-panel :name="childDirectory.id" class="q-pa-none" v-for="childDirectory in directory.children" :key="childDirectory.id">
+                                <div class="row items-center q-px-md q-pt-md q-pb-none">
+                                  <span class="text-grey">{{ item.name }}</span>
+                                  <span class="q-mx-sm">-</span>
+                                  <span class="text-grey">{{ directory.name }}</span>
+                                  <span class="q-mx-sm">-</span>
+                                  <span class="text-blue">{{ childDirectory.name }}</span>
+                                </div>
+                                <ul class="q-pa-md" v-if="childDirectory.childrenPost.length">
+                                  <li v-for="(post, index) in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
+                                    <div class="row items-center">
+                                      <p class="link-type">{{ post.title }}</p>
+                                      <span class="q-ml-md my-label yellow">{{ postChannel(post.channelId) }}</span>
+                                    </div>
+                                    <div class="row items-center q-mt-sm">
+                                      <p class="q-mr-sm">
+                                        <span class="text-grey">{{ index + 1 }}浏览：</span>
+                                        <span>{{ post.view }}</span>
+                                      </p>
+                                      <p class="q-mr-sm">
+                                        <span class="text-grey">评论：</span>
+                                        <span>{{ post.comment }}</span>
+                                      </p>
+                                      <p class="q-mr-sm">
+                                        <span class="text-grey">创建时间：</span>
+                                        <span>{{ parseTime(post.createTime) }}</span>
+                                      </p>
+                                      <p class="q-mr-sm">
+                                        <span class="text-grey">状态：</span>
+                                        <span class="my-status red" v-if="post.status === 'OFFLINE'">下线</span>
+                                        <span class="my-status green" v-if="post.status === 'PUBLISHED'">上线</span>
+                                        <span class="my-status grey" v-if="post.status === 'DRAFT'">草稿</span>
+                                      </p>
+                                    </div>
+                                  </li>
+                                  <q-card flat style="width: 100%" v-if="childDirectory.loading">
+                                    <q-card-section class="q-pa-none">
+                                      <q-skeleton type="text" class="text-subtitle1" />
+                                      <q-skeleton type="text" width="50%" class="text-subtitle1" />
+                                      <q-skeleton type="text" class="text-caption" />
+                                    </q-card-section>
+                                  </q-card>
+                                </ul>
+                                <div class="q-table__bottom--nodata row" v-else>
+                                  暂无【{{ childDirectory.name }}】文章<span class="link-type q-mt-xs" @click="$router.push('/blog-post/list')">去POST页面发文章</span>
+                                </div>
+                              </q-tab-panel>
+                            </q-tab-panels>
+                          </div>
                         </template>
                       </q-splitter>
-                      <div v-else>
+                      <div v-if="!directory.children.length" class="absolute full-width" ref="directoryRightPanelClientWidth" content="为了获取post list区域实际宽度"></div>
+                      <div v-if="!directory.children.length" ref="directoryRightPanel" @scroll="watchDirectoryRightPanelScrollBottom">
                         <div class="text-left q-my-sm q-px-md">
                           <q-btn :label="`给【${directory.name}】新增子目录`" icon="o_add" outline color="primary" @click="toAddChildDirectory(directory.id)" dense></q-btn>
                         </div>
-                        <div class="q-pa-md">
-                          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda
-                          consectetur culpa fuga nulla ullam. In, libero.
+                        <div class="split-line h-1 q-mt-md"></div>
+                        <div class="row items-center q-px-md q-pt-md">
+                          <span class="text-grey">{{ item.name }}</span>
+                          <span class="q-mx-sm">-</span>
+                          <span class="text-blue">{{ directory.name }}</span>
+                        </div>
+                        <ul class="q-pa-md" v-if="directory.childrenPost.length">
+                          <li v-for="(post, index) in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
+                            <div class="row items-center">
+                              <p class="link-type fs-16 1h-30">{{ post.title }}</p>
+                              <span class="q-ml-md my-label yellow">{{ postChannel(post.channelId) }}</span>
+                            </div>
+                            <div class="row items-center q-mt-sm">
+                              <p class="q-mr-sm">
+                                <span class="text-grey">{{ index + 1 }}浏览：</span>
+                                <span>{{ post.view }}</span>
+                              </p>
+                              <p class="q-mr-sm">
+                                <span class="text-grey">评论：</span>
+                                <span>{{ post.comment }}</span>
+                              </p>
+                              <p class="q-mr-sm">
+                                <span class="text-grey">创建时间：</span>
+                                <span>{{ parseTime(post.createTime) }}</span>
+                              </p>
+                              <p class="q-mr-sm">
+                                <span class="text-grey">状态：</span>
+                                <span class="my-status red" v-if="post.status === 'OFFLINE'">下线</span>
+                                <span class="my-status green" v-if="post.status === 'PUBLISHED'">上线</span>
+                                <span class="my-status grey" v-if="post.status === 'DRAFT'">草稿</span>
+                              </p>
+                            </div>
+                          </li>
+                          <q-card flat style="width: 100%" v-if="directory.loading">
+                            <q-card-section class="q-pa-none">
+                              <q-skeleton type="text" class="text-subtitle1" />
+                              <q-skeleton type="text" width="50%" class="text-subtitle1" />
+                              <q-skeleton type="text" class="text-caption" />
+                            </q-card-section>
+                          </q-card>
+                        </ul>
+                        <div class="q-table__bottom--nodata row" v-else>
+                          暂无【{{ directory.name }}】文章<span class="link-type q-mt-xs" @click="$router.push('/blog-post/list')">去POST页面发文章</span>
                         </div>
                       </div>
                     </q-tab-panel>
@@ -256,6 +346,7 @@
         </div>
       </div>
     </MyDialog>
+    <div class="hide">{{ fixedDirectoryRightChannel }}{{ isCollapse }}</div>
   </div>
 </template>
 
@@ -264,12 +355,62 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import { getCurrentInstance } from 'vue';
+import { AppModule } from 'src/store/modules/app';
 const CONST_PARAMS: any = {
   dialog_add_update: { name: '', subName: '', parent_id: '', id: '', type: '0', description: '' },
+};
+const findItemById = (id: any, items: any): any => {
+  for (let item of items) {
+    if (item.id === id) {
+      return item;
+    } else if (item.children && item.children.length > 0) {
+      let result = findItemById(id, item.children);
+      if (result) {
+        return result;
+      }
+    }
+  }
+  return null;
 };
 @Component({ name: 'BlogPostDirectoryComponent' })
 export default class BlogPostDirectoryComponent extends Vue {
   $refs: any;
+  get postChannel() {
+    return (channelId: string) => {
+      const selectOption = this.channelOptions;
+      const item: any = selectOption.find((item: any) => item.value === channelId);
+      if (item) {
+        return item.label;
+      } else {
+        return '--';
+      }
+    };
+  }
+  get fixedDirectoryRightChannel() {
+    if (BlogPostModule.fixedDirectoryRightChannel) {
+      if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
+        let directoryRightPanel = this.$refs['directoryRightPanel'][0];
+        directoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.directoryRightPanel.width}px;height:${this.sheetParams.directoryRightPanel.height}px;height:${this.sheetParams.directoryRightPanel.height}px;top:${this.sheetParams.directoryRightPanel.top}px;left:${this.sheetParams.directoryRightPanel.left}px;`;
+      }
+      if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
+        let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
+        childDirectoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.childDirectoryRightPanel.width}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;top:${this.sheetParams.childDirectoryRightPanel.top}px;left:${this.sheetParams.childDirectoryRightPanel.left}px;`;
+      }
+    } else {
+      if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
+        let directoryRightPanel = this.$refs['directoryRightPanel'][0];
+        directoryRightPanel.style = '';
+      }
+      if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
+        let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
+        childDirectoryRightPanel.style = '';
+      }
+    }
+    return BlogPostModule.fixedDirectoryRightChannel;
+  }
+  get isCollapse() {
+    return !AppModule.sidebar.opened;
+  }
   @Watch('sheetParams.tab')
   private async watchSheetTab(newVal: string) {
     if (!this.sheetParams.isClickSelect) {
@@ -281,6 +422,9 @@ export default class BlogPostDirectoryComponent extends Vue {
           ? (this.sheetParams.data.find((item: any) => item.id === newVal) as any).children[0].children[0].id
           : '';
     }
+    this.$nextTick(() => {
+      BlogPostModule.SET_SCROLL_TOP(Math.random());
+    });
   }
   @Watch('sheetParams.directoryTab')
   private async watchDirectoryTab(newVal: string) {
@@ -291,15 +435,60 @@ export default class BlogPostDirectoryComponent extends Vue {
           ? (this.sheetParams.data.find((item: any) => item.id === this.sheetParams.tab) as any).children.find((item: any) => item.id === newVal).children[0].id
           : '';
     }
+    this.$nextTick(() => {
+      if (newVal && !this.sheetParams.childDirectoryTab) {
+        this.getPostListByCategoryId(newVal);
+      }
+      BlogPostModule.SET_SCROLL_TOP(Math.random());
+    });
+    this.getPostListContainerBox();
+  }
+  @Watch('sheetParams.childDirectoryTab')
+  private async watchChildDirectoryTab(newVal: string) {
+    this.$nextTick(() => {
+      if (newVal) {
+        this.getPostListByCategoryId(newVal);
+      }
+      BlogPostModule.SET_SCROLL_TOP(Math.random());
+    });
+  }
+  @Watch('isCollapse')
+  private async watchIsCollapse(newVal: boolean) {
+    this.getPostListContainerBox();
   }
   async mounted() {
     this.getAllSheetDirectory();
+    this.getChannel();
   }
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  private channelOptions = [];
+  private postParams = {
+    pagination: {
+      page: 1,
+      rowsPerPage: 20,
+      rowsNumber: 0,
+    },
+    params: {
+      categoryId: '',
+    },
+    data: [],
+  };
   private sheetParams = {
     data: [],
     loading: false,
     tab: '',
+    directoryRightPanel: {
+      width: 0,
+      height: 0,
+      left: 0,
+      top: 0,
+    },
+    childDirectoryRightPanel: {
+      width: 0,
+      height: 0,
+      left: 0,
+      top: 0,
+    },
     directoryTab: '',
     childDirectoryTab: '',
     isClickSelect: false,
@@ -416,8 +605,8 @@ export default class BlogPostDirectoryComponent extends Vue {
     input: [],
   };
   private splitterModel1 = 10;
-  private splitterModel2 = 10;
-  private splitterModel3 = 10;
+  private splitterModel2 = 12;
+  private splitterModel3 = 15;
   /* event */
   private toAddSheet() {
     this.dialogAddUpdateParams.dialogType = 'sheet';
@@ -502,7 +691,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.sheetParams.tab = parent_id;
     this.$nextTick(() => {
       this.sheetParams.isClickSelect = false;
-      BlogPostModule.SET_SCROLL_TOP(this.$refs[id][0].$el.offsetTop);
+      BlogPostModule.SET_SCROLL_TOP(Math.random());
     });
   }
   private selectChildDirectory(parent_id: string, paretn_parent_id: string, id: string) {
@@ -522,6 +711,53 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
+  private getPostListContainerBox() {
+    this.$nextTick(() => {
+      if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
+        setTimeout(() => {
+          const clientWidth = this.$refs['directoryRightPanelClientWidth'][0].offsetWidth;
+          this.sheetParams.directoryRightPanel.width = clientWidth;
+          this.sheetParams.directoryRightPanel.height = window.innerHeight - 98;
+          this.sheetParams.directoryRightPanel.left = window.innerWidth - clientWidth - 48;
+          this.sheetParams.directoryRightPanel.top = 98;
+        }, 300);
+      }
+      if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
+        setTimeout(() => {
+          const clientWidth = this.$refs['childDirectoryRightPanelClientWidth'][0].offsetWidth;
+          this.sheetParams.childDirectoryRightPanel.width = clientWidth;
+          this.sheetParams.childDirectoryRightPanel.height = window.innerHeight - 98;
+          this.sheetParams.childDirectoryRightPanel.left = window.innerWidth - clientWidth - 48;
+          this.sheetParams.childDirectoryRightPanel.top = 98;
+        }, 300);
+      }
+    });
+  }
+  private watchSplitterChange() {
+    this.getPostListContainerBox();
+  }
+  private watchDirectoryRightPanelScrollBottom() {
+    const id = this.sheetParams.directoryTab;
+    const div = this.$refs['directoryRightPanel'][0];
+    if (div.scrollTop + div.clientHeight + 10 >= div.scrollHeight) {
+      const item = findItemById(id, this.sheetParams.data);
+      if (!item.lock) {
+        item.lock = true;
+        this.getPostListByCategoryId(id);
+      }
+    }
+  }
+  private watchChildDirectoryRightPanelScrollBottom() {
+    const id = this.sheetParams.childDirectoryTab;
+    const div = this.$refs['childDirectoryRightPanel'][0];
+    if (div.scrollTop + div.clientHeight + 10 >= div.scrollHeight) {
+      const item = findItemById(id, this.sheetParams.data);
+      if (!item.lock) {
+        item.lock = true;
+        this.getPostListByCategoryId(id);
+      }
+    }
+  }
   /* http */
   private async getAllSheetDirectory(dialogType?: string, id?: string) {
     try {
@@ -530,8 +766,18 @@ export default class BlogPostDirectoryComponent extends Vue {
       const allDirectory = await BlogPostModule.getAllDirectory({});
       const allChildDirectory = await BlogPostModule.getAllChildDirectory({});
       const sheets = allSheet.pageData;
-      const directorys = allDirectory.pageData;
-      const childDirectorys = allChildDirectory.pageData;
+      let directorys = allDirectory.pageData;
+      let childDirectorys = allChildDirectory.pageData;
+      directorys = directorys.map((directory: any) => {
+        directory.childrenPost = [];
+        directory.postPage = 1;
+        return directory;
+      });
+      childDirectorys = childDirectorys.map((childDirectory: any) => {
+        childDirectory.childrenPost = [];
+        childDirectory.postPage = 1;
+        return childDirectory;
+      });
       for (let item of sheets) {
         item.children = [];
         item.children = directorys.filter((directory: any) => directory.parent_id === item.id);
@@ -540,7 +786,11 @@ export default class BlogPostDirectoryComponent extends Vue {
         for (let child of item.children) {
           child.children = [];
           child.children = childDirectorys.filter((childDirectory: any) => childDirectory.parent_id === child.id);
+          child.post_count += child.children.reduce((acc: any, innerChild: any) => acc + innerChild.post_count, 0);
         }
+      }
+      for (let item of sheets) {
+        item.post_count += item.children.reduce((acc: any, child: any) => acc + child.post_count, 0);
       }
       this.sheetParams.data = allSheet.pageData;
       if (this.dialogAddUpdateParams.isAdd) {
@@ -554,7 +804,7 @@ export default class BlogPostDirectoryComponent extends Vue {
           }
           this.$nextTick(() => {
             if (dialogType === 'directory') {
-              BlogPostModule.SET_SCROLL_TOP(this.$refs[id][0].$el.offsetTop);
+              BlogPostModule.SET_SCROLL_TOP(Math.random());
             }
           });
         } else {
@@ -566,7 +816,54 @@ export default class BlogPostDirectoryComponent extends Vue {
     } catch (error) {
       this.sheetParams.data = [];
     }
-    this.$q.loading.hide();
+    this.$nextTick(() => {
+      this.$q.loading.hide();
+    });
+  }
+  private async getChannel() {
+    try {
+      let { pageData } = await BlogPostModule.getAllChannel({});
+      pageData = pageData.map((item: any) => {
+        return { ...item, label: item.name, value: item.id };
+      });
+      this.channelOptions = pageData;
+    } finally {
+      return Promise.resolve();
+    }
+  }
+  private async getPostListByCategoryId(id: string) {
+    try {
+      this.postParams.params.categoryId = id;
+      const item = findItemById(this.postParams.params.categoryId, this.sheetParams.data);
+      if (!item.noData) {
+        this.$q.loading.show();
+        const { pageData } = await BlogPostModule.getPostListByCategoryId({
+          categoryId: this.postParams.params.categoryId,
+          page: item.postPage,
+          rowsPerPage: this.postParams.pagination.rowsPerPage,
+        });
+        if (pageData.length === 0) {
+          item.noData = true;
+          item.loading = false;
+          item.lock = true;
+        } else if (pageData.length === this.postParams.pagination.rowsPerPage) {
+          item.childrenPost.push(...pageData);
+          item.postPage++;
+          item.noData = false;
+          item.loading = true;
+          item.lock = false;
+        } else if (pageData.length < this.postParams.pagination.rowsPerPage) {
+          item.childrenPost.push(...pageData);
+          item.noData = true;
+          item.loading = false;
+          item.lock = true;
+        }
+        this.$q.loading.hide();
+      }
+    } catch (error) {
+      console.log(error);
+      this.$q.loading.hide();
+    }
   }
   private async dialogAddUpdateConfirmEvent() {
     if (this.dialogAddUpdateParams.dialogType === 'sheet') {
@@ -759,11 +1056,6 @@ export default class BlogPostDirectoryComponent extends Vue {
   }
 }
 </script>
-<style lang="scss">
-// .q-tabs {
-//   flex-wrap: wrap !important;
-// }
-</style>
 <style lang="scss">
 .body--dark {
   .splitter {

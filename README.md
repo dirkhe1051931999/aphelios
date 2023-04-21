@@ -29,8 +29,6 @@ npm install -g cnpm --registry=https://registry.npm.taobao.org
 docker ps
 ```
 
-1. 删除认证/申请-》移除 sm_board_company_verify_info where authorId==authorId，移除 sm_board_author 的 companyVerifyInfoId，设置 sm_board_author 为 2
-2. 删除用户-> 如果是普通用户，直接删除，如果是企业，如果提交认证了走取消认证申请流程，没有提交认证，只删除 sm_board_author
-3. 审核页面，如果审核通过，sm_board_author 的 status 改为 4，sm_board_company_verify_info status 改为 1
-4. 审核页面，如果审核未通过，sm_board_author 的 status 改为 5，sm_board_company_verify_info status 改为 2
-5. 角色那边加一个审核员权限
+1. 审核页面，如果审核通过，sm_board_author 的 status 改为 4，sm_board_company_verify_info status 改为 1
+2. 审核页面，如果审核未通过，sm_board_author 的 status 改为 5，sm_board_company_verify_info status 改为 2
+3. 角色那边加一个审核员权限

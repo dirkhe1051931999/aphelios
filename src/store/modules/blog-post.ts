@@ -13,15 +13,15 @@ import {
   getAllDirectory,
   getAllPostAuthor,
   getAllSheet,
-  getAuthor,
-  getCategories,
   getCompanyAuthorVerifyInfo,
   getPostById,
   getPostList,
+  getPostListByCategoryId,
   offlinePost,
   publishPost,
   removeChannel,
   removeChildDirectory,
+  removeCompanyAuthorVerify,
   removeDirectory,
   removePostAuthor,
   removeSheet,
@@ -40,13 +40,23 @@ interface IBlogPost {}
 @Module({ dynamic: true, namespaced: true, store, name: 'BlogPost' })
 class BlogPost extends VuexModule implements IBlogPost {
   public scrollTop = 0;
+  public fixedDirectoryRightChannel = false;
   @Mutation
   public SET_SCROLL_TOP(scrollTop: number) {
     this.scrollTop = scrollTop;
   }
+  @Mutation
+  public SET_FIXED_DIRECTORY_RIGHT_CHANNEL(fixedDirectoryRightChannel: boolean) {
+    this.fixedDirectoryRightChannel = fixedDirectoryRightChannel;
+  }
   @Action({ rawError: true })
   public async getPostList(data: any) {
     const result = await getPostList(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getPostListByCategoryId(data: any) {
+    const result = await getPostListByCategoryId(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
@@ -82,16 +92,6 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async publishPost(data: any) {
     const result = await publishPost(data);
-    return Promise.resolve(result);
-  }
-  @Action({ rawError: true })
-  public async getAuthor(data: any) {
-    const result = await getAuthor(data);
-    return Promise.resolve(result);
-  }
-  @Action({ rawError: true })
-  public async getCategories(data: any) {
-    const result = await getCategories(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
@@ -207,6 +207,11 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async getCompanyAuthorVerifyInfo(data: any) {
     const result = await getCompanyAuthorVerifyInfo(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async removeCompanyAuthorVerify(data: any) {
+    const result = await removeCompanyAuthorVerify(data);
     return Promise.resolve(result);
   }
 }
