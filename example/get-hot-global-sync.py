@@ -20,7 +20,7 @@ proxies = {
 articleList = []
 detailList = []
 resultDir = "./result"
-rangeNum = 2
+rangeNum = 5
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)

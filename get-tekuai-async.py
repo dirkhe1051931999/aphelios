@@ -7,13 +7,16 @@ import time
 from bs4 import BeautifulSoup
 import random
 from header import headers
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 articleList = []
 detailList = []
 resultDir = "./data/水木特快"
 channelUrl = "https://wap.newsmth.net/wap/api/board/recent/topic/list?id=c8d614e56acb8a192ec4af8b375a5eea"
 channelId = "897f7890249777c2ecdf89e25ce9ff4c"
-rangeNum = 2
+rangeNum = 3
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)

@@ -6,13 +6,16 @@ import shutil
 import time
 from bs4 import BeautifulSoup
 from header import headers
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 articleList = []
 detailList = []
 resultDir = "./data/汽车"
 channelUrl = "https://wap.newsmth.net/wap/api/channel/loadTopics?channel=e8d1470f8c33b86d8dae444090e81be4"
 channelId = "e8d1470f8c33b86d8dae444090e81be4"
-rangeNum = 2
+rangeNum = 3
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)
