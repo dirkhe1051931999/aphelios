@@ -10,13 +10,37 @@ export const getPostList = async (ctx) => {
   rowsPerPage = rowsPerPage || 20;
   try {
     let results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM sm_board_post_list;`,
+      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (channelId = '${channelId}' OR '${channelId}' = '') AND (status = '${status}' OR '${status}'  = '');`,
       `
           SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
           FROM sm_board_post_list 
           WHERE (channelId = '${channelId}' OR '${channelId}' = '') 
           AND (status = '${status}' OR '${status}'  = '')
           ORDER BY createTime DESC 
+          LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
+    ]);
+    ctx.success(ctx, {
+      pageData: results[1],
+      total: results[0][0].total,
+    });
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+export const getPostListByCategoryId = async (ctx) => {
+  let { categoryId, page, rowsPerPage } = ctx.request.body;
+  if (ctx.isFalsy([categoryId, page, rowsPerPage])) {
+    ctx.error(ctx, '404#categoryId, page, rowsPerPage');
+    return;
+  }
+  try {
+    let results = await ctx.execSql([
+      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
+      `
+          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
+          FROM sm_board_post_list 
+          WHERE (categoryId = '${categoryId}') 
           LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
     ctx.success(ctx, {
@@ -95,9 +119,9 @@ export const deletePost = async (ctx) => {
 };
 // 更新文章
 export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId,channelId, codeCount, id } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId, codeCount, id } = ctx.request.body;
   let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId,codeCount, id])) {
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, codeCount, id])) {
     ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,codeCount, postType,id');
     return;
   }

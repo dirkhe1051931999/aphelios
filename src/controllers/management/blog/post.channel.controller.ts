@@ -1,7 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 // 获取所有文章类别
 export const getAllChannel = async (ctx) => {
-  let sql = `SELECT id, name, pos FROM sm_board_channel ORDER BY pos ASC;`;
+  let sql = `
+  SELECT c.id, c.name, c.pos, COUNT(p.id) as count
+  FROM sm_board_channel c
+  LEFT JOIN sm_board_post_list p ON c.id = p.channelId
+  GROUP BY c.id
+  ORDER BY c.pos ASC;  
+  `;
   try {
     let results = await ctx.execSql(sql);
     ctx.success(ctx, {

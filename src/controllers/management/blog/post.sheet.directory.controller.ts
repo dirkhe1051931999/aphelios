@@ -8,6 +8,12 @@ export const getAllSheet = async (ctx) => {
   let sql = `SELECT id, name, cover,description FROM sm_board_sheet`;
   try {
     let results = await ctx.execSql(sql);
+    results = results.map((item) => {
+      return {
+        ...item,
+        post_count: 0,
+      };
+    });
     ctx.success(ctx, {
       pageData: results,
     });
@@ -17,7 +23,17 @@ export const getAllSheet = async (ctx) => {
   }
 };
 export const getAllDirectory = async (ctx) => {
-  let sql = `SELECT id, name, subName,todayPostCount, type, parent_id FROM sm_board_directory`;
+  let sql = `
+  SELECT d.id, d.name, d.subName, d.todayPostCount, d.type, d.parent_id, COUNT(p.id) as post_count 
+  FROM sm_board_directory d
+  LEFT JOIN sm_board_post_list p ON d.id = p.categoryId
+  GROUP BY d.id, d.name, d.subName, d.todayPostCount, d.type, d.parent_id
+  `;
+  // let sql2 = `
+  // SELECT p.title, p.categoryId, p.view,p.channelId,p.comment,p.createTime,p.status,p.id
+  // FROM sm_board_directory d
+  // LEFT JOIN sm_board_post_list p ON d.id = p.categoryId
+  // `;
   try {
     let results = await ctx.execSql(sql);
     ctx.success(ctx, {
@@ -29,7 +45,17 @@ export const getAllDirectory = async (ctx) => {
   }
 };
 export const getAllChildDirectory = async (ctx) => {
-  let sql = `SELECT id, name, subName, type, parent_id FROM sm_board_child_directory`;
+  let sql = `
+  SELECT cd.id, cd.name, cd.subName, cd.type, cd.parent_id, COUNT(p.id) as post_count
+  FROM sm_board_child_directory cd
+  LEFT JOIN sm_board_post_list p ON cd.id = p.categoryId
+  GROUP BY cd.id, cd.name, cd.subName, cd.type, cd.parent_id
+  `;
+  // let sql2 = `
+  // SELECT p.title, p.categoryId, p.view,p.channelId,p.comment,p.createTime,p.status,p.id
+  // FROM sm_board_child_directory cd
+  // LEFT JOIN sm_board_post_list p ON cd.id = p.categoryId
+  // `;
   try {
     let results = await ctx.execSql(sql);
     ctx.success(ctx, {

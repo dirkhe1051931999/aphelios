@@ -14,7 +14,7 @@ export const getAllUser = async (ctx: Context): Promise<void> => {
   /* 默认page 1， rowsNumber 20 */
   try {
     const results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM user;`,
+      `SELECT COUNT(*) as total FROM user WHERE CASE WHEN ${decoded.userType} = 0 THEN 1 ELSE id = ${decoded.id} END AND (userName LIKE CONCAT('%', '${userName}', '%') OR NULLIF('${userName}', '') IS NULL );`,
       `
         SELECT id,userName,avatar,role,createTime,email,updateTime,province,city,ip,description,userType,userStatus
         FROM user 
