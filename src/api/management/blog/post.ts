@@ -1,14 +1,18 @@
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
-import { addPost, deletePost, getPostById, getPostList, getPostListByCategoryId, offlinePost, publishPost, updatePost, uploadPostImgs } from 'src/controllers/management/blog/post.controller';
+import { addPost, deletePost, getPostContentById, getPostList, getPostListByCategoryId, getPostRowById, offlinePost, publishPost, updatePost, uploadPostImgs } from 'src/controllers/management/blog/post.controller';
 export class ManagementBlogPostAPIController {
-  @Route('/getPostById', HTTP_METHODS.POST)
-  async getPostById(ctx: Koa.Context, next: Koa.Next) {
-    return getPostById(ctx);
+  @Route('/getPostContentById', HTTP_METHODS.POST)
+  async getPostContentById(ctx: Koa.Context, next: Koa.Next) {
+    return getPostContentById(ctx);
   }
   @Route('/getPostListByCategoryId', HTTP_METHODS.POST)
   async getPostListByCategoryId(ctx: Koa.Context, next: Koa.Next) {
     return getPostListByCategoryId(ctx);
+  }
+  @Route('/getPostRowById', HTTP_METHODS.POST)
+  async getPostRowById(ctx: Koa.Context, next: Koa.Next) {
+    return getPostRowById(ctx);
   }
   @Route('/uploadPostImgs', HTTP_METHODS.POST)
   async uploadPostImgs(ctx: Koa.Context, next: Koa.Next) {

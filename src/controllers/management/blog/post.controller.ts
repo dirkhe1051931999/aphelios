@@ -3,19 +3,21 @@ import { uploadImage } from 'src/util/helper';
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { channelId, status, page, rowsPerPage } = ctx.request.body;
+  let { channelId, authorId, status, page, rowsPerPage } = ctx.request.body;
   channelId = channelId || '';
   status = status || '';
+  authorId = authorId || '';
   page = page || 1;
   rowsPerPage = rowsPerPage || 20;
   try {
     let results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (channelId = '${channelId}' OR '${channelId}' = '') AND (status = '${status}' OR '${status}'  = '');`,
+      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (channelId = '${channelId}' OR '${channelId}' = '') AND (status = '${status}' OR '${status}'  = '') AND (authorId = '${authorId}' OR '${authorId}'  = '');`,
       `
           SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
           FROM sm_board_post_list 
           WHERE (channelId = '${channelId}' OR '${channelId}' = '') 
           AND (status = '${status}' OR '${status}'  = '')
+          AND (authorId = '${authorId}' OR '${authorId}'  = '')
           ORDER BY createTime DESC 
           LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
@@ -41,6 +43,7 @@ export const getPostListByCategoryId = async (ctx) => {
           SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
           FROM sm_board_post_list 
           WHERE (categoryId = '${categoryId}') 
+          ORDER BY createTime DESC
           LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
     ctx.success(ctx, {
@@ -52,8 +55,23 @@ export const getPostListByCategoryId = async (ctx) => {
     ctx.error(ctx, 402);
   }
 };
+export const getPostRowById = async (ctx) => {
+  let { id } = ctx.request.body;
+  if (!id) {
+    ctx.error(ctx, '404#id');
+  }
+  try {
+    let result = await ctx.execSql(
+      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType  FROM sm_board_post_list WHERE id = ${id}`
+    );
+    ctx.success(ctx, result[0]);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
 // 获取具体文章
-export const getPostById = async (ctx) => {
+export const getPostContentById = async (ctx) => {
   let { id } = ctx.request.body;
   if (!id) {
     ctx.error(ctx, '404#id');
@@ -93,7 +111,7 @@ export const addPost = async (ctx) => {
       VALUES ('${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}',${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
     ]);
     if (results[0].affectedRows > 0) {
-      ctx.success(ctx, null);
+      ctx.success(ctx, { id: results[0].insertId });
     } else {
       ctx.error(ctx, 405);
     }
