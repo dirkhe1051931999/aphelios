@@ -1,10 +1,10 @@
-import * as path from "path";
+import * as path from 'path';
 interface Config {
   db: {
     mysql: {
       host: string;
       user: string;
-      port: number,
+      port: number;
       password: string;
       database: string;
       connectionLimit: number;
@@ -18,6 +18,14 @@ interface Config {
         auth_pass: string;
       };
     };
+    minio: {
+      endPoint: string;
+      port: number;
+      useSSL: boolean;
+      accessKey: string;
+      secretKey: string;
+      buckets: string;
+    };
     db_salt: string;
   };
   oAuth: {
@@ -26,10 +34,10 @@ interface Config {
       client_secret: string;
     };
     wechat: {
-      appId: string,
-      appSecret: string
-      auth_callback_url: string
-    }
+      appId: string;
+      appSecret: string;
+      auth_callback_url: string;
+    };
   };
   root: string;
   appPath: string;
@@ -51,50 +59,58 @@ interface Config {
 const config: Config = {
   db: {
     mysql: {
-      host: "192.168.200.130",
-      user: "root",
-      password: "123456",
+      host: '192.168.200.130',
+      user: 'root',
+      password: '123456',
       port: 3310,
-      database: "nodejs-service",
+      database: 'nodejs-service',
       connectionLimit: 10,
     },
     redis: {
       port: 6380,
-      host: "192.168.200.130",
+      host: '192.168.200.130',
       db: 3,
       options: {
         return_buffers: false,
-        auth_pass: "",
+        auth_pass: '',
       },
     },
-    db_salt: "LGGKqbCrRKRnywHv3uqFZw==",
+    minio: {
+      endPoint: '192.168.200.130',
+      port: 9000,
+      useSSL: false,
+      accessKey: 'fd9C9kmZ6da67rsf',
+      secretKey: 'AYhWs3r2uPz91lqxVnnIqOAZh0DJX5h5',
+      buckets: 'blog-service-oss',
+    },
+    db_salt: 'LGGKqbCrRKRnywHv3uqFZw==',
   },
   oAuth: {
     github: {
-      client_id: "b0fbc6a7d4ff2b320158",
-      client_secret: "a02a9f6bac91f3acee2dc8aae86513bc2a94a6b6",
+      client_id: 'b0fbc6a7d4ff2b320158',
+      client_secret: 'a02a9f6bac91f3acee2dc8aae86513bc2a94a6b6',
     },
     wechat: {
       appId: 'wx48f0181992fa8676',
       appSecret: 'd581afc54ddedf1a6ffef37d8b6d2c18',
       auth_callback_url: 'http://192.168.200.130:3000/oauth/wechat/callback',
-    }
+    },
   },
-  root: path.normalize(__dirname + "/.."),
-  appPath: "src/static",
-  resetPasswordUrl: "http://192.168.200.130:9002/index.html#/login?token=",
-  defaultCdnUrl: "http://192.168.200.130:3000/cdn",
-  tempUploads: "tempUploads",
-  uploads: "uploads",
+  root: path.normalize(__dirname + '/..'),
+  appPath: 'src/static',
+  resetPasswordUrl: 'http://192.168.200.130:9002/index.html#/login?token=',
+  defaultCdnUrl: 'http://192.168.200.130:3000/cdn',
+  tempUploads: 'tempUploads',
+  uploads: 'uploads',
   port: 3000,
-  tokenSecret: "test",
+  tokenSecret: 'test',
   isUpdateAdmin: false,
-  accessControlAllowOrigin: "http://192.168.200.130:3000",
-  adminName: "admin",
-  adminPassword: "123456",
-  socketioPath: "/testsocketiopath",
-  draftPostRedisKey: "DRAFTPSOTKEY",
-  aliCloudApi: "",
-  aliCloud_APPCODE: "",
+  accessControlAllowOrigin: 'http://192.168.200.130:3000',
+  adminName: 'admin',
+  adminPassword: '123456',
+  socketioPath: '/testsocketiopath',
+  draftPostRedisKey: 'DRAFTPSOTKEY',
+  aliCloudApi: '',
+  aliCloud_APPCODE: '',
 };
 export default config;

@@ -4,7 +4,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import CONFIG from 'src/config';
 import moment from 'moment';
-
+import * as Minio from 'minio';
+const minioClient = new Minio.Client({
+  endPoint: CONFIG.db.minio.endPoint,
+  port: CONFIG.db.minio.port,
+  useSSL: CONFIG.db.minio.useSSL,
+  accessKey: CONFIG.db.minio.accessKey,
+  secretKey: CONFIG.db.minio.secretKey,
+});
 /**
  * Make salt
  *
@@ -68,7 +75,7 @@ export function mkdirsSync(dirname: string): boolean {
 /**
  * 上传文件
  */
-export const uploadImage = (ctx: any): Promise<any> => {
+export const uploadFileToMinio = (ctx: any, withData): Promise<any> => {
   return new Promise((resolve, reject) => {
     const form = new formidable.IncomingForm();
     form.encoding = 'utf-8';
@@ -81,59 +88,26 @@ export const uploadImage = (ctx: any): Promise<any> => {
       if (err) {
         reject(err);
       }
-      const arr = [];
       Object.keys(files).forEach((key) => {
         const file = files[key];
         const tempPath = file.filepath;
-        const dirPath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post/')}${moment().format('YYYYMMDD')}`;
-        const newName = `${file.newFilename}.${file.originalFilename.split('.').pop()}`;
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
-        const newPath = path.join(dirPath, newName);
-        fs.rename(tempPath, newPath, (err) => {
-          if (err) {
-            reject(err);
+        const newName = `${moment().format('YYYYMMDD')}/${file.newFilename}.${file.originalFilename.split('.').pop()}`;
+        minioClient.fPutObject(
+          CONFIG.db.minio.buckets,
+          newName,
+          tempPath,
+          {
+            'Content-Type': file.mimetype,
+          },
+          function (err, objInfo) {
+            if (err) {
+              reject(err);
+            }
+            fs.unlinkSync(tempPath);
+            resolve({ url: `http://${CONFIG.db.minio.endPoint}:${CONFIG.db.minio.port}/${CONFIG.db.minio.buckets}/${newName}`, data: withData ? fields : null });
           }
-        });
-        arr.push(CONFIG.defaultCdnUrl.split('/cdn')[0] + newPath.split(CONFIG.appPath).pop());
+        );
       });
-      resolve(arr);
-    });
-  });
-};
-export const uploadPDF = (ctx: any): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm();
-    form.encoding = 'utf-8';
-    form.keepExtensions = true; // 保留后缀
-    form.maxFieldsSize = 200 * 1024 * 1024; // 文件大小2M
-    form.multiples = true;
-    form.uploadDir = path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_verify_pdf/');
-    mkdirsSync(form.uploadDir);
-    form.parse(ctx.req, (err, fields, files) => {
-      if (err) {
-        reject(err);
-      }
-      const arr = [];
-      Object.keys(files).forEach((key) => {
-        const file = files[key];
-        const tempPath = file.filepath;
-        const dirPath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_verify_pdf/')}${moment().format('YYYYMMDD')}`;
-        const newName = `${file.newFilename}.${file.originalFilename.split('.').pop()}`;
-        if (!fs.existsSync(dirPath)) {
-          fs.mkdirSync(dirPath, { recursive: true });
-        }
-        const newPath = path.join(dirPath, newName);
-        fs.rename(tempPath, newPath, (err) => {
-          if (err) {
-            reject(err);
-          }
-        });
-        arr.push(CONFIG.defaultCdnUrl.split('/cdn')[0] + newPath.split(CONFIG.appPath).pop());
-      });
-      arr.push(fields);
-      resolve(arr);
     });
   });
 };

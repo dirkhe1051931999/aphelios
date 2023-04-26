@@ -1,5 +1,4 @@
-import moment from 'moment';
-import { uploadImage } from 'src/util/helper';
+import { uploadFileToMinio } from 'src/util/helper';
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
@@ -86,8 +85,8 @@ export const getPostContentById = async (ctx) => {
 };
 export const uploadPostImgs = async (ctx) => {
   try {
-    const result = await uploadImage(ctx);
-    ctx.success(ctx, result);
+    const { url } = await uploadFileToMinio(ctx, false);
+    ctx.success(ctx, url);
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 405);

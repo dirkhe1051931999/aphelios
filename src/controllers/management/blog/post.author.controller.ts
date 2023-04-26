@@ -3,8 +3,7 @@ import path from 'path';
 import CONFIG from 'src/config';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
-import * as formidable from 'formidable';
-import { mkdirsSync, uploadPDF } from 'src/util/helper';
+import { uploadFileToMinio } from 'src/util/helper';
 // 查询所有作者
 export const getAllPostAuthor = async (ctx): Promise<void> => {
   let sql = `SELECT id, name, coverUrl, followCount, status, avatarUrl, articleCount, fansCount, type, nick, score, createTime,updateTime,loginTime,companyVerifyInfoId, defaultUser,description 
@@ -180,9 +179,8 @@ export const removePostAuthor = async (ctx): Promise<void> => {
 // 进行企业认证
 export const verifyCompanyAuthor = async (ctx): Promise<void> => {
   try {
-    const result = await uploadPDF(ctx);
-    const pdfUrl = result[0];
-    const { companyName, companyCode, companyType, authorId } = result[1];
+    const { url, data } = await uploadFileToMinio(ctx, true);
+    const { companyName, companyCode, companyType, authorId } = data;
     const haveAuthor = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
     if (haveAuthor[0].count > 0) {
       ctx.error(ctx, 608);
@@ -191,7 +189,7 @@ export const verifyCompanyAuthor = async (ctx): Promise<void> => {
     const id = uuidv4().replace(/\-/g, '');
     await ctx.execSql(`
       INSERT INTO sm_board_company_verify_info (id, authorId, companyName, companyCode, companyType, companyLicense, status, createTime)
-      VALUES ('${id}', '${authorId}', '${companyName}', '${companyCode}', '${companyType}', '${pdfUrl}', 0, ${new Date().getTime()});
+      VALUES ('${id}', '${authorId}', '${companyName}', '${companyCode}', '${companyType}', '${url}', 0, ${new Date().getTime()});
       `);
     await ctx.execSql(`UPDATE sm_board_author SET companyVerifyInfoId = '${id}', status = 3 WHERE id = '${authorId}';`);
     ctx.success(ctx, null);
