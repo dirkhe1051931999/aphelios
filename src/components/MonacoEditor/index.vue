@@ -26,7 +26,7 @@ export default class MonacoEditorComponent extends Vue {
       this.code = this.editor.getValue();
     });
   }
-  public validateCode() {
+  public validateCode(lang: string) {
     const model = this.editor.getModel();
     const code = model.getValue();
     let result;
@@ -39,6 +39,7 @@ export default class MonacoEditorComponent extends Vue {
   }
   public formatCode() {
     this.editor.getAction('editor.action.formatDocument').run();
+    // this.editor.getAction('editor.action.formatDocument').run();
   }
 }
 </script>

@@ -13,11 +13,6 @@
           :no-data-label="$t(`tip.noData`)"
           class="my-table"
         >
-          <template #top>
-            <div class="full-width justify-end row">
-              <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
-            </div>
-          </template>
           <template v-slot:header="props">
             <q-tr :props="props">
               <!-- other -->

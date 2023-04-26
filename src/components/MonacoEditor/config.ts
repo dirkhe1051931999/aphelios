@@ -44,9 +44,9 @@ export const monacoConfig: any = {
   tabSize: 2,
   insertSpaces: true,
   autoIndent: 'none',
-  formatOnPaste: false,
-  formatOnType: false,
-  formatOnSave: false,
+  formatOnPaste: true,
+  formatOnType: true,
+  formatOnSave: true,
   codeActionsOnSave: {
     'source.fixAll': true,
     'source.organizeImports': true,

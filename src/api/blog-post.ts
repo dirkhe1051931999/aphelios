@@ -3,7 +3,8 @@ import { request } from 'src/boot/axios';
 const api = {
   getPostList: '/management/blog/post/getPostList',
   getPostListByCategoryId: 'management/blog/post/getPostListByCategoryId',
-  getPostById: 'management/blog/post/getPostById',
+  getPostRowById: 'management/blog/post/getPostRowById',
+  getPostContentById: 'management/blog/post/getPostContentById',
   uploadPostImgs: '/management/blog/post/uploadPostImgs',
   addPost: '/management/blog/post/addPost',
   deletePost: 'management/blog/post/deletePost',
@@ -48,9 +49,15 @@ export const getPostListByCategoryId = (data: any): any =>
     method: 'post',
     data,
   });
-export const getPostById = (data: any): any =>
+export const getPostRowById = (data: any): any =>
   request({
-    url: api.getPostById,
+    url: api.getPostRowById,
+    method: 'post',
+    data,
+  });
+export const getPostContentById = (data: any): any =>
+  request({
+    url: api.getPostContentById,
     method: 'post',
     data,
   });

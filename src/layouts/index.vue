@@ -1,4 +1,3 @@
-
 <template>
   <div :class="classObj" class="app-wrapper">
     <div v-if="classObj.mobile && classObj.openSidebar" class="drawer-bg" @click="handleClickOutside" />
@@ -11,6 +10,7 @@
       <AppMain />
     </div>
     <div class="sun" ref="sun"></div>
+    <BlogEditorPostDialog></BlogEditorPostDialog>
   </div>
 </template>
 
@@ -23,6 +23,7 @@ import Sidebar from './components/Sidebar/index.vue';
 import NavigationBar from './components/NavigationBar/index.vue';
 import TagsView from './components/TagsView/index.vue';
 import AppMain from './components/AppMain.vue';
+import BlogEditorPostDialog from 'src/pages/blog-post/components/editor-post.vue';
 @Component({
   name: 'LayoutIndexComponents',
   components: {
@@ -30,6 +31,7 @@ import AppMain from './components/AppMain.vue';
     NavigationBar,
     TagsView,
     AppMain,
+    BlogEditorPostDialog,
   },
   mixins: [UseResize],
 })

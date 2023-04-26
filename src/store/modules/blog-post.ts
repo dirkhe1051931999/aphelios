@@ -14,9 +14,10 @@ import {
   getAllPostAuthor,
   getAllSheet,
   getCompanyAuthorVerifyInfo,
-  getPostById,
+  getPostContentById,
   getPostList,
   getPostListByCategoryId,
+  getPostRowById,
   offlinePost,
   publishPost,
   removeChannel,
@@ -41,6 +42,27 @@ interface IBlogPost {}
 class BlogPost extends VuexModule implements IBlogPost {
   public scrollTop = 0;
   public fixedDirectoryRightChannel = false;
+  public allValidAuthor: any[] = [];
+  public allCategory: any[] = [];
+  public allChannel: any[] = [];
+  public disableSelectCategory = false;
+  public blogEditorPostVisiable = false;
+  public postDetail = {
+    row: {
+      authorId: '',
+      categoryId: '',
+      channelId: '',
+      title: '',
+      poster: '',
+      content: '',
+      id: '',
+    },
+  };
+  public postAddOrUpdate = 'add';
+  public addedPostId = '';
+  public currentCategoryId = '';
+  public updatePostSuccessFlag = false;
+  public addPostSuccessFlag = false;
   @Mutation
   public SET_SCROLL_TOP(scrollTop: number) {
     this.scrollTop = scrollTop;
@@ -48,6 +70,50 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Mutation
   public SET_FIXED_DIRECTORY_RIGHT_CHANNEL(fixedDirectoryRightChannel: boolean) {
     this.fixedDirectoryRightChannel = fixedDirectoryRightChannel;
+  }
+  @Mutation
+  public SET_ALL_VALID_AUTHOR(allAuthor: any[]) {
+    this.allValidAuthor = allAuthor;
+  }
+  @Mutation
+  public SET_ALL_CATEGORY(allCategory: any[]) {
+    this.allCategory = allCategory;
+  }
+  @Mutation
+  public SET_ALL_CHANNEL(allChannel: any[]) {
+    this.allChannel = allChannel;
+  }
+  @Mutation
+  public SET_EDITOR_BLOG_POST_VISIABLE(blogEditorPostVisiable: boolean) {
+    this.blogEditorPostVisiable = blogEditorPostVisiable;
+  }
+  @Mutation
+  public SET_DISABLE_SELECT_CATEGORY(disableSelectCategory: boolean) {
+    this.disableSelectCategory = disableSelectCategory;
+  }
+  @Mutation
+  public SET_POST_DETAIL(postDetail: any) {
+    this.postDetail = postDetail;
+  }
+  @Mutation
+  public SET_POST_ADD_OR_UPDATE(postAddOrUpdate: string) {
+    this.postAddOrUpdate = postAddOrUpdate;
+  }
+  @Mutation
+  public SET_ADDED_POST_ID(addedPostId: string) {
+    this.addedPostId = addedPostId;
+  }
+  @Mutation
+  public SET_UPDATE_POST_SUCCESS_FLAG(updatePostSuccessFlag: boolean) {
+    this.updatePostSuccessFlag = updatePostSuccessFlag;
+  }
+  @Mutation
+  public SET_ADD_POST_SUCCESS_FLAG(addPostSuccessFlag: boolean) {
+    this.addPostSuccessFlag = addPostSuccessFlag;
+  }
+  @Mutation
+  public SET_CURRENT_CATEGORY_ID(currentCategoryId: string) {
+    this.currentCategoryId = currentCategoryId;
   }
   @Action({ rawError: true })
   public async getPostList(data: any) {
@@ -60,8 +126,13 @@ class BlogPost extends VuexModule implements IBlogPost {
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
-  public async getPostById(data: any) {
-    const result = await getPostById(data);
+  public async getPostRowById(data: any) {
+    const result = await getPostRowById(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getPostContentById(data: any) {
+    const result = await getPostContentById(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
@@ -97,6 +168,11 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async getAllChannel(data: any) {
     const result = await getAllChannel(data);
+    let { pageData } = result;
+    pageData = pageData.map((item: any) => {
+      return { ...item, label: item.name, value: item.id };
+    });
+    this.SET_ALL_CHANNEL(pageData);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
@@ -182,6 +258,14 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async getAllPostAuthor(data: any) {
     const result = await getAllPostAuthor(data);
+    let { pageData } = result;
+    if (pageData && pageData.length > 0) {
+      pageData = pageData.filter((item: any) => item.status === 0 || (item.status === 4 && item.type === 0));
+      pageData = pageData.map((item: any) => {
+        return { ...item, label: item.name, value: item.id };
+      });
+      this.SET_ALL_VALID_AUTHOR(pageData);
+    }
     return Promise.resolve(result);
   }
   @Action({ rawError: true })

@@ -715,7 +715,6 @@ export default class BlogPostAuthorComponent extends Vue {
         return;
       }
       if (rawFile.size <= 1024 * 1024 * 10) {
-        console.log(rawFile);
         const src = window.URL.createObjectURL(rawFile);
         let embedNode = document.createElement('embed');
         embedNode.src = src;

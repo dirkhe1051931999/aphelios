@@ -171,38 +171,50 @@
                           <div ref="childDirectoryRightPanel" @scroll="watchChildDirectoryRightPanelScrollBottom">
                             <q-tab-panels v-model="sheetParams.childDirectoryTab" animated transition-prev="slide-down" transition-next="slide-up">
                               <q-tab-panel :name="childDirectory.id" class="q-pa-none" v-for="childDirectory in directory.children" :key="childDirectory.id">
-                                <div class="row items-center q-px-md q-pt-md q-pb-none">
+                                <div class="row items-center q-pa-md">
                                   <span class="text-grey">{{ item.name }}</span>
                                   <span class="q-mx-sm">-</span>
                                   <span class="text-grey">{{ directory.name }}</span>
                                   <span class="q-mx-sm">-</span>
                                   <span class="text-blue">{{ childDirectory.name }}</span>
+                                  <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                                 </div>
                                 <ul class="q-pa-md" v-if="childDirectory.childrenPost.length">
                                   <li v-for="(post, index) in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                                     <div class="row items-center">
-                                      <p class="link-type">{{ post.title }}</p>
-                                      <span class="q-ml-md my-label yellow">{{ postChannel(post.channelId) }}</span>
+                                      <p class="link-type fs-16 lh-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
+                                      <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
+                                      <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
+                                      <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
+                                      <span class="q-ml-md my-status grey" v-if="post.status === 'DRAFT'">草稿中</span>
+                                      <span class="q-ml-auto fs-18"># {{ index + 1 }}</span>
                                     </div>
                                     <div class="row items-center q-mt-sm">
-                                      <p class="q-mr-sm">
-                                        <span class="text-grey">{{ index + 1 }}浏览：</span>
-                                        <span>{{ post.view }}</span>
+                                      <p class="q-mr-sm row items-center">
+                                        <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
+                                        <span class="q-ml-sm">{{ post.view }}</span>
                                       </p>
-                                      <p class="q-mr-sm">
-                                        <span class="text-grey">评论：</span>
-                                        <span>{{ post.comment }}</span>
+                                      <p class="q-mr-sm row items-center">
+                                        <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
+                                        <span class="q-ml-sm">{{ post.comment }}</span>
                                       </p>
-                                      <p class="q-mr-sm">
-                                        <span class="text-grey">创建时间：</span>
-                                        <span>{{ parseTime(post.createTime) }}</span>
+                                      <p class="q-mr-sm row items-center">
+                                        <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
+                                        <span class="q-ml-sm">{{ parseTime(post.createTime) }}</span>
                                       </p>
-                                      <p class="q-mr-sm">
-                                        <span class="text-grey">状态：</span>
-                                        <span class="my-status red" v-if="post.status === 'OFFLINE'">下线</span>
-                                        <span class="my-status green" v-if="post.status === 'PUBLISHED'">上线</span>
-                                        <span class="my-status grey" v-if="post.status === 'DRAFT'">草稿</span>
+                                      <p class="q-mr-sm row items-center">
+                                        <q-icon name="o_update" class="text-grey" size="18px"></q-icon>
+                                        <span class="q-ml-sm">{{ parseTime(post.updateTime) }}</span>
                                       </p>
+                                      <p class="q-mr-sm row items-center">
+                                        <q-icon name="o_person" class="text-grey" size="18px"></q-icon>
+                                        <span class="q-ml-sm">{{ postAuthor(post.authorId) }}</span>
+                                      </p>
+                                    </div>
+                                    <div class="row items-cener q-mt-sm">
+                                      <span class="link-type q-mr-sm" v-if="post.status === 'OFFLINE'" @click="handlerClickOnline(post)">上线</span>
+                                      <span class="delete-type q-mr-sm" v-if="post.status === 'PUBLISHED'" @click="handlerClickOffline(post)">下线</span>
+                                      <span class="delete-type q-mr-sm" @click="handlerClickDelete(post)">删除</span>
                                     </div>
                                   </li>
                                   <q-card flat style="width: 100%" v-if="childDirectory.loading">
@@ -213,9 +225,7 @@
                                     </q-card-section>
                                   </q-card>
                                 </ul>
-                                <div class="q-table__bottom--nodata row" v-else>
-                                  暂无【{{ childDirectory.name }}】文章<span class="link-type q-mt-xs" @click="$router.push('/blog-post/list')">去POST页面发文章</span>
-                                </div>
+                                <div class="q-table__bottom--nodata row" v-else>暂无【{{ childDirectory.name }}】文章</div>
                               </q-tab-panel>
                             </q-tab-panels>
                           </div>
@@ -231,32 +241,44 @@
                           <span class="text-grey">{{ item.name }}</span>
                           <span class="q-mx-sm">-</span>
                           <span class="text-blue">{{ directory.name }}</span>
+                          <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                         </div>
                         <ul class="q-pa-md" v-if="directory.childrenPost.length">
                           <li v-for="(post, index) in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                             <div class="row items-center">
-                              <p class="link-type fs-16 1h-30">{{ post.title }}</p>
-                              <span class="q-ml-md my-label yellow">{{ postChannel(post.channelId) }}</span>
+                              <p class="link-type fs-16 1h-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
+                              <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
+                              <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
+                              <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
+                              <span class="q-ml-md my-status grey" v-if="post.status === 'DRAFT'">草稿中</span>
+                              <span class="q-ml-auto fs-18"># {{ index + 1 }}</span>
                             </div>
                             <div class="row items-center q-mt-sm">
-                              <p class="q-mr-sm">
-                                <span class="text-grey">{{ index + 1 }}浏览：</span>
-                                <span>{{ post.view }}</span>
+                              <p class="q-mr-sm row items-center">
+                                <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
+                                <span class="q-ml-sm">{{ post.view }}</span>
                               </p>
-                              <p class="q-mr-sm">
-                                <span class="text-grey">评论：</span>
-                                <span>{{ post.comment }}</span>
+                              <p class="q-mr-sm row items-center">
+                                <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
+                                <span class="q-ml-sm">{{ post.comment }}</span>
                               </p>
-                              <p class="q-mr-sm">
-                                <span class="text-grey">创建时间：</span>
-                                <span>{{ parseTime(post.createTime) }}</span>
+                              <p class="q-mr-sm row items-center">
+                                <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
+                                <span class="q-ml-sm">{{ parseTime(post.createTime) }}</span>
                               </p>
-                              <p class="q-mr-sm">
-                                <span class="text-grey">状态：</span>
-                                <span class="my-status red" v-if="post.status === 'OFFLINE'">下线</span>
-                                <span class="my-status green" v-if="post.status === 'PUBLISHED'">上线</span>
-                                <span class="my-status grey" v-if="post.status === 'DRAFT'">草稿</span>
+                              <p class="q-mr-sm row items-center">
+                                <q-icon name="o_update" class="text-grey" size="18px"></q-icon>
+                                <span class="q-ml-sm">{{ parseTime(post.updateTime) }}</span>
                               </p>
+                              <p class="q-mr-sm row items-center">
+                                <q-icon name="o_person" class="text-grey" size="18px"></q-icon>
+                                <span class="q-ml-sm">{{ postAuthor(post.authorId) }}</span>
+                              </p>
+                            </div>
+                            <div class="row items-cener q-mt-sm">
+                              <span class="link-type q-mr-sm" v-if="post.status === 'OFFLINE'" @click="handlerClickOnline(post)">上线</span>
+                              <span class="delete-type q-mr-sm" v-if="post.status === 'PUBLISHED'" @click="handlerClickOffline(post)">下线</span>
+                              <span class="delete-type q-mr-sm" @click="handlerClickDelete(post)">删除</span>
                             </div>
                           </li>
                           <q-card flat style="width: 100%" v-if="directory.loading">
@@ -267,9 +289,7 @@
                             </q-card-section>
                           </q-card>
                         </ul>
-                        <div class="q-table__bottom--nodata row" v-else>
-                          暂无【{{ directory.name }}】文章<span class="link-type q-mt-xs" @click="$router.push('/blog-post/list')">去POST页面发文章</span>
-                        </div>
+                        <div class="q-table__bottom--nodata row" v-else>暂无【{{ directory.name }}】文章</div>
                       </div>
                     </q-tab-panel>
                   </q-tab-panels>
@@ -372,12 +392,26 @@ const findItemById = (id: any, items: any): any => {
   }
   return null;
 };
-@Component({ name: 'BlogPostDirectoryComponent' })
+@Component({
+  name: 'BlogPostDirectoryComponent',
+  components: {},
+})
 export default class BlogPostDirectoryComponent extends Vue {
   $refs: any;
   get postChannel() {
     return (channelId: string) => {
-      const selectOption = this.channelOptions;
+      const selectOption = BlogPostModule.allChannel;
+      const item: any = selectOption.find((item: any) => item.value === channelId);
+      if (item) {
+        return item.label;
+      } else {
+        return '--';
+      }
+    };
+  }
+  get postAuthor() {
+    return (channelId: string) => {
+      const selectOption = BlogPostModule.allValidAuthor;
       const item: any = selectOption.find((item: any) => item.value === channelId);
       if (item) {
         return item.label;
@@ -410,6 +444,15 @@ export default class BlogPostDirectoryComponent extends Vue {
   }
   get isCollapse() {
     return !AppModule.sidebar.opened;
+  }
+  get addedPostId() {
+    return BlogPostModule.addedPostId;
+  }
+  get updatePostSuccessFlag() {
+    return BlogPostModule.updatePostSuccessFlag;
+  }
+  get addPostSuccessFlag() {
+    return BlogPostModule.addPostSuccessFlag;
   }
   @Watch('sheetParams.tab')
   private async watchSheetTab(newVal: string) {
@@ -456,22 +499,44 @@ export default class BlogPostDirectoryComponent extends Vue {
   private async watchIsCollapse(newVal: boolean) {
     this.getPostListContainerBox();
   }
+  @Watch('addPostSuccessFlag')
+  private async watchAddPostSuccessFlag(newVal: string) {
+    if (newVal) {
+      const result = await BlogPostModule.getPostRowById({
+        id: this.addedPostId,
+      });
+      BlogPostModule.SET_ADDED_POST_ID('');
+      const item = findItemById(result.categoryId, this.sheetParams.data);
+      item.childrenPost.unshift(result);
+      BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(false);
+    }
+  }
+  @Watch('updatePostSuccessFlag')
+  private async watchUpdatePostSuccessFlag(newVal: string) {
+    if (newVal) {
+      const result = await BlogPostModule.getPostRowById({
+        id: this.postParams.params.postId,
+      });
+      const item = findItemById(result.categoryId, this.sheetParams.data);
+      let index = item.childrenPost.findIndex((post: any) => post.id === result.id);
+      item.childrenPost[index] = result;
+      BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
+    }
+  }
   async mounted() {
     this.getAllSheetDirectory();
     this.getChannel();
+    this.getAuthor();
   }
   private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private channelOptions = [];
   private postParams = {
     pagination: {
-      page: 1,
       rowsPerPage: 20,
-      rowsNumber: 0,
     },
     params: {
       categoryId: '',
+      postId: null,
     },
-    data: [],
   };
   private sheetParams = {
     data: [],
@@ -654,6 +719,21 @@ export default class BlogPostDirectoryComponent extends Vue {
       }, 100);
     });
   }
+  private handlerClickUpdatePost(row: any) {
+    this.postParams.params.postId = row.id;
+    BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
+    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
+    BlogPostModule.SET_CURRENT_CATEGORY_ID(row.categoryId);
+    BlogPostModule.SET_POST_DETAIL({ row });
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+  }
+  private handleClickAdd() {
+    BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
+    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
+    const categoryId = this.sheetParams.childDirectoryTab ? this.sheetParams.childDirectoryTab : this.sheetParams.directoryTab;
+    BlogPostModule.SET_CURRENT_CATEGORY_ID(categoryId);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+  }
   private uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.fileID][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -792,6 +872,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       for (let item of sheets) {
         item.post_count += item.children.reduce((acc: any, child: any) => acc + child.post_count, 0);
       }
+      BlogPostModule.SET_ALL_CATEGORY(allSheet.pageData);
       this.sheetParams.data = allSheet.pageData;
       if (this.dialogAddUpdateParams.isAdd) {
         if (dialogType && id) {
@@ -822,11 +903,14 @@ export default class BlogPostDirectoryComponent extends Vue {
   }
   private async getChannel() {
     try {
-      let { pageData } = await BlogPostModule.getAllChannel({});
-      pageData = pageData.map((item: any) => {
-        return { ...item, label: item.name, value: item.id };
-      });
-      this.channelOptions = pageData;
+      await BlogPostModule.getAllChannel({});
+    } finally {
+      return Promise.resolve();
+    }
+  }
+  private async getAuthor() {
+    try {
+      await BlogPostModule.getAllPostAuthor({});
     } finally {
       return Promise.resolve();
     }
@@ -864,6 +948,75 @@ export default class BlogPostDirectoryComponent extends Vue {
       console.log(error);
       this.$q.loading.hide();
     }
+  }
+  private async handlerClickDelete(row: any) {
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
+      });
+      if (result) {
+        await BlogPostModule.deletePost({
+          id: row.id,
+        });
+        const item = findItemById(row.categoryId, this.sheetParams.data);
+        const index = item.childrenPost.findIndex((post: any) => post.id === row.id);
+        item.childrenPost.splice(index, 1);
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+      }
+    } catch (error) {}
+  }
+  private async handlerClickOnline(row: any) {
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 上线提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
+      });
+      if (result) {
+        await BlogPostModule.publishPost({
+          id: row.id,
+        });
+
+        const result = await BlogPostModule.getPostRowById({
+          id: row.id,
+        });
+        row.status = result.status;
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+      }
+    } catch (error) {}
+  }
+  private async handlerClickOffline(row: any) {
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '💕💕💕 下线提示',
+        color: 'primary',
+        content: '确定要执行该操作吗 :) ?',
+        confirmButtonText: '嗯，是的',
+      });
+      if (result) {
+        await BlogPostModule.offlinePost({
+          id: row.id,
+        });
+        const result = await BlogPostModule.getPostRowById({
+          id: row.id,
+        });
+        row.status = result.status;
+        this.$globalMessage.show({
+          type: 'success',
+          content: this.$t('messages.success'),
+        });
+      }
+    } catch (error) {}
   }
   private async dialogAddUpdateConfirmEvent() {
     if (this.dialogAddUpdateParams.dialogType === 'sheet') {
@@ -1066,6 +1219,9 @@ export default class BlogPostDirectoryComponent extends Vue {
     background: $dark;
     border: solid 1px #ffffff;
   }
+  .post-list-topbar {
+    background: $dark;
+  }
 }
 .body--light {
   .splitter {
@@ -1075,6 +1231,9 @@ export default class BlogPostDirectoryComponent extends Vue {
   .upload-img {
     background: #ffffff;
     border: solid 1px $dark;
+  }
+  .post-list-topbar {
+    background: #ffffff;
   }
 }
 .splitter {

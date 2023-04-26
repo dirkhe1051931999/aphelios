@@ -14,6 +14,7 @@ const { configure } = require('quasar/wrappers');
 const setting = require('./src/setting.json');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const MonacoLocalesPlugin = require('monaco-editor-locales-plugin');
 const multiplePage = require('./multiple.page.generate');
 const path = require('path');
 module.exports = configure(function (ctx) {
@@ -79,7 +80,24 @@ module.exports = configure(function (ctx) {
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
       chainWebpack(chain) {},
       extendWebpack(cfg) {
-        cfg.plugins.push(new MonacoWebpackPlugin());
+        cfg.plugins.push(
+          new MonacoWebpackPlugin({
+            languages: ['javascript', 'css', 'html', 'typescript', 'json'],
+            features: ['coreCommands', 'find', 'format', 'folding', 'smartSelect', 'snippets', 'suggest', 'hover'],
+          })
+        );
+        cfg.plugins.push(
+          new MonacoLocalesPlugin({
+            //设置支持的语言
+            languages: ['es', 'zh-cn'],
+            //默认语言
+            defaultLanguage: 'zh-cn',
+            //打印不匹配的文本
+            logUnmatched: false,
+            //自定义文本翻译
+            mapLanguages: { 'zh-cn': { 'Peek References': '查找引用', 'Go to Symbol...': '跳到变量位置', 'Command Palette': '命令面板' } },
+          })
+        );
         // linting is slow in TS projects, we execute it only for production builds
         if (ctx.prod) {
           cfg.plugins.push(new CleanWebpackPlugin());
