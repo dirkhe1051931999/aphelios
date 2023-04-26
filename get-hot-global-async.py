@@ -14,7 +14,7 @@ detailList = []
 resultDir = "./data/热帖"
 channelUrl = "https://wap.newsmth.net/wap/api/hot/global"
 channelId = "4ed7f0d8b621c8ccf9e11eca9991d6dc"
-rangeNum = 3
+rangeNum = 5
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)
@@ -101,7 +101,7 @@ async def main():
         await asyncio.gather(*tasks)
         tasks = []
         for article in articleList:
-            folderName = article.get("title")
+            folderName = article.get("id")
             folderPath = os.path.join(resultDir, folderName)
             os.makedirs(folderPath, exist_ok=True)
             task = asyncio.ensure_future(

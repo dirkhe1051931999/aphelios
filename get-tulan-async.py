@@ -15,7 +15,7 @@ detailList = []
 resultDir = "./data/图览"
 channelUrl = "https://wap.newsmth.net/wap/api/album/load/global"
 channelId = "4dda79c64b3ffb61f8048d745292ff5d"
-rangeNum = 3
+rangeNum = 5
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)
@@ -88,13 +88,6 @@ async def main():
     print(f"{resultDir}-start")
     async with aiohttp.ClientSession(headers=headers) as session:
         tasks = []
-        proxies = [
-            "http://103.127.1.130:80",
-            "http://103.197.251.202:80",
-            "http://103.149.146.252:80",
-            "http://103.77.60.14:80",
-            "http://103.117.192.14:80",
-        ]
         for page in range(1, rangeNum):
             task = asyncio.ensure_future(get_page(session, page, ""))
             print(f"page {page} is done")
@@ -102,7 +95,7 @@ async def main():
         await asyncio.gather(*tasks)
         tasks = []
         for article in articleList:
-            folderName = article.get("title")
+            folderName = article.get("id")
             folderPath = os.path.join(resultDir, folderName)
             os.makedirs(folderPath, exist_ok=True)
             task = asyncio.ensure_future(
