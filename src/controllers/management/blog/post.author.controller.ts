@@ -22,52 +22,18 @@ export const getAllPostAuthor = async (ctx): Promise<void> => {
 // 添加作者
 export const addPostAuthor = async (ctx): Promise<void> => {
   let { name, nick, avatar, cover, description, type, managementPassword, appPassword } = ctx.request.body;
-  if (ctx.isFalsy([name, nick, avatar, description, type, managementPassword, appPassword])) {
-    ctx.error(ctx, '404#name, nick, avatar, description, type, managementPassword, appPassword');
+  if (ctx.isFalsy([name, nick, avatar, cover, description, type, managementPassword, appPassword])) {
+    ctx.error(ctx, '404#name, nick, avatar, cover,description, type, managementPassword, appPassword');
     return;
   }
-  let imageBuffer, imageBuffer2, match, match2, imageType, imageType2, imagePath, imagePath2, imageName, imageName2;
-  if (cover) {
-    // 封面
-    cover = cover.replace(/^data:image\/\w+;base64,/, '');
-    imageBuffer2 = Buffer.from(cover, 'base64');
-    match2 = cover.match(/^data:image\/(\w+);base64,/);
-    imageType2 = match2 ? match2[1] : 'png';
-    imagePath2 = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_cover/')}${moment().format('YYYYMMDD')}/`;
-    imageName2 = uuidv4().replace(/\-/g, '');
-    if (!fs.existsSync(imagePath2)) {
-      fs.mkdirSync(imagePath2, { recursive: true });
-    }
-  }
-  // 头像
-  avatar = avatar.replace(/^data:image\/\w+;base64,/, '');
-  imageBuffer = Buffer.from(avatar, 'base64');
-  match = avatar.match(/^data:image\/(\w+);base64,/);
-  imageType = match ? match[1] : 'png';
-  imagePath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_avatar/')}${moment().format('YYYYMMDD')}/`;
-  imageName = uuidv4().replace(/\-/g, '');
-  if (!fs.existsSync(imagePath)) {
-    fs.mkdirSync(imagePath, { recursive: true });
-  }
   try {
-    let coverUrl, avatarUrl;
-    if (cover) {
-      // 封面
-      fs.writeFileSync(imagePath2 + imageName2 + '.' + imageType2, imageBuffer2);
-      coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath2.split(CONFIG.appPath).pop() + imageName2 + '.' + imageType2;
-    } else {
-      coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + '/cdn/post_author_cover/default.png';
-    }
-    // 头像
-    fs.writeFileSync(imagePath + imageName + '.' + imageType, imageBuffer);
-    avatarUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath.split(CONFIG.appPath).pop() + imageName + '.' + imageType;
     const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
     if (exist[0].count > 0) {
       ctx.error(ctx, 607);
     } else {
       const id = uuidv4().replace(/\-/g, '');
       let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime) 
-                VALUES ('${id}', '${name}', '${nick}', '${avatarUrl}' ,'${coverUrl}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
+                VALUES ('${id}', '${name}', '${nick}', '${avatar}' ,'${avatar}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
         type === 1 ? 0 : 2
       },0,0,0,0,${new Date().getTime()})`;
       await ctx.execSql(sql);
@@ -81,59 +47,16 @@ export const addPostAuthor = async (ctx): Promise<void> => {
 // 更新作者
 export const updatePostAuthor = async (ctx): Promise<void> => {
   let { id, nick, avatar, cover, description } = ctx.request.body;
-  if (ctx.isFalsy([id, nick, avatar, description])) {
-    ctx.error(ctx, '404#id, name, nick, avatar, description, type');
+  if (ctx.isFalsy([id, nick, avatar, cover, description])) {
+    ctx.error(ctx, '404#id, name, nick, avatar,cover, description, type');
     return;
   }
-  let imageBuffer, imageBuffer2, match, match2, imageType, imageType2, imagePath, imagePath2, imageName, imageName2;
-  const reg = /^data:image\/(\w+);base64,/;
-  if (reg.test(cover)) {
-    // 封面
-    cover = cover.replace(/^data:image\/\w+;base64,/, '');
-    imageBuffer2 = Buffer.from(cover, 'base64');
-    match2 = cover.match(reg);
-    imageType2 = match2 ? match2[1] : 'png';
-    imagePath2 = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_cover/')}${moment().format('YYYYMMDD')}/`;
-    imageName2 = uuidv4().replace(/\-/g, '');
-    if (!fs.existsSync(imagePath2)) {
-      fs.mkdirSync(imagePath2, { recursive: true });
-    }
-  }
-  if (reg.test(avatar)) {
-    // 头像
-    avatar = avatar.replace(/^data:image\/\w+;base64,/, '');
-    imageBuffer = Buffer.from(avatar, 'base64');
-    match = avatar.match(reg);
-    imageType = match ? match[1] : 'png';
-    imagePath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/post_author_avatar/')}${moment().format('YYYYMMDD')}/`;
-    imageName = uuidv4().replace(/\-/g, '');
-    if (!fs.existsSync(imagePath)) {
-      fs.mkdirSync(imagePath, { recursive: true });
-    }
-  }
   try {
-    let coverUrl, avatarUrl;
-    if (!cover) {
-      coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + '/cdn/post_author_cover/default.png';
-    } else if (cover.indexOf('http://') === -1) {
-      // 封面
-      fs.writeFileSync(imagePath2 + imageName2 + '.' + imageType2, imageBuffer2);
-      coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath2.split(CONFIG.appPath).pop() + imageName2 + '.' + imageType2;
-    } else {
-      coverUrl = cover;
-    }
-    if (avatar.indexOf('http://') === -1) {
-      // 头像
-      fs.writeFileSync(imagePath + imageName + '.' + imageType, imageBuffer);
-      avatarUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath.split(CONFIG.appPath).pop() + imageName + '.' + imageType;
-    } else {
-      avatarUrl = avatar;
-    }
     const sql = `
     UPDATE sm_board_author
     SET nick = '${nick}', 
-        avatarUrl = '${avatarUrl}', 
-        coverUrl = '${coverUrl}', 
+        avatarUrl = '${avatar}', 
+        coverUrl = '${cover}', 
         description = '${description}', 
         updateTime = ${new Date().getTime()}
     WHERE id = '${id}';        
