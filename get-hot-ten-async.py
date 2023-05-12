@@ -16,7 +16,7 @@ detailList = []
 resultDir = "./data/十大"
 channelUrl = "https://wap.newsmth.net/wap/api/hot/ten"
 channelId = "f446f1333e362f3cd156f1443cb407eb"
-rangeNum = 5
+rangeNum = 1
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)
@@ -50,6 +50,7 @@ async def fetch_article(session, article, folderPath, proxies):
     categoryId = topic.get("boardId")
     title = topic.get("subject")
     account = topic.get("article").get("account")
+    topicId = topic.get("article").get("topicId")
     content = topic.get("article").get("body")
     attachments = topic.get("article").get("attachments")
     postTime = topic.get("article").get("postTime")
@@ -60,6 +61,7 @@ async def fetch_article(session, article, folderPath, proxies):
         "title": title,  # 标题
         "account": account,  # 发帖人
         "content": content,  # 内容
+        "topicId": topicId,  # 帖子id
         "attachments": attachments,  # 附件
         "createTime": postTime,  # 创建时间
         "updateTime": updateTime,  # 更新时间

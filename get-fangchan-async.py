@@ -49,6 +49,7 @@ async def fetch_article(session, article, folderPath, proxies):
         categoryId = topic.get("boardId")
         title = topic.get("subject")
         account = topic.get("article").get("account")
+        topicId = topic.get("article").get("topicId")
         content = topic.get("article").get("body")
         attachments = topic.get("article").get("attachments")
         postTime = topic.get("article").get("postTime")
@@ -59,6 +60,7 @@ async def fetch_article(session, article, folderPath, proxies):
             "title": title,  # 标题
             "account": account,  # 发帖人
             "content": content,  # 内容
+            "topicId": topicId,  # 帖子id
             "attachments": attachments,  # 附件
             "createTime": postTime,  # 创建时间
             "updateTime": updateTime,  # 更新时间

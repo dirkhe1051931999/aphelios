@@ -15,12 +15,12 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 data_dir = "./data"
 sql_dir = "./sql"
-url = "192.168.200.130:9000"
+url = "89.117.89.86:9000"
 bucket_name = "blog-service-oss"
 client = Minio(
     url,
-    access_key="fd9C9kmZ6da67rsf",
-    secret_key="AYhWs3r2uPz91lqxVnnIqOAZh0DJX5h5",
+    access_key="cF66XWcUfZz06vdN",
+    secret_key="HiiMrsPLk5dTQxCEWUzxmuXRrpU50AwV",
     secure=False,
 )
 today = datetime.today().strftime("%Y%m%d")
@@ -69,14 +69,19 @@ for d in allData:
     channel_id = d["channelId"]
     createTime = d["createTime"]
     updateTime = d["updateTime"]
+    src_topic_id = d["topicId"]
+    haveImg = 1 if len(d["img_path"]) > 0 else 0
     post_type = 1
-    sql = f'INSERT INTO `nodejs-service`.`sm_board_post_list` (`title`, `content`, `status`, `poster`, `createTime`, `updateTime`, `view`, `comment`, `authorId`, `commentId`, `categoryId`, `channelId`, `codeCount`, `postType`) VALUES ("{title}", "{content}", "OFFLINE", "{poster}", {createTime}, {updateTime}, 0, 0, "{author_id}", NULL, "{category_id}", "{channel_id}", 0, {post_type});'
+    sql = f'INSERT INTO `nodejs-service`.`sm_board_post_list` (`title`, `content`, `status`, `poster`, `createTime`, `updateTime`, `view`, `comment`, `authorId`, `commentId`, `categoryId`, `channelId`, `codeCount`, `postType`, `srcTopicId`, `haveImg`) VALUES ("{title}", "{content}", "OFFLINE", "{poster}", {createTime}, {updateTime}, 0, 0, "{author_id}", NULL, "{category_id}", "{channel_id}", 0, {post_type}, "{src_topic_id}", {haveImg});'
     allSql.append(sql)
 
+if not os.path.isdir(sql_dir):
+    os.makedirs(sql_dir)
 
-if os.path.exists(sql_dir):
-    shutil.rmtree(sql_dir)
-os.makedirs(sql_dir)
+file_path = os.path.join(sql_dir, "post.sql")
+if os.path.exists(file_path):
+    os.remove(file_path)
 
-with open(os.path.join(sql_dir, "post_sql.sql"), "w", encoding="utf-8") as f:
+
+with open(os.path.join(sql_dir, "post.sql"), "w", encoding="utf-8") as f:
     f.write("".join(allSql))

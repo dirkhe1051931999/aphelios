@@ -8,7 +8,8 @@ from bs4 import BeautifulSoup
 from header import headers
 import sys
 import io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 articleList = []
 detailList = []
 resultDir = "./data/热帖"
@@ -49,6 +50,7 @@ async def fetch_article(session, article, folderPath, proxies):
         title = topic.get("subject")
         account = topic.get("article").get("account")
         content = topic.get("article").get("body")
+        topicId = topic.get("article").get("topicId")
         attachments = topic.get("article").get("attachments")
         postTime = topic.get("article").get("postTime")
         updateTime = topic.get("article").get("postTime")
@@ -58,6 +60,7 @@ async def fetch_article(session, article, folderPath, proxies):
             "title": title,  # 标题
             "account": account,  # 发帖人
             "content": content,  # 内容
+            "topicId": topicId,  # 帖子id
             "attachments": attachments,  # 附件
             "createTime": postTime,  # 创建时间
             "updateTime": updateTime,  # 更新时间
