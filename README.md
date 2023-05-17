@@ -23,7 +23,11 @@ This is a full-stack integrated service project with multiple server-side and cl
 - Capture data branch->generate, technology stack is python
 
 ## installation environment
-
+```
+### centos8.3
+$ sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+$ sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+```
 ```
 ## Install docker
 sudo yum install -y yum-utils
@@ -53,29 +57,40 @@ sudo yum -y install nodejs
 # install cpm
 npm install -g cnpm --registry=https://registry.npm.taobao.org
 # Install docker-compose
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker -compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 # Create a new minio oss object store
-vi docker-compose.yml
-------------------------------------------
-version: '3.7'
-services.
-minio.
-image: minio/minio
-ports: - '9000:9000' - '9001:9001'
-volumes: - '. /minio/data1:/data1' - '. /minio/data2:/data2'
-command: 'server --console-address ":9001" http://minio/data{1.. .2}'
-environment: - MINIO_ROOT_USER=admin - MINIO_ROOT_PASSWORD=12345678
-healthcheck.
-test: - CMD - curl - '-f' - 'http://localhost:9000/minio/health/live'
-interval: 30s
-timeout: 20s
-retries: 3
-------------------------------------------
+vim docker-compose.yml
 # Run and end compose
 docker-compose up -d
 docker-compose down
 # View started containers
 docker ps
+```
+
+```yml
+# docker-compose.yml
+version: "3.7"
+services:
+  minio:
+    image: minio/minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - "./minio/data1:/data1"
+      - "./minio/data2:/data2"
+      - "./minio/data3:/data3"
+      - "./minio/data4:/data4"
+    command: 'server --console-address ":9001" /data{1...4}'
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=12345678
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 ```
