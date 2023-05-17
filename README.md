@@ -1,7 +1,7 @@
 # Project Overview
 
 This is a full-stack integrated service project with multiple server-side and client-side to provide a one-stop service solution. The goal is to build a cross-platform application, from server-side to various types of clients.
-
+1
 
 ## Full-stack integrated services
 
@@ -24,11 +24,13 @@ This is a full-stack integrated service project with multiple server-side and cl
 - Capture data branch->generate, technology stack is python
 
 ## installation environment
+
 ```
 ### centos8.3
 $ sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 $ sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 ```
+
 ```
 ## Install docker
 sudo yum install -y yum-utils
