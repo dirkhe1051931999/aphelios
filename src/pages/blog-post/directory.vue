@@ -183,6 +183,7 @@
                                   <li v-for="(post, index) in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                                     <div class="row items-center">
                                       <p class="link-type fs-16 lh-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
+                                      <q-icon v-if="post.haveImg" color="grey" size="18px" name="o_image" class="q-ml-sm"></q-icon>
                                       <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
                                       <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
                                       <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
@@ -247,6 +248,7 @@
                           <li v-for="(post, index) in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                             <div class="row items-center">
                               <p class="link-type fs-16 1h-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
+                              <q-icon v-if="post.haveImg" color="grey" size="18px" name="o_image" class="q-ml-sm"></q-icon>
                               <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
                               <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
                               <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
@@ -642,7 +644,7 @@ export default class BlogPostDirectoryComponent extends Vue {
             value: '1',
           },
         ],
-        label: '栏目副名',
+        label: '有无下级',
       },
     ],
     childDirectoryInput: [
@@ -1194,8 +1196,10 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.dialogAddUpdateParams.params.subName = item.subName;
       this.dialogAddUpdateParams.params.type = item.type;
       this.dialogAddUpdateParams.input = this.dialogAddUpdateParams.directoryInput as any;
-      const index = this.dialogAddUpdateParams.input.findIndex((item: any) => item.name === 'type');
-      this.dialogAddUpdateParams.input.splice(index, 1);
+      const index = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'type');
+      if (index !== -1) {
+        this.dialogAddUpdateParams.input.splice(index, 1);
+      }
     } else if (type === 'child-directory') {
       this.dialogAddUpdateParams.params.name = item.name;
       this.dialogAddUpdateParams.params.subName = item.subName;

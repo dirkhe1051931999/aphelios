@@ -285,9 +285,9 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           this.dialogAddUpdateParams.row.content = data;
           this.editor.setHtml(data);
         }
-        this.$refs.editorWrap.style = 'transform: translateY(0) scale(1);opacity:1;height:100%;';
+        this.$refs.editorWrap.style = 'transform: translateY(0)';
       } else {
-        this.$refs.editorWrap.style = 'transform: translateY(-100vh) scale(.8);opacity:0;height:0%;';
+        this.$refs.editorWrap.style = 'transform: translateY(-100vh);';
         initForm();
       }
     });
@@ -591,9 +591,8 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   z-index: 1003;
   background: rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
-  transition: all 0.3s;
-  transform: translateY(-100vh) scale(0.8);
-  opacity: 0;
+  // transition: all 0.3s;
+  transform: translateY(-100vh);
   .editor-content {
     position: absolute;
     padding: 16px;

@@ -85,7 +85,8 @@
               <div class="text-left" v-else>
                 <!-- title -->
                 <div v-if="col.name === 'title'">
-                  <span class="link-type" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
+                  <span class="link-type q-mr-sm" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
+                  <q-icon v-if="props.row.haveImg" color="grey" size="18px" name="o_image"></q-icon>
                 </div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
