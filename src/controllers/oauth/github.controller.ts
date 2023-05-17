@@ -24,7 +24,7 @@ export const githubOAuth = async (ctx) => {
       "Content-Type": "application/json",
     },
     data: JSON.stringify(params),
-  })
+  } as any)
     .then(async (res: any) => {
       const args = res.data.split('&');
       let arg = args[0].split('=');
@@ -35,7 +35,7 @@ export const githubOAuth = async (ctx) => {
           Authorization: "token " + arg[1],
           "Content-Type": "application/json",
         },
-      }).then(async (result: any) => {
+      } as any).then(async (result: any) => {
         let { login, avatar_url, email } = result.data;
         let userId = 0;
         let mobile = null;

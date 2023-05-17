@@ -77,7 +77,7 @@ export function mkdirsSync(dirname: string): boolean {
  */
 export const uploadFileToMinio = (ctx: any, withData): Promise<any> => {
   return new Promise((resolve, reject) => {
-    const form = new formidable.IncomingForm();
+    const form: any = new formidable.IncomingForm();
     form.encoding = 'utf-8';
     form.keepExtensions = true; // 保留后缀
     form.maxFieldsSize = 200 * 1024 * 1024; // 文件大小2M

@@ -59,7 +59,7 @@ interface Config {
 const config: Config = {
   db: {
     mysql: {
-      host: '192.168.200.130',
+      host: '192.168.200.134',
       user: 'root',
       password: '123456',
       port: 3310,
@@ -68,7 +68,7 @@ const config: Config = {
     },
     redis: {
       port: 6380,
-      host: '192.168.200.130',
+      host: '192.168.200.134',
       db: 3,
       options: {
         return_buffers: false,
@@ -76,11 +76,11 @@ const config: Config = {
       },
     },
     minio: {
-      endPoint: '192.168.200.130',
+      endPoint: '192.168.200.134',
       port: 9000,
       useSSL: false,
-      accessKey: 'fd9C9kmZ6da67rsf',
-      secretKey: 'AYhWs3r2uPz91lqxVnnIqOAZh0DJX5h5',
+      accessKey: '9RSB8iL0VQ0J7PGs',
+      secretKey: '5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr',
       buckets: 'blog-service-oss',
     },
     db_salt: 'LGGKqbCrRKRnywHv3uqFZw==',
@@ -98,14 +98,14 @@ const config: Config = {
   },
   root: path.normalize(__dirname + '/..'),
   appPath: 'src/static',
-  resetPasswordUrl: 'http://192.168.200.130:9002/index.html#/login?token=',
-  defaultCdnUrl: 'http://192.168.200.130:3000/cdn',
+  resetPasswordUrl: 'http://localhost:9002/index.html#/login?token=',
+  defaultCdnUrl: 'http://localhost:3000/cdn',
   tempUploads: 'tempUploads',
   uploads: 'uploads',
   port: 3000,
   tokenSecret: 'test',
   isUpdateAdmin: false,
-  accessControlAllowOrigin: 'http://192.168.200.130:3000',
+  accessControlAllowOrigin: 'http://localhost:3000',
   adminName: 'admin',
   adminPassword: '123456',
   socketioPath: '/testsocketiopath',
