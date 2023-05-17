@@ -15,12 +15,12 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 data_dir = "./data"
 sql_dir = "./sql"
-url = "89.117.89.86:9000"
+url = "192.168.200.134:9000"
 bucket_name = "blog-service-oss"
 client = Minio(
     url,
-    access_key="cF66XWcUfZz06vdN",
-    secret_key="HiiMrsPLk5dTQxCEWUzxmuXRrpU50AwV",
+    access_key="9RSB8iL0VQ0J7PGs",
+    secret_key="5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr",
     secure=False,
 )
 today = datetime.today().strftime("%Y%m%d")
