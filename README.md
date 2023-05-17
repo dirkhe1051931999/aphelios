@@ -1,7 +1,6 @@
 # Project Overview
 
 This is a full-stack integrated service project with multiple server-side and client-side to provide a one-stop service solution. The goal is to build a cross-platform application, from server-side to various types of clients.
-1
 
 ## Full-stack integrated services
 
