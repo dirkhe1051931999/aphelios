@@ -24,7 +24,6 @@ def get_topic_ids(data_dir):
                         allTopicId.append(data["topicId"])
     return allTopicId
 
-
 def fetch_url(args):
     url, session = args
     try:
@@ -45,6 +44,7 @@ def get_comments(data, topicId):
             allData.append(
                 {
                     "id": str(uuid.uuid4()).replace("-", "").lower(),
+                    "id2": comment.get("id"),
                     "replyId": None
                     if comment.get("replyId") == curPostId
                     or comment.get("replyId") is None
@@ -79,9 +79,10 @@ def main():
         with ThreadPool(4) as pool:  # adjust this number based on your own situation
             responses = pool.map(fetch_url, ((url, session) for url in urls))
 
-    for topicId, response in zip(allTopicId, responses):
+    for topicId, response in zip(allTopicId, responses): # type: ignore
         if response is not None:
             allData.extend(get_comments(response, topicId))
+    # print(json.dumps(allData, indent=4, ensure_ascii=False))
     for i in allData:
         replyId = i.get("replyId")
         if replyId is None:
@@ -89,7 +90,7 @@ def main():
         else:
             replyId = f'"{replyId}"'
         allSql.append(
-            f'INSERT INTO sm_board_comment (id, replyId, content, postTime, userId, postId) VALUES ("{i.get("id")}", {replyId}, "{i.get("content")}" , {i.get("postTime")}, "{i.get("userId")}", "{i.get("topicId")}");'
+            f'INSERT INTO sm_board_comment (id,id2, replyId, content, postTime, userId, postId) VALUES ("{i.get("id")}","{i.get("id2")}", {replyId}, "{i.get("content")}" , {i.get("postTime")}, "{i.get("userId")}", "{i.get("topicId")}");'
         )
     sql_dir = "./sql"
     if not os.path.isdir(sql_dir):

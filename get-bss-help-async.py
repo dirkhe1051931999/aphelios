@@ -15,7 +15,7 @@ detailList = []
 resultDir = "./data/BSS使用帮助"
 channelUrl = "https://wap.newsmth.net/wap/api/board/recent/topic/list?id=badb9267f3b15a79068ede1c338b76b3"
 channelId = "69c8366bfbb715437d36c9c6711a5b9e"
-rangeNum = 3
+rangeNum =3
 if os.path.exists(resultDir):
     shutil.rmtree(resultDir)
 os.makedirs(resultDir)
