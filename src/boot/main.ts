@@ -15,6 +15,7 @@ import 'vue3-side-panel/dist/vue3-side-panel.css';
 import { defaultFill } from 'src/utils/tools';
 import { date } from 'quasar';
 
+
 import { Platform } from 'quasar';
 export default boot(({ app }) => {
   // We globally register our directive with Vue;

@@ -36,25 +36,11 @@
     >
       <template #selected>
         <template v-if="inputModel && inputModel.length">
-          <q-chip
-            :removable="!readonly"
-            v-for="(item, index) in inputModel"
-            :key="item"
-            dense
-            @remove="inputModel.splice(index, 1)"
-            >{{
-              inputSelectOptionBak.find(
-                (data) => String(data.value) === String(item)
-              )?.label ?? item
-            }}
+          <q-chip :removable="!readonly" v-for="(item, index) in inputModel" :key="item" dense @remove="inputModel.splice(index, 1)"
+            >{{ inputSelectOptionBak.find((data) => String(data.value) === String(item))?.label ?? item }}
           </q-chip>
         </template>
-        <template
-          v-if="
-            (!inputModel || (inputModel && !inputModel.length)) &&
-            showPlaceholder
-          "
-        >
+        <template v-if="(!inputModel || (inputModel && !inputModel.length)) && showPlaceholder">
           <span class="text-grey-5 fs-12">{{ inputPlaceholder }}</span>
         </template>
       </template>
@@ -62,12 +48,7 @@
         <q-item v-bind="scope.itemProps">
           <q-item-section v-close-popup>
             <q-item-label>{{ scope.opt.label }}</q-item-label>
-            <q-item-label
-              caption
-              v-if="scope.opt.description"
-              class="text-grey"
-              >{{ scope.opt.description }}</q-item-label
-            >
+            <q-item-label caption v-if="scope.opt.description" class="text-grey">{{ scope.opt.description }}</q-item-label>
           </q-item-section>
         </q-item>
       </template>
@@ -107,24 +88,23 @@ export default class FormMultipleSelectComponent extends Vue {
     }
     this.$emit('input', this.inputModel);
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private inputModel: string[] | any[] = [];
-  private inputPlaceholder = '';
-  private classes = '';
-  private rules: any[] = [];
-  private label = '';
-  private inputSelectOption: any[] = [];
-  private inputSelectOptionBak: any[] = [];
-  private showClose: boolean = true;
-  private readonly: boolean = false;
-  private userInput: boolean = false;
-  private inputId: string = '';
-  private hint: string = '';
-  private showPlaceholder = true;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public inputModel: string[] | any[] = [];
+  public inputPlaceholder = '';
+  public classes = '';
+  public rules: any[] = [];
+  public label = '';
+  public inputSelectOption: any[] = [];
+  public inputSelectOptionBak: any[] = [];
+  public showClose: boolean = true;
+  public readonly: boolean = false;
+  public userInput: boolean = false;
+  public inputId: string = '';
+  public hint: string = '';
+  public showPlaceholder = true;
   mounted() {
     this.inputModel = this.option.model;
-    this.inputPlaceholder =
-      this.option?.inputPlaceholder ?? this.globals.$t('messages.pleaseSelect');
+    this.inputPlaceholder = this.option?.inputPlaceholder ?? this.globals.$t('messages.pleaseSelect');
     this.classes = this.option?.classes ?? '';
     this.rules = this.option?.rules;
     this.label = this.option?.label;
@@ -139,14 +119,14 @@ export default class FormMultipleSelectComponent extends Vue {
   public async validForm() {
     return this.$refs[this.inputId].validate();
   }
-  private popShow() {
+  public popShow() {
     if (this.userInput) {
       this.showPlaceholder = false;
     } else {
       this.showPlaceholder = true;
     }
   }
-  private popHide() {
+  public popHide() {
     if (!this.inputModel || (this.inputModel && !this.inputModel.length)) {
       this.$nextTick(() => {
         this.$refs[this.inputId] && this.$refs[this.inputId].blur();
@@ -154,7 +134,7 @@ export default class FormMultipleSelectComponent extends Vue {
     }
     this.showPlaceholder = true;
   }
-  private filterFn(val: any, update: any) {
+  public filterFn(val: any, update: any) {
     update(() => {
       if (val === '') {
         this.inputSelectOption = this.inputSelectOptionBak;
@@ -165,7 +145,7 @@ export default class FormMultipleSelectComponent extends Vue {
       }
     });
   }
-  private removeItem(index: number) {
+  public removeItem(index: number) {
     this.inputModel.splice(index, 1);
     if (!this.inputModel.length) {
       this.showPlaceholder = true;
@@ -174,7 +154,7 @@ export default class FormMultipleSelectComponent extends Vue {
       });
     }
   }
-  private inputValue(val: string) {
+  public inputValue(val: string) {
     if (!val) {
       this.showPlaceholder = true;
       if (!this.inputModel || (this.inputModel && !this.inputModel.length)) {
@@ -188,6 +168,4 @@ export default class FormMultipleSelectComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

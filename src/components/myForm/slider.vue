@@ -63,7 +63,7 @@ export default class mySliderComponent extends Vue {
     this.dateParams.max = this.option.max;
     this.dateParams.step = this.option.step || 0.1;
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public dateParams = {
     model: 0,
     rules: [],
@@ -73,7 +73,7 @@ export default class mySliderComponent extends Vue {
     max: 100,
     step: 0.1,
   };
-  private handlerClickSetSlider() {
+  public handlerClickSetSlider() {
     const item = this.dateParams;
     this.$q
       .dialog({
@@ -135,6 +135,4 @@ export default class mySliderComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

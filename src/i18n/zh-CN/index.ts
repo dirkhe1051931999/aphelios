@@ -9,6 +9,7 @@ export default {
     'blog-post-channel': '博文频道',
     'blog-post-directory': '博文目录',
     'blog-post-author': '博文作者',
+    'blog-post-user': '博文用户',
     audit: '审核管理',
     'audit-company-certification': '企业认证审核',
     'audit-comment': '评论审核',

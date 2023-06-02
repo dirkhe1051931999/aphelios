@@ -197,7 +197,8 @@
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm">{{ post.comment }}</span>
+                                        <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
+                                        <span v-else>--</span>
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
@@ -262,7 +263,8 @@
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm">{{ post.comment }}</span>
+                                <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
+                                <span v-else>--</span>
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
@@ -423,25 +425,43 @@ export default class BlogPostDirectoryComponent extends Vue {
     };
   }
   get fixedDirectoryRightChannel() {
-    if (BlogPostModule.fixedDirectoryRightChannel) {
+    if (BlogPostModule.directoryLeftSideBarNotScroll) {
       if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
         let directoryRightPanel = this.$refs['directoryRightPanel'][0];
-        directoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.directoryRightPanel.width}px;height:${this.sheetParams.directoryRightPanel.height}px;height:${this.sheetParams.directoryRightPanel.height}px;top:${this.sheetParams.directoryRightPanel.top}px;left:${this.sheetParams.directoryRightPanel.left}px;`;
+        directoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.directoryRightPanel.width}px;height:${
+          this.sheetParams.directoryRightPanel.height
+        }px;height:${this.sheetParams.directoryRightPanel.height - 100}px;top:${this.sheetParams.directoryRightPanel.top + 100}px;left:${this.sheetParams.directoryRightPanel.left + 8}px;`;
       }
       if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
         let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
-        childDirectoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.childDirectoryRightPanel.width}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;top:${this.sheetParams.childDirectoryRightPanel.top}px;left:${this.sheetParams.childDirectoryRightPanel.left}px;`;
+        childDirectoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.childDirectoryRightPanel.width}px;height:${
+          this.sheetParams.childDirectoryRightPanel.height
+        }px;height:${this.sheetParams.childDirectoryRightPanel.height - 100}px;top:${this.sheetParams.childDirectoryRightPanel.top + 100}px;left:${
+          this.sheetParams.childDirectoryRightPanel.left + 8
+        }px;`;
       }
     } else {
-      if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
-        let directoryRightPanel = this.$refs['directoryRightPanel'][0];
-        directoryRightPanel.style = '';
-      }
-      if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
-        let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
-        childDirectoryRightPanel.style = '';
+      if (BlogPostModule.fixedDirectoryRightChannel) {
+        if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
+          let directoryRightPanel = this.$refs['directoryRightPanel'][0];
+          directoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.directoryRightPanel.width}px;height:${this.sheetParams.directoryRightPanel.height}px;height:${this.sheetParams.directoryRightPanel.height}px;top:${this.sheetParams.directoryRightPanel.top}px;left:${this.sheetParams.directoryRightPanel.left}px;`;
+        }
+        if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
+          let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
+          childDirectoryRightPanel.style = `position:fixed;overflow-y:scroll;transition: all .1s ease;background:#ffffff;width:${this.sheetParams.childDirectoryRightPanel.width}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;height:${this.sheetParams.childDirectoryRightPanel.height}px;top:${this.sheetParams.childDirectoryRightPanel.top}px;left:${this.sheetParams.childDirectoryRightPanel.left}px;`;
+        }
+      } else {
+        if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
+          let directoryRightPanel = this.$refs['directoryRightPanel'][0];
+          directoryRightPanel.style = '';
+        }
+        if (this.$refs['childDirectoryRightPanel'] && this.$refs['childDirectoryRightPanel'][0]) {
+          let childDirectoryRightPanel = this.$refs['childDirectoryRightPanel'][0];
+          childDirectoryRightPanel.style = '';
+        }
       }
     }
+
     return BlogPostModule.fixedDirectoryRightChannel;
   }
   get isCollapse() {
@@ -457,7 +477,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     return BlogPostModule.addPostSuccessFlag;
   }
   @Watch('sheetParams.tab')
-  private async watchSheetTab(newVal: string) {
+  public async watchSheetTab(newVal: string) {
     if (!this.sheetParams.isClickSelect) {
       this.sheetParams.directoryTab = (this.sheetParams.data.find((item: any) => item.id === newVal) as any).children.length
         ? (this.sheetParams.data.find((item: any) => item.id === newVal) as any).children[0].id
@@ -472,7 +492,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     });
   }
   @Watch('sheetParams.directoryTab')
-  private async watchDirectoryTab(newVal: string) {
+  public async watchDirectoryTab(newVal: string) {
     if (!this.sheetParams.isClickSelect) {
       this.sheetParams.childDirectoryTab =
         (this.sheetParams.data.find((item: any) => item.id === this.sheetParams.tab) as any).children.find((item: any) => item.id === newVal) &&
@@ -489,7 +509,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.getPostListContainerBox();
   }
   @Watch('sheetParams.childDirectoryTab')
-  private async watchChildDirectoryTab(newVal: string) {
+  public async watchChildDirectoryTab(newVal: string) {
     this.$nextTick(() => {
       if (newVal) {
         this.getPostListByCategoryId(newVal);
@@ -498,11 +518,11 @@ export default class BlogPostDirectoryComponent extends Vue {
     });
   }
   @Watch('isCollapse')
-  private async watchIsCollapse(newVal: boolean) {
+  public async watchIsCollapse(newVal: boolean) {
     this.getPostListContainerBox();
   }
   @Watch('addPostSuccessFlag')
-  private async watchAddPostSuccessFlag(newVal: string) {
+  public async watchAddPostSuccessFlag(newVal: string) {
     if (newVal) {
       const result = await BlogPostModule.getPostRowById({
         id: this.addedPostId,
@@ -514,7 +534,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     }
   }
   @Watch('updatePostSuccessFlag')
-  private async watchUpdatePostSuccessFlag(newVal: string) {
+  public async watchUpdatePostSuccessFlag(newVal: string) {
     if (newVal) {
       const result = await BlogPostModule.getPostRowById({
         id: this.postParams.params.postId,
@@ -530,8 +550,8 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.getChannel();
     this.getAuthor();
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private postParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public postParams = {
     pagination: {
       rowsPerPage: 20,
     },
@@ -540,7 +560,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       postId: null,
     },
   };
-  private sheetParams = {
+  public sheetParams = {
     data: [],
     loading: false,
     tab: '',
@@ -560,7 +580,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     childDirectoryTab: '',
     isClickSelect: false,
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: '',
     isAdd: true,
@@ -671,11 +691,11 @@ export default class BlogPostDirectoryComponent extends Vue {
     ],
     input: [],
   };
-  private splitterModel1 = 10;
-  private splitterModel2 = 12;
-  private splitterModel3 = 15;
+  public splitterModel1 = 10;
+  public splitterModel2 = 12;
+  public splitterModel3 = 15;
   /* event */
-  private toAddSheet() {
+  public toAddSheet() {
     this.dialogAddUpdateParams.dialogType = 'sheet';
     this.dialogAddUpdateParams.isAdd = true;
     this.dialogAddUpdateParams.params.parent_id = 'to-fill-data';
@@ -692,7 +712,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }, 100);
     });
   }
-  private toAddDirectory(parentId: string) {
+  public toAddDirectory(parentId: string) {
     this.dialogAddUpdateParams.dialogType = 'directory';
     this.dialogAddUpdateParams.isAdd = true;
     this.dialogAddUpdateParams.params.parent_id = this.sheetParams.tab;
@@ -701,7 +721,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.dialogAddUpdateParams.title = `添加【${(this.sheetParams.data[parentIndex] as any).name}】的二级栏目`;
     this.dialogAddUpdateParams.visiable = true;
   }
-  private toAddChildDirectory(parentId: string) {
+  public toAddChildDirectory(parentId: string) {
     this.dialogAddUpdateParams.dialogType = 'child-directory';
     this.dialogAddUpdateParams.isAdd = true;
     this.dialogAddUpdateParams.title = '添加三级栏目';
@@ -709,7 +729,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.dialogAddUpdateParams.input = this.dialogAddUpdateParams.childDirectoryInput as any;
     this.dialogAddUpdateParams.visiable = true;
   }
-  private handleClickUploadFile() {
+  public handleClickUploadFile() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.fileID][0].type = 'text';
       this.dialogAddUpdateParams.upload.params.fileName = '';
@@ -721,7 +741,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }, 100);
     });
   }
-  private handlerClickUpdatePost(row: any) {
+  public handlerClickUpdatePost(row: any) {
     this.postParams.params.postId = row.id;
     BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
     BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
@@ -729,14 +749,14 @@ export default class BlogPostDirectoryComponent extends Vue {
     BlogPostModule.SET_POST_DETAIL({ row });
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
   }
-  private handleClickAdd() {
+  public handleClickAdd() {
     BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
     BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
     const categoryId = this.sheetParams.childDirectoryTab ? this.sheetParams.childDirectoryTab : this.sheetParams.directoryTab;
     BlogPostModule.SET_CURRENT_CATEGORY_ID(categoryId);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
   }
-  private uploadFileSuccess() {
+  public uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.fileID][0].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -767,7 +787,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     });
   }
-  private selectDirectory(parent_id: string, id: string) {
+  public selectDirectory(parent_id: string, id: string) {
     this.sheetParams.isClickSelect = true;
     this.sheetParams.directoryTab = id;
     this.sheetParams.tab = parent_id;
@@ -776,7 +796,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       BlogPostModule.SET_SCROLL_TOP(Math.random());
     });
   }
-  private selectChildDirectory(parent_id: string, paretn_parent_id: string, id: string) {
+  public selectChildDirectory(parent_id: string, paretn_parent_id: string, id: string) {
     this.sheetParams.isClickSelect = true;
     this.sheetParams.childDirectoryTab = id;
     this.sheetParams.directoryTab = parent_id;
@@ -785,15 +805,15 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.sheetParams.isClickSelect = false;
     });
   }
-  private dialogAddUpdateCloseEvent(data: { type: string }) {
+  public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
-  private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
-  private getPostListContainerBox() {
+  public getPostListContainerBox() {
     this.$nextTick(() => {
       if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
         setTimeout(() => {
@@ -815,10 +835,10 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     });
   }
-  private watchSplitterChange() {
+  public watchSplitterChange() {
     this.getPostListContainerBox();
   }
-  private watchDirectoryRightPanelScrollBottom() {
+  public watchDirectoryRightPanelScrollBottom() {
     const id = this.sheetParams.directoryTab;
     const div = this.$refs['directoryRightPanel'][0];
     if (div.scrollTop + div.clientHeight + 10 >= div.scrollHeight) {
@@ -829,7 +849,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
-  private watchChildDirectoryRightPanelScrollBottom() {
+  public watchChildDirectoryRightPanelScrollBottom() {
     const id = this.sheetParams.childDirectoryTab;
     const div = this.$refs['childDirectoryRightPanel'][0];
     if (div.scrollTop + div.clientHeight + 10 >= div.scrollHeight) {
@@ -840,8 +860,16 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
+  public openCommentDialog(row: any) {
+    const detail = {
+      id: row.id,
+      title: row.title,
+    };
+    BlogPostModule.SET_COMMENT_DETAIL(detail);
+    BlogPostModule.SET_COMMENT_VISIABLE(true);
+  }
   /* http */
-  private async getAllSheetDirectory(dialogType?: string, id?: string) {
+  public async getAllSheetDirectory(dialogType?: string, id?: string) {
     try {
       this.$q.loading.show();
       const allSheet = await BlogPostModule.getAllSheet({});
@@ -903,21 +931,21 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     });
   }
-  private async getChannel() {
+  public async getChannel() {
     try {
       await BlogPostModule.getAllChannel({});
     } finally {
       return Promise.resolve();
     }
   }
-  private async getAuthor() {
+  public async getAuthor() {
     try {
       await BlogPostModule.getAllPostAuthor({});
     } finally {
       return Promise.resolve();
     }
   }
-  private async getPostListByCategoryId(id: string) {
+  public async getPostListByCategoryId(id: string) {
     try {
       this.postParams.params.categoryId = id;
       const item = findItemById(this.postParams.params.categoryId, this.sheetParams.data);
@@ -951,7 +979,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -973,7 +1001,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async handlerClickOnline(row: any) {
+  public async handlerClickOnline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 上线提示',
@@ -997,7 +1025,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async handlerClickOffline(row: any) {
+  public async handlerClickOffline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 下线提示',
@@ -1020,7 +1048,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     if (this.dialogAddUpdateParams.dialogType === 'sheet') {
       if (!this.dialogAddUpdateParams.upload.params.file) {
         this.$globalMessage.show({
@@ -1077,7 +1105,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     }
   }
-  private async addSheet() {
+  public async addSheet() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
       description: this.dialogAddUpdateParams.params.description,
@@ -1086,7 +1114,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addSheet(params);
     return Promise.resolve(id);
   }
-  private async updateSheet() {
+  public async updateSheet() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
       name: this.dialogAddUpdateParams.params.name,
@@ -1096,7 +1124,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateSheet(params);
     return Promise.resolve();
   }
-  private async addDirectory() {
+  public async addDirectory() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
       subName: this.dialogAddUpdateParams.params.subName,
@@ -1106,7 +1134,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addDirectory(params);
     return Promise.resolve(id);
   }
-  private async updateDirectory() {
+  public async updateDirectory() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
       name: this.dialogAddUpdateParams.params.name,
@@ -1115,7 +1143,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateDirectory(params);
     return Promise.resolve();
   }
-  private async addChildDirectory() {
+  public async addChildDirectory() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
       subName: this.dialogAddUpdateParams.params.subName,
@@ -1125,7 +1153,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addChildDirectory(params);
     return Promise.resolve(id);
   }
-  private async updateChildDirectory() {
+  public async updateChildDirectory() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
       name: this.dialogAddUpdateParams.params.name,
@@ -1134,7 +1162,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateChildDirectory(params);
     return Promise.resolve();
   }
-  private async removeItem(event: any, type: string, item: any) {
+  public async removeItem(event: any, type: string, item: any) {
     this.dialogAddUpdateParams.isAdd = false;
     const result = await this.$globalConfirm.show({
       title: '💕💕💕 提示',
@@ -1184,7 +1212,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
-  private async updateItem(event: any, type: string, item: any) {
+  public async updateItem(event: any, type: string, item: any) {
     this.dialogAddUpdateParams.isAdd = false;
     if (type === 'sheet') {
       this.dialogAddUpdateParams.upload.params.file = item.cover;

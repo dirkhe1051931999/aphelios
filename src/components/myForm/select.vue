@@ -102,21 +102,21 @@ export default class FormSelectComponent extends Vue {
     });
     this.$emit('input', this.model);
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private model: string = '';
-  private inputPlaceholder = '';
-  private classes = '';
-  private rules: any[] = [];
-  private label = '';
-  private inputSelectOption: any[] = [];
-  private inputSelectOptionBak: any[] = [];
-  private showClose: boolean = true;
-  private readonly: boolean = false;
-  private hint: string = '';
-  private inputId: string = '';
-  private userInput: boolean = false;
-  private showPlaceholder = true;
-  private disable = false;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public model: string = '';
+  public inputPlaceholder = '';
+  public classes = '';
+  public rules: any[] = [];
+  public label = '';
+  public inputSelectOption: any[] = [];
+  public inputSelectOptionBak: any[] = [];
+  public showClose: boolean = true;
+  public readonly: boolean = false;
+  public hint: string = '';
+  public inputId: string = '';
+  public userInput: boolean = false;
+  public showPlaceholder = true;
+  public disable = false;
   mounted() {
     this.model = this.option?.model ?? '';
     this.inputPlaceholder = this.option?.inputPlaceholder ?? 'Please select';
@@ -135,14 +135,14 @@ export default class FormSelectComponent extends Vue {
   public async validForm() {
     return this.$refs[this.inputId].validate();
   }
-  private popShow() {
+  public popShow() {
     if (this.userInput) {
       this.showPlaceholder = false;
     } else {
       this.showPlaceholder = true;
     }
   }
-  private popHide() {
+  public popHide() {
     if (!this.model || (this.model && !this.model.length)) {
       this.$nextTick(() => {
         this.$refs[this.inputId] && this.$refs[this.inputId].blur();
@@ -150,7 +150,7 @@ export default class FormSelectComponent extends Vue {
     }
     this.showPlaceholder = true;
   }
-  private filterFn(val: any, update: any) {
+  public filterFn(val: any, update: any) {
     update(() => {
       if (val === '') {
         this.inputSelectOption = this.inputSelectOptionBak;
@@ -161,7 +161,7 @@ export default class FormSelectComponent extends Vue {
       }
     });
   }
-  private inputValue(val: string) {
+  public inputValue(val: string) {
     if (!val) {
       this.showPlaceholder = true;
       if (!this.model || (this.model && !this.model.length)) {
@@ -175,6 +175,4 @@ export default class FormSelectComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

@@ -1,7 +1,6 @@
-
 <template>
   <div class="VueSidePanel">
-    <VueSidePanel v-model="isOpened" lock-scroll width="800px" z-index="2000" hide-close-btn body-class="VueSidePanel" :overlay-opacity="0">
+    <VueSidePanel v-model="isOpened" lock-scroll width="50vw" z-index="2000" hide-close-btn body-class="VueSidePanel" :overlay-opacity="0.3">
       <div class="title f-bold q-pa-md fs-18">
         {{ title }}
         <div class="close" @click="isOpened = false">

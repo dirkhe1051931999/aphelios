@@ -355,7 +355,7 @@ import setting from 'src/setting.json';
 export default class LoginPage2 extends Vue {
   declare $refs: any;
   @Watch('$route', { immediate: true })
-  private onRouteChange(route: any) {
+  public onRouteChange(route: any) {
     // TODO: remove the "as Dictionary<string>" hack after v4 release for vue-router
     // See https://github.com/vuejs/vue-router/pull/2050 for details
     const query = route.query as Dictionary<string>;
@@ -365,7 +365,7 @@ export default class LoginPage2 extends Vue {
     }
   }
   @Watch('pageType')
-  private onPageTypeChange(route: any) {
+  public onPageTypeChange(route: any) {
     this.changePasswordForm.username = '';
     this.changePasswordForm.oldPassword = '';
     this.changePasswordForm.password = '';
@@ -449,10 +449,10 @@ export default class LoginPage2 extends Vue {
       location.replace('index.html#/login');
     }
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public passwordRules = setting.passwordRules;
   public pageType = 'signIn';
-  private otherQuery: Dictionary<string> = {};
+  public otherQuery: Dictionary<string> = {};
   public changePasswordForm = {
     username: '',
     oldPassword: '',
@@ -555,9 +555,9 @@ export default class LoginPage2 extends Vue {
       },
     ],
   };
-  private redirect?: string;
+  public redirect?: string;
   /* event */
-  private getOtherQuery(query: Dictionary<string>) {
+  public getOtherQuery(query: Dictionary<string>) {
     return Object.keys(query).reduce((acc, cur) => {
       if (cur !== 'redirect') {
         acc[cur] = query[cur];
@@ -565,7 +565,7 @@ export default class LoginPage2 extends Vue {
       return acc;
     }, {} as Dictionary<string>);
   }
-  private async resetPasswordToSignIn() {
+  public async resetPasswordToSignIn() {
     if (getToken()) {
       const result = await this.$globalConfirm.show({
         title: '再次确认',
@@ -585,11 +585,11 @@ export default class LoginPage2 extends Vue {
     this.pageType = 'signIn';
     this.$router.push('/login');
   }
-  private clickGithubLogin() {
+  public clickGithubLogin() {
     location.href = setting.github_oauth_url;
   }
   /* http */
-  private async handlerSignIn() {
+  public async handlerSignIn() {
     if (!this.signInParams.username || !this.signInParams.password) {
       this.$globalMessage.show({
         type: 'error',
@@ -624,7 +624,7 @@ export default class LoginPage2 extends Vue {
       location.reload();
     }
   }
-  private async handleClickSendCode() {
+  public async handleClickSendCode() {
     if (!this.signInParams.username) {
       this.$globalMessage.show({
         type: 'error',
@@ -662,7 +662,7 @@ export default class LoginPage2 extends Vue {
       this.signInParams.getCodeConfig.getVerifyCodeLoading = false;
     }
   }
-  private handlerChangePassword() {
+  public handlerChangePassword() {
     this.$refs.changePasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
         await UserModule.changePassword({
@@ -685,7 +685,7 @@ export default class LoginPage2 extends Vue {
       }
     });
   }
-  private handlerForgetPassword() {
+  public handlerForgetPassword() {
     this.$refs.forgotPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
         await UserModule.forgotPassword({
@@ -705,7 +705,7 @@ export default class LoginPage2 extends Vue {
       }
     });
   }
-  private handlerResetPassword() {
+  public handlerResetPassword() {
     this.$refs.resetPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
         const { code, message } = await UserModule.changePasswordWithOutOld({

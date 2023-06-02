@@ -84,8 +84,8 @@ export default class FormDateComponent extends Vue {
     this.myDateData.classes = this.option.classes;
     this.myDateData.dateRange = this.option.dateRange;
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private myDateData = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public myDateData = {
     model: '',
     dateRange: { from: '', to: '' },
     label: '',
@@ -96,6 +96,4 @@ export default class FormDateComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

@@ -61,21 +61,20 @@ export default class FormMaskInputComponent extends Vue {
   onchange(newVal: string) {
     this.$emit('input', newVal);
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private model = '';
-  private type = '';
-  private inputPlaceholder = '';
-  private classes = '';
-  private rules: any[] = [];
-  private label = '';
-  private hint: string = '';
-  private mask: string = '';
-  private readonly: boolean = false;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public model = '';
+  public type = '';
+  public inputPlaceholder = '';
+  public classes = '';
+  public rules: any[] = [];
+  public label = '';
+  public hint: string = '';
+  public mask: string = '';
+  public readonly: boolean = false;
   mounted() {
     this.model = this.option.model ?? '';
     this.type = this.option?.type ?? 'text';
-    this.inputPlaceholder =
-      this.option?.inputPlaceholder ?? this.globals.$t('messages.pleaseEnter');
+    this.inputPlaceholder = this.option?.inputPlaceholder ?? this.globals.$t('messages.pleaseEnter');
     this.classes = this.option?.classes ?? '';
     this.rules = this.option?.rules;
     this.label = this.option?.label;
@@ -89,6 +88,4 @@ export default class FormMaskInputComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

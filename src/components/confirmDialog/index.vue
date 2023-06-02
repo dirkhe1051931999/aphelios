@@ -28,10 +28,10 @@ export default class dialogConfirmComponent extends Vue {
   @Prop({ default: '' }) content!: string;
   @Prop({ default: '' }) confirmButtonText!: string;
   @Prop({ default: 'primary' }) color!: string;
-  private show() {
+  public show() {
     this.$refs.dialogRef.show();
   }
-  private hide() {
+  public hide() {
     this.$refs.dialogRef.hide();
   }
   public onOKClick() {

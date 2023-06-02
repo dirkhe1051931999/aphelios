@@ -9,6 +9,7 @@ export default {
     'blog-post-channel': 'Blog post channel',
     'blog-post-directory': 'Blog post directory',
     'blog-post-author': 'Blog post author',
+    'blog-post-user': 'Blog post user',
     audit: 'Audit',
     'audit-company-certification': 'Company certification',
     'audit-comment': 'Comment',

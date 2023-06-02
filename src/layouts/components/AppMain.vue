@@ -58,17 +58,25 @@ export default class AppMainComponent extends Vue {
       this.calcStyle1 = 'width:calc(100vw - 220px)';
     }
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private calcStyle1 = '';
-  private calcStyle2 = '';
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public calcStyle1 = '';
+  public calcStyle2 = '';
   /* event */
-  private watchAppMainScroll(e: any) {
+  public watchAppMainScroll(e: any) {
     const offsetTop = e.target.offsetTop;
     const scrollTop = e.target.scrollTop;
-    if (scrollTop > offsetTop) {
+    const clientHeight = e.target.clientHeight;
+    const scrollHeight = e.target.scrollHeight;
+    if (scrollTop + clientHeight >= scrollHeight - 16) {
       BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(true);
+      BlogPostModule.SET_DIRECTORY_LEFT_SIDE_BAR_NOT_SCROLL(true);
     } else {
-      BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(false);
+      BlogPostModule.SET_DIRECTORY_LEFT_SIDE_BAR_NOT_SCROLL(false);
+      if (scrollTop > offsetTop) {
+        BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(true);
+      } else {
+        BlogPostModule.SET_FIXED_DIRECTORY_RIGHT_CHANNEL(false);
+      }
     }
   }
 }

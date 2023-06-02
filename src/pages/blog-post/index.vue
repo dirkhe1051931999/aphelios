@@ -111,7 +111,7 @@
                 </div>
                 <!-- count -->
                 <div v-if="col.name === 'count'">
-                  <span class="link-type" v-if="props.row.comment">{{ defaultFill(props.row.comment) }} </span>
+                  <span class="link-type" v-if="props.row.comment" @click="openCommentDialog(props.row)">{{ defaultFill(props.row.comment) }} </span>
                   <span v-else>--</span>
                   <span class="q-mx-sm">/</span>
                   <span class="link-type" v-if="props.row.view">{{ defaultFill(props.row.view) }}</span>
@@ -144,7 +144,7 @@ import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
 
 const CONST_PARAMS: any = {
-  query: { channelId: '', status: '', authorId: '' },
+  query: { channelId: '', status: '', authorId: '', haveComment: '' },
 };
 
 @Component({
@@ -239,7 +239,7 @@ export default class BlogPostComponent extends Vue {
     };
   }
   @Watch('addPostSuccessFlag')
-  private async watchAddPostSuccessFlag(newVal: string) {
+  public async watchAddPostSuccessFlag(newVal: string) {
     if (newVal) {
       console.log('add id', this.addedPostId);
       this.getData();
@@ -247,7 +247,7 @@ export default class BlogPostComponent extends Vue {
     }
   }
   @Watch('updatePostSuccessFlag')
-  private async watchUpdatePostSuccessFlag(newVal: string) {
+  public async watchUpdatePostSuccessFlag(newVal: string) {
     if (newVal) {
       this.getData();
       BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
@@ -263,8 +263,8 @@ export default class BlogPostComponent extends Vue {
     this.getChannel();
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private queryParams: any = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public queryParams: any = {
     id: 'query',
     queryLoading: false,
     resetLoading: false,
@@ -304,9 +304,25 @@ export default class BlogPostComponent extends Vue {
         selectOption: [],
         id: 'authorId',
       },
+      {
+        placeholder: '是否有评论',
+        type: 'select',
+        class: 'w-250 m-r-15 m-b-15',
+        selectOption: [
+          {
+            label: '有',
+            value: '1',
+          },
+          {
+            label: '无',
+            value: '0',
+          },
+        ],
+        id: 'haveComment',
+      },
     ],
   };
-  private tableParams = {
+  public tableParams = {
     loading: false,
     data: [],
     categoryOptions: [],
@@ -376,29 +392,29 @@ export default class BlogPostComponent extends Vue {
     ],
   };
   /**event */
-  private paginationInput(data: any) {
+  public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
-  private async handleQuery() {
+  public async handleQuery() {
     this.queryParams.queryLoading = true;
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.queryLoading = false;
   }
-  private async handleResetQuery() {
+  public async handleResetQuery() {
     this.queryParams.resetLoading = true;
     this.queryParams.params = cloneDeep(CONST_PARAMS.query);
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.resetLoading = false;
   }
-  private handleClickAdd() {
+  public handleClickAdd() {
     BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
     BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
     BlogPostModule.SET_POST_DETAIL({
       row: {
@@ -413,14 +429,23 @@ export default class BlogPostComponent extends Vue {
     BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
   }
+  public openCommentDialog(row: any) {
+    const detail = {
+      id: row.id,
+      title: row.title,
+    };
+    BlogPostModule.SET_COMMENT_DETAIL(detail);
+    BlogPostModule.SET_COMMENT_VISIABLE(true);
+  }
   /**http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       const { pageData, total } = await BlogPostModule.getPostList({
         channelId: this.queryParams.params.channelId,
         status: this.queryParams.params.status,
         authorId: this.queryParams.params.authorId,
+        haveComment: this.queryParams.params.haveComment,
         page: this.tableParams.pagination.page,
         rowsPerPage: this.tableParams.pagination.rowsPerPage,
       });
@@ -438,7 +463,7 @@ export default class BlogPostComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getAuthor() {
+  public async getAuthor() {
     try {
       let { pageData } = await BlogPostModule.getAllPostAuthor({});
       if (pageData && pageData.length > 0) {
@@ -453,7 +478,7 @@ export default class BlogPostComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getCategories() {
+  public async getCategories() {
     try {
       const allSheet = await BlogPostModule.getAllSheet({});
       const allDirectory = await BlogPostModule.getAllDirectory({});
@@ -479,7 +504,7 @@ export default class BlogPostComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async getChannel() {
+  public async getChannel() {
     try {
       let { pageData } = await BlogPostModule.getAllChannel({});
       pageData = pageData.map((item: any) => {
@@ -491,7 +516,7 @@ export default class BlogPostComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -511,7 +536,7 @@ export default class BlogPostComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async handlerClickOnline(row: any) {
+  public async handlerClickOnline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -531,7 +556,7 @@ export default class BlogPostComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async handlerClickOffline(row: any) {
+  public async handlerClickOffline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',

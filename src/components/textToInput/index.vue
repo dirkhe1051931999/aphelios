@@ -25,14 +25,14 @@ export default class TextToInputComponent extends Vue {
     this.oldText = newVal;
     this.text = newVal;
   }
-  private text = '';
-  private oldText = '';
-  private _loading = false;
-  private close() {
+  public text = '';
+  public oldText = '';
+  public _loading = false;
+  public close() {
     this.text = this.oldText;
     this.$emit('close', { value: this.text, that: this.that });
   }
-  private confirm() {
+  public confirm() {
     this.oldText = this.text;
     this.$emit('confirm', { value: this.text, that: this.that });
   }

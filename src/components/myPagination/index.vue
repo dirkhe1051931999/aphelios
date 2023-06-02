@@ -56,18 +56,18 @@ export default class MyPaginationComponent extends Vue {
     this._paginationParams.rowsPerPage = newVal.rowsPerPage;
     this._paginationParams.rowsNumber = newVal.rowsNumber;
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private _rowNumbersArr = [10, 20, 30];
-  private _paginationParams: Pagination = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public _rowNumbersArr = [10, 20, 30];
+  public _paginationParams: Pagination = {
     page: 1,
     rowsPerPage: 10,
     rowsNumber: 0, // 总数
   };
 
-  private _paginationInput() {
+  public _paginationInput() {
     this.$emit('pagination', this._paginationParams);
   }
-  private selectChange() {
+  public selectChange() {
     this._paginationParams.page = 1;
     this.$emit('pagination', this._paginationParams);
   }
@@ -78,7 +78,6 @@ export default class MyPaginationComponent extends Vue {
   }
 }
 </script>
-
 
 <style lang="scss">
 .body--dark {

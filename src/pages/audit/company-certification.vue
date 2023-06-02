@@ -78,8 +78,8 @@ export default class MyCompanyCertificationComponent extends Vue {
     this.getData();
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private tableParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public tableParams = {
     loading: false,
     data: [],
     pagination: {
@@ -148,13 +148,13 @@ export default class MyCompanyCertificationComponent extends Vue {
     ],
   };
   /* event */
-  private paginationInput(data: any) {
+  public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
 
   /* http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       const { pageData } = await AuditModule.getCompanyCertificationList({
@@ -175,7 +175,7 @@ export default class MyCompanyCertificationComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async handlerClickPass(item: any) {
+  public async handlerClickPass(item: any) {
     try {
       this.$q.loading.show();
       await AuditModule.passCompanyCertification({
@@ -190,7 +190,7 @@ export default class MyCompanyCertificationComponent extends Vue {
     } catch (error) {}
     this.$q.loading.hide();
   }
-  private async handlerClickReject(item: any) {
+  public async handlerClickReject(item: any) {
     this.$q
       .dialog({
         title: '不通过原因',

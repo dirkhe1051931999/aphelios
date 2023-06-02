@@ -10,7 +10,7 @@ const WIDTH = 992;
 })
 export default class UseResize extends Vue {
   @Watch('route.name')
-  private onchange() {
+  public onchange() {
     if (AppModule.device === DeviceType.Mobile && AppModule.sidebar.opened) {
       AppModule.CLOSE_SIDEBAR(false);
     }
@@ -29,16 +29,14 @@ export default class UseResize extends Vue {
     }
   }
   public route = useRoute();
-  private _isMobile() {
+  public _isMobile() {
     const rect = document.body.getBoundingClientRect();
     return rect.width - 1 < WIDTH;
   }
-  private _resizeHandler() {
+  public _resizeHandler() {
     if (!document.hidden) {
       const isMobile = this._isMobile();
-      AppModule.TOGGLE_DEVICE(
-        isMobile ? DeviceType.Mobile : DeviceType.Desktop
-      );
+      AppModule.TOGGLE_DEVICE(isMobile ? DeviceType.Mobile : DeviceType.Desktop);
       if (isMobile) {
         AppModule.CLOSE_SIDEBAR(true);
       }

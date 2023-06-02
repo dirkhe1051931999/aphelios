@@ -1,4 +1,3 @@
-
 <template>
   <router-view />
 </template>
@@ -8,6 +7,7 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { myIcons } from 'src/utils/custom-svg';
 import setting from 'src/setting.json';
 import { getDarkTheme } from './utils/localStorage';
+
 const NODE_ENV = process.env.NODE_ENV;
 const development = NODE_ENV === 'development';
 const path = development ? 'img:/icons/' : `img:${setting.publicPath}icons/`;
@@ -34,7 +34,6 @@ export default class myComponentApp extends Vue {
   }
 }
 </script>
-
 
 <style lang="scss">
 @import 'src/css/reset-quasar.scss';

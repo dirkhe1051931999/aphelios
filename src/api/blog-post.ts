@@ -1,4 +1,5 @@
 import { request } from 'src/boot/axios';
+import setting from 'src/setting.json';
 
 const api = {
   getPostList: '/management/blog/post/getPostList',
@@ -35,6 +36,14 @@ const api = {
   verifyCompanyAuthor: 'management/blog/post_author/verifyCompanyAuthor',
   getCompanyAuthorVerifyInfo: 'management/blog/post_author/getCompanyAuthorVerifyInfo',
   removeCompanyAuthorVerify: 'management/blog/post_author/removeCompanyAuthorVerify',
+  getCommentsByPostId: 'management/blog/post/getCommentsByPostId',
+  setCommentStatus: 'management/blog/post/setCommentStatus',
+  getAllPostUser: 'management/blog/post_user/getAllPostUser',
+  getAreaData: `${setting.minio}/blog-service-oss/province_city_region_town/`,
+  getIP: 'web/app/getIP',
+  addPostUser: 'management/blog/post_user/addPostUser',
+  deletePostUser: 'management/blog/post_user/deletePostUser',
+  viewUserPassword: 'management/blog/post_user/viewUserPassword',
 };
 
 export const getPostList = (data: any): any =>
@@ -239,6 +248,53 @@ export const getCompanyAuthorVerifyInfo = (data: any): any =>
 export const removeCompanyAuthorVerify = (data: any): any =>
   request({
     url: api.removeCompanyAuthorVerify,
+    method: 'post',
+    data,
+  });
+export const getCommentsByPostId = (data: any): any =>
+  request({
+    url: api.getCommentsByPostId,
+    method: 'post',
+    data,
+  });
+export const setCommentStatus = (data: any): any =>
+  request({
+    url: api.setCommentStatus,
+    method: 'post',
+    data,
+  });
+export const getAllPostUser = (data: any): any =>
+  request({
+    url: api.getAllPostUser,
+    method: 'post',
+    data,
+  });
+export const getAreaData = (data: any): any =>
+  request({
+    url: `${api.getAreaData}${data.pinyin}.json`,
+    method: 'get',
+  });
+export const getIP = (data: any): any =>
+  request({
+    url: api.getIP,
+    method: 'get',
+    params: data,
+  });
+export const addPostUser = (data: any): any =>
+  request({
+    url: api.addPostUser,
+    method: 'post',
+    data,
+  });
+export const deletePostUser = (data: any): any =>
+  request({
+    url: api.deletePostUser,
+    method: 'post',
+    data,
+  });
+export const viewUserPassword = (data: any): any =>
+  request({
+    url: api.viewUserPassword,
     method: 'post',
     data,
   });

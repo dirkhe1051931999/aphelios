@@ -1,10 +1,4 @@
-import {
-  VuexModule,
-  Module,
-  Mutation,
-  Action,
-  getModule,
-} from 'vuex-module-decorators';
+import { VuexModule, Module, Mutation, Action, getModule } from 'vuex-module-decorators';
 import { RouteLocationNormalized } from 'vue-router';
 import store from 'src/store';
 export type ITagsView = Partial<RouteLocationNormalized>;
@@ -15,7 +9,7 @@ export interface ITagsViewState {
 class TagsView extends VuexModule {
   public visitedViews: ITagsView[] = [];
   @Mutation
-  private ADD_VISITED_VIEW(view: ITagsView) {
+  public ADD_VISITED_VIEW(view: ITagsView) {
     if (
       this.visitedViews.some((v, index) => {
         if (v.path === view.path) {
@@ -32,7 +26,7 @@ class TagsView extends VuexModule {
     this.visitedViews.push(Object.assign({}, view));
   }
   @Mutation
-  private DEL_VISITED_VIEW(view: ITagsView) {
+  public DEL_VISITED_VIEW(view: ITagsView) {
     for (const [i, v] of this.visitedViews.entries()) {
       if (v.path === view.path) {
         this.visitedViews.splice(i, 1);
@@ -41,13 +35,13 @@ class TagsView extends VuexModule {
     }
   }
   @Mutation
-  private DEL_OTHER_VISITED_VIEWS(view: ITagsView) {
+  public DEL_OTHER_VISITED_VIEWS(view: ITagsView) {
     this.visitedViews = this.visitedViews.filter((v) => {
       return v.meta?.affix || v.path === view.path;
     });
   }
   @Mutation
-  private DEL_ALL_VISITED_VIEWS() {
+  public DEL_ALL_VISITED_VIEWS() {
     // keep affix tags
     const affixTags = this.visitedViews.filter((tag) => tag.meta?.affix);
     this.visitedViews = affixTags;

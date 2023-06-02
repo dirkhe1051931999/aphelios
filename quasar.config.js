@@ -10,21 +10,20 @@
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 
-const { configure } = require('quasar/wrappers');
-const setting = require('./src/setting.json');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const MonacoLocalesPlugin = require('monaco-editor-locales-plugin');
-const multiplePage = require('./multiple.page.generate');
-const path = require('path');
-module.exports = configure(function (ctx) {
+const {configure} = require ('quasar/wrappers');
+const setting = require ('./src/setting.json');
+const {CleanWebpackPlugin} = require ('clean-webpack-plugin');
+const MonacoWebpackPlugin = require ('monaco-editor-webpack-plugin');
+const MonacoLocalesPlugin = require ('monaco-editor-locales-plugin');
+const multiplePage = require ('./multiple.page.generate');
+const path = require ('path');
+module.exports = configure (function (ctx) {
   return {
     // https://v2.quasar.dev/quasar-cli-webpack/supporting-ts
     supportTS: {
       tsCheckerConfig: {
         eslint: {
-          enabled: true,
-          files: ['./src/**/*.{ts,tsx,js,jsx,vue}'],
+          enabled: true, files: ['./src/**/*.{ts,tsx,js,jsx,vue}'],
         },
       },
     },
@@ -41,8 +40,7 @@ module.exports = configure(function (ctx) {
     css: ['app.scss'],
 
     // https://github.com/quasarframework/quasar/tree/dev/extras
-    extras: [
-      // 'ionicons-v4',
+    extras: [// 'ionicons-v4',
       // 'mdi-v5',
       // 'fontawesome-v6',
       // 'eva-icons',
@@ -52,16 +50,14 @@ module.exports = configure(function (ctx) {
 
       'roboto-font', // optional, you are not bound to it
       'material-icons', // optional, you are not bound to it
-      'material-icons-outlined',
-    ],
+      'material-icons-outlined'],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-build
     build: {
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       transpile: false,
       publicPath: process.env.NODE_ENV !== 'production' ? null : setting.publicPath,
-      distDir: ctx.modeName === 'spa' ? `dist${setting.publicPath}` : `dist/${ctx.modeName}`,
-      // Add dependencies for transpiling with Babel (Array of string/regex)
+      distDir: ctx.modeName === 'spa' ? `dist${setting.publicPath}` : `dist/${ctx.modeName}`, // Add dependencies for transpiling with Babel (Array of string/regex)
       // (from node_modules, which are by default not transpiled).
       // Applies only if "transpile" is set to true.
       transpileDependencies: ['vuex-module-decorators'],
@@ -69,7 +65,7 @@ module.exports = configure(function (ctx) {
       rtl: false, // https://quasar.dev/options/rtl-support
       preloadChunks: true,
       showProgress: true,
-      scssLoaderOptions: { additionalData: '@import "src/css/extra.variables.scss";' },
+      scssLoaderOptions: {additionalData: '@import "src/css/extra.variables.scss";'},
       gzip: true,
       analyze: false,
 
@@ -78,50 +74,43 @@ module.exports = configure(function (ctx) {
 
       // https://v2.quasar.dev/quasar-cli-webpack/handling-webpack
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      chainWebpack(chain) {},
-      extendWebpack(cfg) {
-        cfg.plugins.push(
-          new MonacoWebpackPlugin({
-            languages: ['javascript', 'css', 'html', 'typescript', 'json'],
-            features: ['coreCommands', 'find', 'format', 'folding', 'smartSelect', 'snippets', 'suggest', 'hover'],
-          })
-        );
-        cfg.plugins.push(
-          new MonacoLocalesPlugin({
-            //设置支持的语言
-            languages: ['es', 'zh-cn'],
-            //默认语言
-            defaultLanguage: 'zh-cn',
-            //打印不匹配的文本
-            logUnmatched: false,
-            //自定义文本翻译
-            mapLanguages: { 'zh-cn': { 'Peek References': '查找引用', 'Go to Symbol...': '跳到变量位置', 'Command Palette': '命令面板' } },
-          })
-        );
+      chainWebpack (chain) {
+      },
+      extendWebpack (cfg) {
+        cfg.plugins.push (new MonacoWebpackPlugin ({
+          languages: ['javascript', 'css', 'html', 'typescript', 'json'],
+          features: ['coreCommands', 'find', 'format', 'folding', 'smartSelect', 'snippets', 'suggest', 'hover'],
+        }));
+        cfg.plugins.push (new MonacoLocalesPlugin ({
+          //设置支持的语言
+          languages: ['es', 'zh-cn'], //默认语言
+          defaultLanguage: 'zh-cn', //打印不匹配的文本
+          logUnmatched: false, //自定义文本翻译
+          mapLanguages: {
+            'zh-cn': {
+              'Peek References': '查找引用', 'Go to Symbol...': '跳到变量位置', 'Command Palette': '命令面板',
+            },
+          },
+        }));
         // linting is slow in TS projects, we execute it only for production builds
         if (ctx.prod) {
-          cfg.plugins.push(new CleanWebpackPlugin());
+          cfg.plugins.push (new CleanWebpackPlugin ());
         }
         cfg.resolve.alias = {
-          ...cfg.resolve.alias,
-          src2: path.resolve(__dirname, './src2'),
+          ...cfg.resolve.alias, src2: path.resolve (__dirname, './src2'),
         };
-        cfg.entry = Object.assign(multiplePage.getEntryPages('src2'), cfg.entry);
-        cfg.plugins.push(...multiplePage.htmlPlugins('src2'));
+        cfg.entry = Object.assign (multiplePage.getEntryPages ('src2'), cfg.entry);
+        cfg.plugins.push (...multiplePage.htmlPlugins ('src2'));
       },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer
     devServer: {
-      https: false,
-      port: ctx.mode.ssr ? 9100 : setting.devServerPort,
-      open: true, // opens browser window automatically
+      https: false, port: ctx.mode.ssr ? 9100 : setting.devServerPort, open: true, // opens browser window automatically
       proxy: {
         // proxy all requests starting with /api to jsonplaceholder
         '/api': {
-          target: 'http://127.0.0.1:' + 9004,
-          changeOrigin: true,
-          pathRewrite: {
+          target: 'http://127.0.0.1:' + 9004, changeOrigin: true, pathRewrite: {
             '^/api': '',
           },
         },
@@ -131,25 +120,15 @@ module.exports = configure(function (ctx) {
     // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-framework
     framework: {
       config: {
-        dark: 'auto',
-        screen: {
+        dark: 'auto', screen: {
           bodyClasses: true,
-        },
-        brand: {
-          white: '#ffffff',
-          negative: '#e93030',
-          primary: '#5469d4',
-        },
-        loadingBar: {
-          color: 'primary',
-          size: '4px',
-          position: 'top',
-        },
-        notify: {
-          position: 'bottom-right',
-          timeout: 2500,
-        },
-        loading: {
+        }, brand: {
+          white: '#ffffff', negative: '#e93030', primary: '#5469d4',
+        }, loadingBar: {
+          color: 'primary', size: '4px', position: 'top',
+        }, notify: {
+          position: 'bottom-right', timeout: 2500,
+        }, loading: {
           message: 'Loading...',
         },
       },
@@ -161,8 +140,7 @@ module.exports = configure(function (ctx) {
       // (like functional components as one of the examples),
       // you can manually specify Quasar components/directives to be available everywhere:
       //
-      components: ['QHeader', 'QFooter', 'QTooltip'],
-      directives: ['Ripple', 'Mutation', 'Scroll'],
+      components: ['QHeader', 'QFooter', 'QTooltip'], directives: ['Ripple', 'Mutation', 'Scroll'],
 
       // Quasar plugins
       plugins: ['Notify', 'AppFullscreen', 'LoadingBar', 'Loading', 'Dialog', 'BottomSheet'],
@@ -182,14 +160,11 @@ module.exports = configure(function (ctx) {
       prodPort: 3000, // The default port that the production server should use
       // (gets superseded if process.env.PORT is specified at runtime)
 
-      maxAge: 1000 * 60 * 60 * 24 * 30,
-      // Tell browser when a file from the server should expire from cache (in ms)
+      maxAge: 1000 * 60 * 60 * 24 * 30, // Tell browser when a file from the server should expire from cache (in ms)
 
       // chainWebpackWebserver (/* chain */) {},
 
-      middlewares: [
-        ctx.prod ? 'compression' : '',
-        'render', // keep this as last one
+      middlewares: [ctx.prod ? 'compression' : '', 'render', // keep this as last one
       ],
     },
 
@@ -210,33 +185,17 @@ module.exports = configure(function (ctx) {
         orientation: 'portrait',
         background_color: '#ffffff',
         theme_color: '#027be3',
-        icons: [
-          {
-            src: 'icons/icon-128x128.png',
-            sizes: '128x128',
-            type: 'image/png',
-          },
-          {
-            src: 'icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'icons/icon-256x256.png',
-            sizes: '256x256',
-            type: 'image/png',
-          },
-          {
-            src: 'icons/icon-384x384.png',
-            sizes: '384x384',
-            type: 'image/png',
-          },
-          {
-            src: 'icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
-        ],
+        icons: [{
+          src: 'icons/icon-128x128.png', sizes: '128x128', type: 'image/png',
+        }, {
+          src: 'icons/icon-192x192.png', sizes: '192x192', type: 'image/png',
+        }, {
+          src: 'icons/icon-256x256.png', sizes: '256x256', type: 'image/png',
+        }, {
+          src: 'icons/icon-384x384.png', sizes: '384x384', type: 'image/png',
+        }, {
+          src: 'icons/icon-512x512.png', sizes: '512x512', type: 'image/png',
+        }],
       },
     },
 
@@ -272,13 +231,13 @@ module.exports = configure(function (ctx) {
       },
 
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      chainWebpackMain(/* chain */) {
+      chainWebpackMain (/* chain */) {
         // do something with the Electron main process Webpack cfg
         // extendWebpackMain also available besides this chainWebpackMain
       },
 
       // "chain" is a webpack-chain object https://github.com/neutrinojs/webpack-chain
-      chainWebpackPreload(/* chain */) {
+      chainWebpackPreload (/* chain */) {
         // do something with the Electron main process Webpack cfg
         // extendWebpackPreload also available besides this chainWebpackPreload
       },

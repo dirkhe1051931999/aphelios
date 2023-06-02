@@ -11,6 +11,7 @@
     </div>
     <div class="sun" ref="sun"></div>
     <BlogEditorPostDialog></BlogEditorPostDialog>
+    <BlogCommentDialog></BlogCommentDialog>
   </div>
 </template>
 
@@ -24,6 +25,7 @@ import NavigationBar from './components/NavigationBar/index.vue';
 import TagsView from './components/TagsView/index.vue';
 import AppMain from './components/AppMain.vue';
 import BlogEditorPostDialog from 'src/pages/blog-post/components/editor-post.vue';
+import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
 @Component({
   name: 'LayoutIndexComponents',
   components: {
@@ -32,6 +34,7 @@ import BlogEditorPostDialog from 'src/pages/blog-post/components/editor-post.vue
     TagsView,
     AppMain,
     BlogEditorPostDialog,
+    BlogCommentDialog,
   },
   mixins: [UseResize],
 })
@@ -57,7 +60,7 @@ export default class LayoutIndexComponents extends Vue {
   public handleClickOutside() {
     AppModule.CLOSE_SIDEBAR(false);
   }
-  private toggleThemeChange() {
+  public toggleThemeChange() {
     if (!this.$q.dark.isActive) {
       this.$refs.sun.classList.add('down');
       setTimeout(() => {

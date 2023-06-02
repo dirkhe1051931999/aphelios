@@ -26,15 +26,15 @@ class User extends VuexModule implements IUserState {
     this.pagePermissionId = arr;
   }
   @Mutation
-  private SET_TOKEN(token: string) {
+  public SET_TOKEN(token: string) {
     this.token = token;
   }
   @Mutation
-  private SET_USERNAME(username: string) {
+  public SET_USERNAME(username: string) {
     this.username = username;
   }
   @Mutation
-  private SET_INTRODUCTION(introduction: string) {
+  public SET_INTRODUCTION(introduction: string) {
     this.introduction = introduction;
   }
   @Mutation

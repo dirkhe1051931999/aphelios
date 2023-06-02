@@ -26,13 +26,12 @@ export default class MyFixedPageComponent extends Vue {
       this.calcStyle = 'width:calc(100vw - 254px - 24px - 24px);left:calc(254px + 24px)';
     }
   }
-  private calcStyle = '';
-  private back() {
+  public calcStyle = '';
+  public back() {
     this.$emit('back');
   }
 }
 </script>
-
 
 <style lang="scss" scoped>
 .body--dark {

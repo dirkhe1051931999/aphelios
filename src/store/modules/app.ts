@@ -1,7 +1,7 @@
 import { i18n } from 'src/boot/i18n';
 import settings from 'src/setting.json';
 import { getLanguage, setLanguage } from 'src/utils/cookie';
-import { getSidebarStatus, setSidebarStatus } from 'src/utils/localStorage';
+import { setSidebarStatus, getSidebarStatus } from 'src/utils/localStorage';
 import { Vue } from 'vue-facing-decorator';
 import { VuexModule, Module, Mutation, Action, getModule } from 'vuex-module-decorators';
 import store from '../index';
@@ -14,6 +14,7 @@ interface ISidebar {
   opened: boolean;
   withoutAnimation: boolean;
 }
+
 @Module({ dynamic: true, namespaced: true, store, name: 'App' })
 class App extends VuexModule {
   public language = getLanguage() || settings.language;

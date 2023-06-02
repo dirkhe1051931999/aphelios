@@ -293,7 +293,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     });
   }
   mounted() {}
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     row: {
       title: '',
       authorId: '',
@@ -304,7 +304,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       id: '',
     },
   };
-  private dialogUpload = {
+  public dialogUpload = {
     id: 'dialog-upload-img',
     fileID: 'dialog_upload_img',
     clickLoading: false,
@@ -316,7 +316,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     accept: '.png,.jpg',
     posterFile: null,
   };
-  private editorConfig = {
+  public editorConfig = {
     placeholder: '请输入内容',
     scroll: false,
     modalAppendToBody: true,
@@ -350,14 +350,14 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     },
   };
   // 先创建 editor
-  private editor: any;
+  public editor: any;
   // 创建 toolbar
-  private toolbar: any;
+  public toolbar: any;
   /* event */
   hideDialog() {
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(false);
   }
-  private handleOpenUploadPosterContainer() {
+  public handleOpenUploadPosterContainer() {
     this.$refs[this.dialogUpload.fileID].type = 'text';
     setTimeout(() => {
       this.$refs[this.dialogUpload.fileID].type = 'file';
@@ -365,7 +365,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       this.$refs[this.dialogUpload.fileID].click();
     }, 100);
   }
-  private async uploadFileSuccess() {
+  public async uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -386,7 +386,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     this.dialogUpload.posterFile = postFiles[0];
   }
   /* http */
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.row.title) {
       this.$globalMessage.show({
         type: 'error',

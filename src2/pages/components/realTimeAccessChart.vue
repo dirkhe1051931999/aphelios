@@ -12,7 +12,6 @@
   <div class="echarts" id="RealTimeAccessChart" style="width: 100%; height: calc(100% - 50px)"></div>
 </template>
 
-
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { ECharts, init } from 'echarts';
@@ -20,7 +19,7 @@ import 'echarts-liquidfill';
 
 @Component({ name: 'myComponent' })
 export default class myComponent extends Vue {
-  private actualTotal = '216908';
+  public actualTotal = '216908';
   public initChart(data: number = 1): ECharts {
     const charEle = document.getElementById('RealTimeAccessChart') as HTMLElement;
     const charEch: ECharts = init(charEle);

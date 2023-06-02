@@ -30,7 +30,7 @@
     "element-plus": "^2.2.20",
     "js-beautify": "^1.14.7",
     "js-cookie": "^3.0.1",
-    "jsencrypt": "^3.2.1",
+    "jsencrypt": "^3.3.2",
     "json-editor-vue": "^0.9.2",
     "marked": "^2.0.0",
     "minio": "^7.0.33",

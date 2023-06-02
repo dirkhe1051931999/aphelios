@@ -374,13 +374,13 @@ export default class BlogPostAuthorComponent extends Vue {
   mounted() {
     this.getAllPostAuthor();
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private postAuthorParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public postAuthorParams = {
     data: [],
   };
-  private getAuthorLevelName = getAuthorLevelName;
-  private getAuthorLevel = getAuthorLevel;
-  private dialogAddUpdateParams = {
+  public getAuthorLevelName = getAuthorLevelName;
+  public getAuthorLevel = getAuthorLevel;
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: '',
     clickLoading: false,
@@ -494,7 +494,7 @@ export default class BlogPostAuthorComponent extends Vue {
       },
     ],
   };
-  private dialogVerifyParams = {
+  public dialogVerifyParams = {
     title: '账号认证',
     visiable: false,
     // step 1, result 0 , type add--->去认证
@@ -552,7 +552,7 @@ export default class BlogPostAuthorComponent extends Vue {
     ],
   };
   /* event */
-  private handleClickAdd() {
+  public handleClickAdd() {
     const nameIndex = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'name');
     this.dialogAddUpdateParams.input[nameIndex].readonly = false;
     const managementPasswordIndex = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'managementPassword');
@@ -565,7 +565,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.params.nick = row.nick;
     this.dialogAddUpdateParams.params.name = row.name;
     this.dialogAddUpdateParams.params.type = String(row.type);
@@ -585,7 +585,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogAddUpdateParams.title = 'Update';
     this.dialogAddUpdateParams.visiable = true;
   }
-  private handlerClickVerify(item: any) {
+  public handlerClickVerify(item: any) {
     this.dialogVerifyParams.step = 1;
     this.dialogVerifyParams.result = 0;
     this.dialogVerifyParams.type = 'add';
@@ -593,7 +593,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogVerifyParams.visiable = true;
     this.dialogVerifyParams.params.id = item.id;
   }
-  private handleClickStepPrevious() {
+  public handleClickStepPrevious() {
     if (this.dialogVerifyParams.step === 2) {
       this.dialogVerifyParams.step = 1;
     }
@@ -601,7 +601,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.dialogVerifyParams.step = 2;
     }
   }
-  private handleClickUploadFile() {
+  public handleClickUploadFile() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.avatarID][0].type = 'text';
       this.dialogAddUpdateParams.upload.params.avatarName = '';
@@ -613,7 +613,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
-  private handleClickUploadFileForCover() {
+  public handleClickUploadFileForCover() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.coverID][0].type = 'text';
       this.dialogAddUpdateParams.upload.params.coverName = '';
@@ -625,7 +625,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
-  private handleClickUploadFileForPDF() {
+  public handleClickUploadFileForPDF() {
     this.$nextTick(() => {
       this.$refs[this.dialogVerifyParams.upload.id][0].type = 'text';
       this.dialogVerifyParams.upload.params.pdfName = '';
@@ -638,7 +638,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
-  private uploadFileSuccess() {
+  public uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.avatarID][0].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -669,7 +669,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
-  private uploadFileSuccessForCover() {
+  public uploadFileSuccessForCover() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.coverID][0].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -700,7 +700,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
-  private async uploadFileSuccessForPDF() {
+  public async uploadFileSuccessForPDF() {
     const files = this.$refs[this.dialogVerifyParams.upload.id][0].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -733,11 +733,11 @@ export default class BlogPostAuthorComponent extends Vue {
     });
   }
   /* 关闭dialog */
-  private dialogAddUpdateCloseEvent(data: { type: string }) {
+  public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
   /* 新增或编辑dialog隐藏时 */
-  private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
       this.dialogAddUpdateParams.upload.params.avatar = '';
@@ -747,7 +747,7 @@ export default class BlogPostAuthorComponent extends Vue {
     }
   }
   /* 认证dialog隐藏时 */
-  private dialogVerifyParamsHide() {
+  public dialogVerifyParamsHide() {
     this.dialogVerifyParams.step = 1;
     this.dialogVerifyParams.result = 0;
     this.dialogVerifyParams.type = 'add';
@@ -758,7 +758,7 @@ export default class BlogPostAuthorComponent extends Vue {
   }
   /* http */
   /* 获取所有用户 */
-  private async getAllPostAuthor() {
+  public async getAllPostAuthor() {
     try {
       this.$q.loading.show();
       let { pageData } = await BlogPostModule.getAllPostAuthor({});
@@ -773,7 +773,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.$q.loading.hide();
   }
   /* 确定新增或更新用户 */
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.upload.params.avatar) {
       this.$globalMessage.show({
         type: 'error',
@@ -816,7 +816,7 @@ export default class BlogPostAuthorComponent extends Vue {
     } catch (error) {}
   }
   /* 删除用户 */
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -837,7 +837,7 @@ export default class BlogPostAuthorComponent extends Vue {
     } catch (error) {}
   }
   /* 提交认证信息或执行下一步 */
-  private async handleClickStepNextButton() {
+  public async handleClickStepNextButton() {
     if (this.dialogVerifyParams.step === 1) {
       if (!this.dialogVerifyParams.upload.params.pdf) {
         this.$globalMessage.show({
@@ -874,7 +874,7 @@ export default class BlogPostAuthorComponent extends Vue {
     }
   }
   /* 查看认证详情 */
-  private async handlerClickViewVerify(item: any) {
+  public async handlerClickViewVerify(item: any) {
     this.$q.loading.show();
     this.dialogVerifyParams.visiable = true;
     this.dialogVerifyParams.params.id = item.id;
@@ -903,7 +903,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.$q.loading.hide();
   }
   /* 移除认证 */
-  private async handlerClickRemoveVerify(item: any) {
+  public async handlerClickRemoveVerify(item: any) {
     const result = await this.$globalConfirm.show({
       title: '💕💕💕 提示',
       color: 'primary',

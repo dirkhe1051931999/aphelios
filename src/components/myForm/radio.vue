@@ -55,17 +55,17 @@ export default class FormRadioComponent extends Vue {
   onchange() {
     this.$emit('input', this.model);
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private model: string = '';
-  private classes = '';
-  private rules: any[] = [];
-  private label = '';
-  private inputSelectOption: any[] = [];
-  private inputSelectOptionBak: any[] = [];
-  private readonly: boolean = false;
-  private inputId: string = '';
-  private showPlaceholder = true;
-  private disable = false;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public model: string = '';
+  public classes = '';
+  public rules: any[] = [];
+  public label = '';
+  public inputSelectOption: any[] = [];
+  public inputSelectOptionBak: any[] = [];
+  public readonly: boolean = false;
+  public inputId: string = '';
+  public showPlaceholder = true;
+  public disable = false;
   mounted() {
     this.model = this.option?.model ?? '';
     this.classes = this.option?.classes ?? '';
@@ -80,6 +80,4 @@ export default class FormRadioComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

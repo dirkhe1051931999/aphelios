@@ -149,10 +149,10 @@ const QUERY_PARAMS = {
   name: 'myComponentMenu2TableIndex',
 })
 export default class myComponentMenu2TableIndex extends Vue {
-  private queryParams = cloneDeep(QUERY_PARAMS);
-  private queryLoading = false;
-  private resetLoading = false;
-  private queryInput: any = [
+  public queryParams = cloneDeep(QUERY_PARAMS);
+  public queryLoading = false;
+  public resetLoading = false;
+  public queryInput: any = [
     {
       placeholder: 'IMSI',
       type: 'text',
@@ -224,7 +224,7 @@ export default class myComponentMenu2TableIndex extends Vue {
       id: 'ascription',
     },
   ];
-  private tableParams = {
+  public tableParams = {
     loading: false,
     data: [
       {
@@ -311,19 +311,19 @@ export default class myComponentMenu2TableIndex extends Vue {
       { name: 'action', label: '$action', field: 'action', align: 'left' },
     ],
   };
-  private addVisiable = false;
-  private name = null;
-  private age = null;
-  private previewImgUrl = '';
-  private accept = false;
-  private paginationInput() {
+  public addVisiable = false;
+  public name = null;
+  public age = null;
+  public previewImgUrl = '';
+  public accept = false;
+  public paginationInput() {
     if (this.tableParams.pagination.rowsNumber / this.tableParams.pagination.rowsPerPage < 1) return;
     this.getData();
   }
-  private handlerClickTableAdd() {
+  public handlerClickTableAdd() {
     this.addVisiable = true;
   }
-  private onSubmit() {
+  public onSubmit() {
     if (this.accept !== true) {
       this.$q.notify({
         color: 'red-5',
@@ -340,19 +340,19 @@ export default class myComponentMenu2TableIndex extends Vue {
       });
     }
   }
-  private onReset() {
+  public onReset() {
     this.name = null;
     this.age = null;
     this.accept = false;
   }
-  private handlerClickDetail() {
+  public handlerClickDetail() {
     this.$q.notify({
       message: 'uhhh... no details',
       icon: 'announcement',
       position: 'bottom',
     });
   }
-  private getData() {}
+  public getData() {}
 }
 </script>
 <style lang="scss">

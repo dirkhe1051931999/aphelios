@@ -110,13 +110,13 @@ export default class BlogPostChannelComponent extends Vue {
     this.getData();
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private tableParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public tableParams = {
     loading: false,
     data: [],
     oldData: [],
   };
-  private dialogAddParams = {
+  public dialogAddParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -141,24 +141,24 @@ export default class BlogPostChannelComponent extends Vue {
     ],
   };
   /* event */
-  private handleClickAdd() {
+  public handleClickAdd() {
     this.dialogAddParams.visiable = true;
     this.dialogAddParams.dialogType = 'add';
     this.dialogAddParams.title = 'Add';
   }
-  private dialogAddCloseEvent(data: { type: string }) {
+  public dialogAddCloseEvent(data: { type: string }) {
     this.dialogAddParams.visiable = false;
   }
-  private dialogAddBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddParams.params = data.params;
     }
   }
-  private toPostList(item: any) {
+  public toPostList(item: any) {
     this.$router.push(`/blog-post/list?channelId=${item.id}`);
   }
   /* http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       const { pageData } = await BlogPostModule.getAllChannel({});
@@ -200,7 +200,7 @@ export default class BlogPostChannelComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async handleClickSave() {
+  public async handleClickSave() {
     const diff = differenceWith(this.tableParams.data, this.tableParams.oldData, isEqual);
     if (diff.length > 0) {
       try {
@@ -252,7 +252,7 @@ export default class BlogPostChannelComponent extends Vue {
     let loading: any = this.dialogAddParams.loading;
     showEdit[that] = false;
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -272,7 +272,7 @@ export default class BlogPostChannelComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async dialogAddConfirmEvent() {
+  public async dialogAddConfirmEvent() {
     try {
       this.dialogAddParams.clickLoading = true;
       await BlogPostModule.addChannel({

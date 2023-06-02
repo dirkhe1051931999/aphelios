@@ -337,7 +337,7 @@ import { copyToClipboard } from 'quasar';
 export default class myBlogPostDialogComponent extends Vue {
   /**instance */
   declare $refs: any;
-  @Prop({ default: '' }) private from!: string;
+  @Prop({ default: '' }) public from!: string;
   get authorOptions() {
     return BlogPostModule.allValidAuthor;
   }
@@ -411,7 +411,7 @@ export default class myBlogPostDialogComponent extends Vue {
     const disable = ['directory'];
     return disable.includes(this.from);
   }
-  private dialogUpload = {
+  public dialogUpload = {
     id: 'dialog-upload-img',
     fileID: 'dialog_upload_img',
     clickLoading: false,
@@ -427,7 +427,7 @@ export default class myBlogPostDialogComponent extends Vue {
     htmlImgFile: [],
     params: { file: [], fileName: [], fileBase64: [] },
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -463,11 +463,11 @@ export default class myBlogPostDialogComponent extends Vue {
     },
   };
   /* event */
-  private handlerDialogBeforeHide() {
+  public handlerDialogBeforeHide() {
     this.$refs.qEditor.caret.el.removeEventListener('click', this.handlerActionCode);
     this.$refs.postContent && this.$refs.postContent.removeEventListener('click', this.handlerActionCode);
   }
-  private async submitAddCode() {
+  public async submitAddCode() {
     if (!this.$refs[`${this.dialogAddUpdateParams.id}-addCode`].code) {
       if (this.dialogAddUpdateParams.addCode.action === 'add') {
         this.$globalMessage.show({
@@ -534,7 +534,7 @@ export default class myBlogPostDialogComponent extends Vue {
       init();
     }
   }
-  private handlerActionCode(event: any) {
+  public handlerActionCode(event: any) {
     let isDelete = /blog-post-editor-add-code-delete-button-\d+/.test(event.target.id);
     let isCopy = /blog-post-editor-add-code-copy-button-\d+/.test(event.target.id);
     let isEdit = /blog-post-editor-add-code-edit-button-\d+/.test(event.target.id);
@@ -561,7 +561,7 @@ export default class myBlogPostDialogComponent extends Vue {
       });
     }
   }
-  private async uploadFileSuccess() {
+  public async uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -589,12 +589,12 @@ export default class myBlogPostDialogComponent extends Vue {
       (this.dialogUpload.posterFile as any).push(postFiles[0]);
     }
   }
-  private removeCurrentImg(index: number) {
+  public removeCurrentImg(index: number) {
     (this.dialogUpload.params.fileName as any).splice(index, 1);
     (this.dialogUpload.params.file as any).splice(index, 1);
     (this.dialogUpload.params.fileBase64 as any).splice(index, 1);
   }
-  private handleClickUploadFile() {
+  public handleClickUploadFile() {
     this.$refs[this.dialogUpload.fileID].type = 'text';
     setTimeout(() => {
       this.$refs[this.dialogUpload.fileID].type = 'file';
@@ -602,7 +602,7 @@ export default class myBlogPostDialogComponent extends Vue {
       this.$refs[this.dialogUpload.fileID].click();
     }, 100);
   }
-  private saveBase64ImgInHTML() {
+  public saveBase64ImgInHTML() {
     if (!this.dialogUpload.params.fileBase64.length) {
       this.$globalMessage.show({ type: 'error', content: '请上传图片' });
       return;
@@ -626,7 +626,7 @@ export default class myBlogPostDialogComponent extends Vue {
       this.dialogUpload.visiable = false;
     }
   }
-  private handleOpenUploadPosterContainer() {
+  public handleOpenUploadPosterContainer() {
     this.dialogUpload.params.file = [];
     this.dialogUpload.params.fileBase64 = [];
     this.dialogUpload.params.fileName = [];
@@ -635,7 +635,7 @@ export default class myBlogPostDialogComponent extends Vue {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = '上传封面';
   }
-  private handleOpenUploadContainer() {
+  public handleOpenUploadContainer() {
     this.dialogUpload.params.file = [];
     this.dialogUpload.params.fileBase64 = [];
     this.dialogUpload.params.fileName = [];
@@ -644,7 +644,7 @@ export default class myBlogPostDialogComponent extends Vue {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = '上传图片';
   }
-  private _viewPostHTML(html: any) {
+  public _viewPostHTML(html: any) {
     function removeDOMByPartialId(html: string, id: string) {
       const regex = new RegExp(`<[^>]*id=['"].*${id}.*['"][^>]*>(.*?)<\/[^>]*>`, 'gi');
       return html.replace(regex, '');
@@ -663,7 +663,7 @@ export default class myBlogPostDialogComponent extends Vue {
     });
     return result;
   }
-  private addCode(type: any) {
+  public addCode(type: any) {
     this.dialogAddUpdateParams.addCode.visiable = true;
     this.dialogAddUpdateParams.addCode.title = type.label;
     this.dialogAddUpdateParams.addCode.lang = type.value;
@@ -734,7 +734,7 @@ export default class myBlogPostDialogComponent extends Vue {
       Prism.highlightAll();
     }, 100);
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.row.title) {
       this.$globalMessage.show({
         type: 'error',

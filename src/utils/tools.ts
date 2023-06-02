@@ -1,4 +1,6 @@
 import md5crypto from 'crypto-js/md5';
+import JSEncrypt from 'jsencrypt/bin/jsencrypt.min.js';
+import setting from 'src/setting.json';
 export const getCssVariableValue = (cssVariableName: string) => {
   let cssVariableValue = '';
   try {
@@ -42,4 +44,11 @@ export function sleep(ms: number) {
 export function enCrypty(psw: string) {
   let sugar = '!@A#$Q%W^E&R*T()_+a_1';
   return md5crypto(sugar + psw).toString();
+}
+export function RSAEnCrypty(data: string) {
+  let encrypt = new JSEncrypt();
+  let pk = setting.rsaPublicKey;
+  encrypt.setPublicKey(pk);
+  const encrypted = encrypt.encrypt(data);
+  return encrypted;
 }

@@ -11,6 +11,7 @@ export function getAuthorLevelName(score: number) {
     return '丞相';
   }
 }
+
 export function getAuthorLevel(score: number) {
   if (score < 1000) {
     return '1';
@@ -24,6 +25,7 @@ export function getAuthorLevel(score: number) {
     return '5';
   }
 }
+
 export const companyType = [
   { label: 'IT/互联网/通信', value: 'IT/互联网/通信' },
   { label: '金融/银行/保险', value: '金融/银行/保险' },

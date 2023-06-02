@@ -116,7 +116,9 @@ axios.interceptors.response.use(
     } else {
       /* 不是blob */
       const { code, success } = response.data;
-      if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(response.config.url)) {
+      const isMinio = response.config.url.includes(setting.minio);
+      const pass = [isMinio];
+      if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(response.config.url) || !pass.includes(false)) {
         return Promise.resolve(response.data);
       } else if (!code || !success || !setting.succCode.includes(String(code))) {
         return errorFuc(response);

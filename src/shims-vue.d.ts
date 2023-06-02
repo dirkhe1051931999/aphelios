@@ -34,3 +34,4 @@ declare module 'prettier/parser-angular';
 declare module 'prettier/parser-java';
 declare module 'prettier-plugin-java';
 declare module 'sortablejs';
+declare module 'jsencrypt/bin/jsencrypt.min.js';

@@ -211,8 +211,8 @@ export default class BlogPostChannelComponent extends Vue {
     this.getData();
   }
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private tableParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public tableParams = {
     loading: false,
     data: [],
     pagination: {
@@ -291,7 +291,7 @@ export default class BlogPostChannelComponent extends Vue {
       },
     ],
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -333,30 +333,30 @@ export default class BlogPostChannelComponent extends Vue {
     ],
   };
   /* event */
-  private paginationInput(data: any) {
+  public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
-  private handleClickAdd() {
+  public handleClickAdd() {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'update';
     this.dialogAddUpdateParams.title = 'Update';
   }
-  private dialogAddUpdateCloseEvent(data: { type: string }) {
+  public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
-  private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
   /* http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       this.tableParams.loading = false;
@@ -366,7 +366,7 @@ export default class BlogPostChannelComponent extends Vue {
       return Promise.resolve();
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -384,7 +384,7 @@ export default class BlogPostChannelComponent extends Vue {
       }
     } catch (error) {}
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     try {
       this.dialogAddUpdateParams.clickLoading = true;
       // await HTTP_REQUEST()

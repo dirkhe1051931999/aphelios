@@ -84,9 +84,9 @@ export default class MyDialogComponent extends Vue {
   onTitleChange(newVal: string) {
     this.myDialogParams.title = newVal;
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private bakParams = {};
-  private myDialogParams = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public bakParams = {};
+  public myDialogParams = {
     id: '',
     dialogType: '',
     clickLoading: false,
@@ -108,13 +108,13 @@ export default class MyDialogComponent extends Vue {
     this.bakParams = cloneDeep(this.option.params);
   }
   /* event */
-  private handlerClickCancel() {
+  public handlerClickCancel() {
     this.$nextTick(() => {
       this.$emit('close', { type: this.myDialogParams.dialogType });
       this.$refs[this.myDialogParams.id].resetValidation();
     });
   }
-  private handlerClickDialogConfirmButton() {
+  public handlerClickDialogConfirmButton() {
     if (!this.option.customComfirm) {
       this.$refs[this.myDialogParams.id].validate().then(async (valid: boolean) => {
         if (valid) {
@@ -133,7 +133,7 @@ export default class MyDialogComponent extends Vue {
       this.$emit('confirm', { type: this.myDialogParams.dialogType });
     }
   }
-  private handlerBeforeHide() {
+  public handlerBeforeHide() {
     this.myDialogParams.params = cloneDeep(this.bakParams);
     this.$emit('before-hide', {
       type: this.myDialogParams.dialogType,

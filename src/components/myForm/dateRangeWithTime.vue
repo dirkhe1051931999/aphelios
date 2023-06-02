@@ -121,7 +121,7 @@ export default class myDateRangeWithTImeComponent extends Vue {
     this.dateParams.label = this.option.label;
     this.dateParams.classes = this.option.classes;
   }
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public dateParams = {
     model: '',
     startModel: '',
@@ -135,6 +135,4 @@ export default class myDateRangeWithTImeComponent extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

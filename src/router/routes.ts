@@ -113,6 +113,15 @@ export const asyncRoutes: RouteRecordRaw[] = [
           pagePermissionId: ['BlogPostAuthor'],
         },
       },
+      {
+        path: 'user',
+        component: () => import(/* webpackChunkName: "blog-post-user" */ 'src/pages/blog-post/user.vue'),
+        name: 'BlogPostUser',
+        meta: {
+          title: 'blog-post-user',
+          pagePermissionId: ['BlogPostUser'],
+        },
+      },
     ],
   },
   {

@@ -361,8 +361,8 @@ export default class myComponentTableBeta extends Vue {
   /**instance */
   declare $refs: any;
   /**params */
-  private globals = getCurrentInstance()!.appContext.config.globalProperties;
-  private queryParams: any = {
+  public globals = getCurrentInstance()!.appContext.config.globalProperties;
+  public queryParams: any = {
     id: 'query',
     queryLoading: false,
     resetLoading: false,
@@ -421,7 +421,7 @@ export default class myComponentTableBeta extends Vue {
       },
     ],
   };
-  private tableParams = {
+  public tableParams = {
     selected: [],
     loading: false,
     data: [
@@ -529,7 +529,7 @@ export default class myComponentTableBeta extends Vue {
       },
     ],
   };
-  private dialogAddUpdateParams = {
+  public dialogAddUpdateParams = {
     id: 'dialog_add_update',
     dialogType: 'add',
     clickLoading: false,
@@ -668,7 +668,7 @@ export default class myComponentTableBeta extends Vue {
       },
     ],
   };
-  private dialogUpload = {
+  public dialogUpload = {
     id: 'dialog-upload-file',
     fileID: 'dialog_upload_file',
     clickLoading: false,
@@ -678,7 +678,7 @@ export default class myComponentTableBeta extends Vue {
     accept: '.xls',
     params: { file: '', fileName: '' },
   };
-  private dialogDetailParams = {
+  public dialogDetailParams = {
     id: 'dialog-upload-file',
     getDataLoading: false,
     clickLoading: false,
@@ -697,34 +697,34 @@ export default class myComponentTableBeta extends Vue {
     ],
   };
   /**event */
-  private paginationInput(data: any) {
+  public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
-  private async handleQuery() {
+  public async handleQuery() {
     this.queryParams.queryLoading = true;
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.queryLoading = false;
   }
-  private async handleResetQuery() {
+  public async handleResetQuery() {
     this.queryParams.resetLoading = true;
     this.queryParams.params = cloneDeep(CONST_PARAMS.query);
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.resetLoading = false;
   }
-  private handleClickAdd() {
+  public handleClickAdd() {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
-  private handlerClickUpdate(row: any) {
+  public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'update';
     this.dialogAddUpdateParams.title = 'Update';
   }
-  private handleClickUpload() {
+  public handleClickUpload() {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = 'Upload';
     this.$nextTick(() => {
@@ -737,10 +737,10 @@ export default class myComponentTableBeta extends Vue {
       }, 100);
     });
   }
-  private handleClickUploadFile() {
+  public handleClickUploadFile() {
     this.$refs[this.dialogUpload.fileID].click();
   }
-  private uploadFileSuccess() {
+  public uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
@@ -749,7 +749,7 @@ export default class myComponentTableBeta extends Vue {
       this.dialogUpload.params.file = rawFile;
     });
   }
-  private handlerClickDetail(row: any) {
+  public handlerClickDetail(row: any) {
     const getValue = (row: any, key: string): string => {
       switch (key) {
         case 'name':
@@ -778,36 +778,36 @@ export default class myComponentTableBeta extends Vue {
     this.dialogDetailParams.params = arr;
     this.dialogDetailParams.visiable = true;
   }
-  private monitorDialogUploadHide() {
+  public monitorDialogUploadHide() {
     this.dialogUpload.params.fileName = '';
     this.dialogUpload.params.file = '';
   }
-  private dialogAddUpdateCloseEvent(data: { type: string }) {
+  public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
-  private dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
-  private dialogUploadCloseEvent(data: { type: string }) {
+  public dialogUploadCloseEvent(data: { type: string }) {
     this.dialogUpload.visiable = false;
   }
-  private dialogUploadBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogUploadBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogUpload.params = data.params;
     }
   }
-  private dialogDetailCloseEvent(data: { type: string }) {
+  public dialogDetailCloseEvent(data: { type: string }) {
     this.dialogDetailParams.visiable = false;
   }
-  private dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
+  public dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
   /**http */
-  private async getData() {
+  public async getData() {
     try {
       this.tableParams.loading = true;
       this.tableParams.loading = false;
@@ -817,7 +817,7 @@ export default class myComponentTableBeta extends Vue {
       return Promise.resolve();
     }
   }
-  private async dialogAddUpdateConfirmEvent() {
+  public async dialogAddUpdateConfirmEvent() {
     try {
       this.dialogAddUpdateParams.clickLoading = true;
       // await HTTP_REQUEST()
@@ -832,7 +832,7 @@ export default class myComponentTableBeta extends Vue {
       this.dialogAddUpdateParams.clickLoading = false;
     }
   }
-  private async handlerClickDelete(row: any) {
+  public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 提示',
@@ -850,7 +850,7 @@ export default class myComponentTableBeta extends Vue {
       }
     } catch (error) {}
   }
-  private async hanleClickUploadConfirm() {
+  public async hanleClickUploadConfirm() {
     try {
       const form = new FormData();
       form.append('file', this.dialogUpload.params.file);
