@@ -96,3 +96,38 @@ services:
       timeout: 20s
       retries: 3
 ```
+
+```shell
+# 获取源 以8.5为例 参考https://renjianzhide.com/archives/centos-install-mysql
+cat /etc/redhat-release
+wget https://dev.mysql.com/get/mysql80-community-release-el8-5.noarch.rpm
+# install
+sudo yum localinstall mysql80-community-release-el8-5.noarch.rpm
+sudo yum module disable mysql
+sudo yum install mysql-community-server
+# 通过 vim 打开 my.cnf 文件，并在最后一行填入 lower_case_table_names=1
+sudo vim /etc/my.cnf
+# 启动并开机自启
+sudo systemctl start mysqld
+sudo systemctl enable mysqld
+# 获取初始化密码 ：后的
+sudo grep 'temporary password' /var/log/mysqld.log
+# 连接mysql
+mysql -uroot -p
+# 修改密码
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'Hejian@123';
+# 创建远程用户
+CREATE USER 'hejian'@'%' IDENTIFIED BY 'Hejian@123';
+# 赋予指定用户访问数据库所有权限
+GRANT ALL PRIVILEGES ON *.* TO 'hejian'@'%';
+# 刷新权限
+FLUSH PRIVILEGES;
+# 查看所有用户
+use mysql
+SELECT host,user,plugin FROM USER;
+# 修改默认加密方式
+ALTER USER 'hejian'@'%' IDENTIFIED WITH mysql_native_password BY 'Hejian@123';
+# 防火墙需要允许3306端口连接
+sudo firewall-cmd --permanent --zone=public --add-port=3306/tcp
+sudo firewall-cmd --reload
+```
