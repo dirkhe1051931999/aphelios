@@ -1,9 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-import CONFIG from 'src/config';
-import moment from 'moment';
+import { uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
-import { uploadFileToMinio } from 'src/util/helper';
 // 查询所有作者
 export const getAllPostAuthor = async (ctx): Promise<void> => {
   let sql = `SELECT id, name, coverUrl, followCount, status, avatarUrl, articleCount, fansCount, type, nick, score, createTime,updateTime,loginTime,companyVerifyInfoId, defaultUser,description 
@@ -26,6 +22,8 @@ export const addPostAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, '404#name, nick, avatar, cover,description, type, managementPassword, appPassword');
     return;
   }
+  const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
+  const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
   try {
     const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
     if (exist[0].count > 0) {
@@ -33,7 +31,7 @@ export const addPostAuthor = async (ctx): Promise<void> => {
     } else {
       const id = uuidv4().replace(/\-/g, '');
       let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime) 
-                VALUES ('${id}', '${name}', '${nick}', '${avatar}' ,'${avatar}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
+                VALUES ('${id}', '${name}', '${nick}', '${avatarData.url}' ,'${coverData.url}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
         type === 1 ? 0 : 2
       },0,0,0,0,${new Date().getTime()})`;
       await ctx.execSql(sql);
@@ -51,12 +49,14 @@ export const updatePostAuthor = async (ctx): Promise<void> => {
     ctx.error(ctx, '404#id, name, nick, avatar,cover, description, type');
     return;
   }
+  const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
+  const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
   try {
     const sql = `
     UPDATE sm_board_author
     SET nick = '${nick}', 
-        avatarUrl = '${avatar}', 
-        coverUrl = '${cover}', 
+        avatarUrl = '${avatarData.url}', 
+        coverUrl = '${coverData.url}', 
         description = '${description}', 
         updateTime = ${new Date().getTime()}
     WHERE id = '${id}';        

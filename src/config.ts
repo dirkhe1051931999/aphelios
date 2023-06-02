@@ -55,14 +55,16 @@ interface Config {
   draftPostRedisKey: string;
   aliCloudApi: string;
   aliCloud_APPCODE: string;
+  rsaPublicKey: string;
+  rsaPrivateKey: string;
 }
 const config: Config = {
   db: {
     mysql: {
       host: '192.168.200.134',
-      user: 'root',
-      password: '123456',
-      port: 3310,
+      user: 'hejian',
+      password: 'Hejian@123',
+      port: 3306,
       database: 'nodejs-service',
       connectionLimit: 10,
     },
@@ -112,5 +114,7 @@ const config: Config = {
   draftPostRedisKey: 'DRAFTPSOTKEY',
   aliCloudApi: '',
   aliCloud_APPCODE: '',
+  rsaPublicKey: `-----BEGIN PUBLIC KEY-----MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAK5oK2YRalfr6OjDcjkrljm0FFIFQ4iA/NYcoqIXkdVkmtTeBrcz+OSx39rOqT8xuuZVuTE++DcTwehr9mb1PmECAwEAAQ==-----END PUBLIC KEY-----`,
+  rsaPrivateKey: `-----BEGIN PRIVATE KEY-----MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEArmgrZhFqV+vo6MNyOSuWObQUUgVDiID81hyioheR1WSa1N4GtzP45LHf2s6pPzG65lW5MT74NxPB6Gv2ZvU+YQIDAQABAkA1ibi4zmPMtZh7y3OG5UBqWkNaok8G2kHDIGs0QvP7gzLX4VW6L1seswq8IJLxKz5zU4ObkUBpxZmCjj7dy+zZAiEA2IZ4EeGVPdGfanfQKt1bt8ypey2Mfr9wie3JRF/SWM8CIQDOM/qjrlZPMSBV/f4Sp/+0LE10g6XnCpW2xKjWEHdhzwIgIulznLZ5wND22kzdRLwSWM1oGlNazukBNUwg4qRsnyMCIQCQLpZF10QwcXhbyJLcdq38TLIIE3lwuN0AhDhOHgtrzwIgMaBLSEmu8IJrXh7XuJwY+58udanJwDH8No+r41rcNec=-----END PRIVATE KEY-----`,
 };
 export default config;

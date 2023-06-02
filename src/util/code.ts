@@ -33,4 +33,5 @@ export const errorCode = {
   606: ['图片上传异常', 'Image upload exception'],
   607: ['名称重复', 'Name already exists'],
   608: ['该企业已提交认证', 'The enterprise has been verified'],
+  701: ['用户名已存在', 'Username already exists'],
 };

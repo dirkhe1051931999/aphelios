@@ -5,6 +5,8 @@ import * as path from 'path';
 import CONFIG from 'src/config';
 import moment from 'moment';
 import * as Minio from 'minio';
+import { v4 as uuidv4 } from 'uuid';
+import NodeRSA from 'node-rsa';
 const minioClient = new Minio.Client({
   endPoint: CONFIG.db.minio.endPoint,
   port: CONFIG.db.minio.port,
@@ -110,4 +112,42 @@ export const uploadFileToMinio = (ctx: any, withData): Promise<any> => {
       });
     });
   });
+};
+export const uploadBase64FileToMinio = (base64: any, dir: string): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    base64 = base64.replace(/^data:image\/\w+;base64,/, '');
+    const imageBuffer = Buffer.from(base64, 'base64');
+    const match = base64.match(/^data:image\/(\w+);base64,/);
+    const imageType = match ? match[1] : 'png';
+    const imagePath = path.join(CONFIG.root, CONFIG.appPath, CONFIG.tempUploads);
+    const imageName = uuidv4().replace(/\-/g, '');
+    const tempPath = imagePath + '/' + imageName + '.' + imageType;
+    const newName = `${dir}/${imageName}.${imageType}`;
+    if (!fs.existsSync(imagePath)) {
+      fs.mkdirSync(imagePath, { recursive: true });
+    }
+    fs.writeFileSync(tempPath, imageBuffer);
+    minioClient.fPutObject(
+      CONFIG.db.minio.buckets,
+      newName,
+      tempPath,
+      {
+        'Content-Type': imageType === 'jpg' ? 'image/jpeg' : 'image/png',
+      },
+      function (err, objInfo) {
+        if (err) {
+          reject(err);
+        }
+        fs.unlinkSync(tempPath);
+        resolve({ url: `http://${CONFIG.db.minio.endPoint}:${CONFIG.db.minio.port}/${CONFIG.db.minio.buckets}/${newName}` });
+      }
+    );
+  });
+};
+export const rsaDecrypt = (data: string): string => {
+  let pk = CONFIG.rsaPrivateKey;
+  let encrypt = new NodeRSA(pk);
+  encrypt.setOptions({ encryptionScheme: 'pkcs1' });
+  let encrypted = encrypt.decrypt(data, 'utf8');
+  return encrypted;
 };

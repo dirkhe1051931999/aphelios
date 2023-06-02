@@ -16,6 +16,7 @@ import tokenError from './middlreware/tokenError';
 import RedisStore from './util/redis-store';
 import RedisDB from './util/redis-db';
 import { hasEmptyValue } from './util/helper';
+import { backupDatabase } from './util/mysql-backup';
 
 const app = new Koa();
 

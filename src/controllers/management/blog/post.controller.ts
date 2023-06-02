@@ -2,21 +2,31 @@ import { uploadFileToMinio } from 'src/util/helper';
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { channelId, authorId, status, page, rowsPerPage } = ctx.request.body;
+  let { channelId, authorId, status, page, rowsPerPage, haveComment } = ctx.request.body;
   channelId = channelId || '';
   status = status || '';
   authorId = authorId || '';
+  haveComment = haveComment || '';
   page = page || 1;
   rowsPerPage = rowsPerPage || 20;
   try {
     let results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (channelId = '${channelId}' OR '${channelId}' = '') AND (status = '${status}' OR '${status}'  = '') AND (authorId = '${authorId}' OR '${authorId}'  = '');`,
+      `SELECT COUNT(*) as total FROM sm_board_post_list 
+      WHERE (channelId = '${channelId}' OR '${channelId}' = '') 
+      AND (status = '${status}' OR '${status}'  = '') 
+      AND (authorId = '${authorId}' OR '${authorId}'  = '')
+      AND ((('${haveComment}' = '1' AND (SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) > 0)
+      OR ('${haveComment}' = '0' AND (SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) = 0))
+      OR '${haveComment}' = '');`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
+          SELECT id, title, createTime, updateTime, status, poster, view, authorId, commentId, categoryId,channelId, codeCount, postType,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
           FROM sm_board_post_list 
           WHERE (channelId = '${channelId}' OR '${channelId}' = '') 
           AND (status = '${status}' OR '${status}'  = '')
           AND (authorId = '${authorId}' OR '${authorId}'  = '')
+          AND ((('${haveComment}' = '1' AND (SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) > 0)
+          OR ('${haveComment}' = '0' AND (SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) = 0))
+          OR '${haveComment}' = '')
           ORDER BY createTime DESC 
           LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
@@ -39,7 +49,7 @@ export const getPostListByCategoryId = async (ctx) => {
     let results = await ctx.execSql([
       `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType
+          SELECT id, title, createTime, updateTime, status, poster, view, authorId, commentId, categoryId,channelId, codeCount, postType,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
           FROM sm_board_post_list 
           WHERE (categoryId = '${categoryId}') 
           ORDER BY createTime DESC
@@ -185,6 +195,48 @@ export const publishPost = async (ctx) => {
   }
   try {
     await ctx.execSql(`UPDATE sm_board_post_list SET status = 'PUBLISHED' WHERE id = ?`, id);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+// 获取文章评论
+export const getCommentsByPostId = async (ctx) => {
+  let { id } = ctx.request.body;
+  if (ctx.isFalsy([id])) {
+    ctx.error(ctx, '404#id');
+    return;
+  }
+  try {
+    const results = await ctx.execSql(`
+    SELECT c.*
+    FROM sm_board_post_list p
+    LEFT JOIN sm_board_comment c
+    ON p.srcTopicId = c.postId
+    WHERE p.id = ${id};
+  `);
+    ctx.success(ctx, {
+      pageData: results,
+    });
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+/* 修改评论状态
+1 正常
+2 拉黑
+3 删除
+*/
+export const setCommentStatus = async (ctx) => {
+  let { id, status } = ctx.request.body;
+  if (ctx.isFalsy([id, status])) {
+    ctx.error(ctx, '404#id,status');
+    return;
+  }
+  try {
+    await ctx.execSql(`UPDATE sm_board_comment SET status = ${status} WHERE id = ?`, id);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);

@@ -1,7 +1,3 @@
-import moment from "moment";
-import axios from "axios";
-import COFNIG from "src/config";
-
 // 添加事件踪迹
 export const addEventTrack = async (ctx) => {
   // let ip = ctx.request.ip.replace("::ffff:", "");

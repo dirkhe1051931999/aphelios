@@ -1,8 +1,5 @@
+import { uploadBase64FileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
-import fs from 'fs';
-import path from 'path';
-import CONFIG from 'src/config';
-import moment from 'moment';
 // 获取所有文章类别
 export const getAllSheet = async (ctx) => {
   let sql = `SELECT id, name, cover,description FROM sm_board_sheet`;
@@ -72,18 +69,9 @@ export const addSheet = async (ctx) => {
     ctx.error(ctx, '404#name, cover, description');
     return;
   }
-  cover = cover.replace(/^data:image\/\w+;base64,/, '');
-  const imageBuffer = Buffer.from(cover, 'base64');
-  const match = cover.match(/^data:image\/(\w+);base64,/);
-  const imageType = match ? match[1] : 'png';
-  const imagePath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/sheet_directory_image/')}${moment().format('YYYYMMDD')}/`;
-  const imageName = uuidv4().replace(/\-/g, '');
-  if (!fs.existsSync(imagePath)) {
-    fs.mkdirSync(imagePath, { recursive: true });
-  }
   try {
-    fs.writeFileSync(imagePath + imageName + '.' + imageType, imageBuffer);
-    const coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath.split(CONFIG.appPath).pop() + imageName + '.' + imageType;
+    const { url } = await uploadBase64FileToMinio(cover, 'assets');
+    const coverUrl = url;
     const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_sheet WHERE name = '${name}'`);
     if (exist[0].count > 0) {
       ctx.error(ctx, 607);
@@ -200,17 +188,8 @@ export const updateSheet = async (ctx) => {
   try {
     let coverUrl = '';
     if (cover.indexOf('data:image') > -1) {
-      cover = cover.replace(/^data:image\/\w+;base64,/, '');
-      const imageBuffer = Buffer.from(cover, 'base64');
-      const match = cover.match(/^data:image\/(\w+);base64,/);
-      const imageType = match ? match[1] : 'png';
-      const imagePath = `${path.join(CONFIG.root, CONFIG.appPath, 'cdn/sheet_directory_image/')}${moment().format('YYYYMMDD')}/`;
-      const imageName = uuidv4().replace(/\-/g, '');
-      if (!fs.existsSync(imagePath)) {
-        fs.mkdirSync(imagePath, { recursive: true });
-      }
-      fs.writeFileSync(imagePath + imageName + '.' + imageType, imageBuffer);
-      coverUrl = CONFIG.defaultCdnUrl.split('/cdn')[0] + imagePath.split(CONFIG.appPath).pop() + imageName + '.' + imageType;
+      const { url } = await uploadBase64FileToMinio(cover, 'assets');
+      coverUrl = url;
     } else {
       coverUrl = cover;
     }
