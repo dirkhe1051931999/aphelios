@@ -7,10 +7,13 @@ from bs4 import BeautifulSoup
 from multiprocessing.dummy import Pool as ThreadPool
 import sys
 import io
+import random
+
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 allSql = []
+userId = ["39f7637ff64a499287b2d7efc5c0cc8a", "92b4543d43964e038c19c9737e30d9c9", "c2ab38dd81e148ec9f02760ceaada40b"]
 
 
 def get_topic_ids(data_dir):
@@ -33,6 +36,20 @@ def fetch_url(args):
         print(f"Error fetching {url}: {e}")
         return None
 
+def find_top_id(item, list):
+    if item['replyId'] is None:
+        item['topId'] = None
+    else:
+        for i in list:
+            if i['id2'] == item['replyId']:
+                if i['replyId'] is None:
+                    item['topId'] = i['id2']
+                else:
+                    item['topId'] = find_top_id(i, list)
+                break
+            else:
+                item['topId'] = None
+    return item['topId']
 
 def get_comments(data, topicId):
     allData = []
@@ -45,6 +62,7 @@ def get_comments(data, topicId):
                 {
                     "id": str(uuid.uuid4()).replace("-", "").lower(),
                     "id2": comment.get("id"),
+                    "topId": None,
                     "replyId": None
                     if comment.get("replyId") == curPostId
                     or comment.get("replyId") is None
@@ -56,7 +74,7 @@ def get_comments(data, topicId):
                     .replace("\n", "")
                     .split("【")[0],
                     "postTime": comment.get("postTime"),
-                    "userId": "8872cbcdc16748ed9728203dbb0b2764",
+                    "userId": random.choice(userId),
                     "topicId": topicId,
                 }
             )
@@ -65,14 +83,14 @@ def get_comments(data, topicId):
 
 def main():
     data_dir = "./data"
-    url_template = "https://wap.newsmth.net/wap/api/topic/loadArticlesByMode/{uuid}/1/{page}/20?t=1683875940722"
+    url_template = "https://wap.newsmth.net/wap/api/topic/loadArticlesByMode/{uuid}/1/{page}/1000?t=1683875940722"
     allData = []
 
     allTopicId = get_topic_ids(data_dir)
     urls = [
         url_template.format(uuid=uuid, page=page)
         for uuid in allTopicId
-        for page in range(1, 6)
+        for page in range(1, 2)
     ]
 
     with requests.Session() as session:
@@ -82,6 +100,17 @@ def main():
     for topicId, response in zip(allTopicId, responses): # type: ignore
         if response is not None:
             allData.extend(get_comments(response, topicId))
+    # 获取topId
+    for item in allData:
+        item['topId'] = find_top_id(item, allData)    
+    # 如果replyId在allData中不存在，则将replyId置为NULL
+    for item in allData:
+        if item['replyId'] is not None:
+            for i in allData:
+                if i['id2'] == item['replyId']:
+                    break
+            else:
+                item['replyId'] = None
     # print(json.dumps(allData, indent=4, ensure_ascii=False))
     for i in allData:
         replyId = i.get("replyId")
@@ -90,7 +119,7 @@ def main():
         else:
             replyId = f'"{replyId}"'
         allSql.append(
-            f'INSERT INTO sm_board_comment (id,id2, replyId, content, postTime, userId, postId) VALUES ("{i.get("id")}","{i.get("id2")}", {replyId}, "{i.get("content")}" , {i.get("postTime")}, "{i.get("userId")}", "{i.get("topicId")}");'
+            f'INSERT INTO sm_board_comment (id,id2,topId, replyId, content, postTime, userId, postId) VALUES ("{i.get("id")}","{i.get("id2")}", "{i.get("topId")}", {replyId}, "{i.get("content")}" , {i.get("postTime")}, "{i.get("userId")}", "{i.get("topicId")}");'
         )
     sql_dir = "./sql"
     if not os.path.isdir(sql_dir):
