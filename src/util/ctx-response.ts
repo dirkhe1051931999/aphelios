@@ -35,7 +35,7 @@ export const success = (ctx: Context, header, data) => {
  */
 export const error = (ctx: Context, heaadr, code: string | number) => {
   let message = "";
-  if (typeof code === "string") {
+  if (typeof code === "string" && code.includes("#")) {
     let extra = code.split("#")[1];
     code = Number(code.split("#")[0]);
     message =

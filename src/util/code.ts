@@ -1,4 +1,9 @@
+const webErrorCode = {
+  W1001: ['sortBy只支持id，createTime，view，comment排序', 'sortBy only supports id, createTime, view, comment sorting'],
+  W1002: ['缺少必传参数id', 'Missing required parameter id'],
+};
 export const errorCode = {
+  ...webErrorCode,
   500: ['服务器内部错误', 'Internal server error'],
   401: ['Token 失效', 'Token invalid'],
   402: ['查询异常', 'Query exception'],

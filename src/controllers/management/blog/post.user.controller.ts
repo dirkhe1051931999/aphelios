@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import setting from 'src/config';
 // 查询所有用户
 export const getAllPostUser = async (ctx): Promise<void> => {
   let { username, type, page, rowsPerPage } = ctx.request.body;
@@ -38,7 +37,6 @@ export const addPostUser = async (ctx): Promise<void> => {
   try {
     let id = uuidv4().replace(/-/g, '');
     let createTime = new Date().getTime();
-    avatarUrl = avatarUrl.indexOf('http') !== -1 || avatarUrl.indexOf('https') !== -1 ? avatarUrl : `${setting.defaultCdnUrl.replace('/cdn', '')}${avatarUrl}`;
     const results = await ctx.execSql([
       `INSERT INTO sm_board_user (id,gender,createTime,type,nickname,username,email,password,avatarUrl,address,ip,region,description) 
         SELECT '${id}',${gender},${createTime},1,'${nickname}','${username}','${email}','${password}','${avatarUrl}','${address}&${address_detail}','${ip}','${region}','${description}' FROM DUAL WHERE NOT EXISTS (
@@ -64,6 +62,20 @@ export const deletePostUser = async (ctx): Promise<void> => {
   }
   try {
     await ctx.execSql([`DELETE FROM sm_board_user WHERE id = '${id}';`]);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+export const setPostUserStatus = async (ctx): Promise<void> => {
+  const { id, status } = ctx.request.body;
+  if (ctx.isFalsy([id, status])) {
+    ctx.error(ctx, '404#id,status');
+    return;
+  }
+  try {
+    await ctx.execSql([`UPDATE sm_board_user SET type = ${status} WHERE id = '${id}';`]);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
