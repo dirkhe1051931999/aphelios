@@ -41,3 +41,22 @@ export const companyType = [
   { label: '政府/非盈利机构/其他', value: '政府/非盈利机构/其他' },
   { label: '其他', value: '其他' },
 ];
+export const TEST_ACCOUNT = {
+  id: '3a4d1e4777c34b328eb46b0a701e0d08',
+  ip: '103.126.24.17',
+  type: 1,
+  email: '1051931999@qq.com',
+  score: 0,
+  gender: 1,
+  region: 'Hong Kong;Wanchai',
+  address: '陕西省;西安市;鄠邑区;草堂街道&宋西村479号',
+  nickname: '何健的账号',
+  username: 'hejian_test',
+  avatarUrl: 'http://localhost:3000/cdn/avatar/Malphite.png',
+  fansCount: 0,
+  loginTime: null,
+  createTime: 1686205313376,
+  description: '误删',
+  friendCount: 0,
+  articleCount: 0,
+};

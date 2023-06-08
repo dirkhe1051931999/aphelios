@@ -71,7 +71,7 @@
   }
 }
 
-@for $size from 0 through 1000 {
+@for $size from 0 through 2000 {
   .left-#{$size} {
     left: #{$size}px;
   }

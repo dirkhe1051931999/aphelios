@@ -14,7 +14,8 @@ import MyFormDateRangeWithTime from 'src/components/myForm/dateRangeWithTime.vue
 import MyFormSlider from 'src/components/myForm/slider.vue';
 import MyFormRadio from 'src/components/myForm/radio.vue';
 import MyMaskInput from 'src/components/myForm/maskInput.vue';
-import MyMenuTreeComponent from 'src/components/myForm/menuTree.vue'
+import MyMenuTreeComponent from 'src/components/myForm/menuTree.vue';
+import SimpleRichTextInput from 'src/components/simpleRichTextInput/index.vue';
 
 // 我们使用Vue全局注册了我们的组件
 export default boot(({ app }) => {
@@ -33,4 +34,5 @@ export default boot(({ app }) => {
   app.component('MyFormSlider', MyFormSlider);
   app.component('MyFormRadio', MyFormRadio);
   app.component('MyMenuTreeComponent', MyMenuTreeComponent);
+  app.component('SimpleRichTextInput', SimpleRichTextInput);
 });

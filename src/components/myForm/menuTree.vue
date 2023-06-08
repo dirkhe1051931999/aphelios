@@ -122,7 +122,6 @@ export default class MyMenuTreeComponent extends Vue {
   }
   @Watch('detail_model')
   onDetailModelchange(newVal: string) {
-    console.log('detail_model', newVal);
     this.$emit('detail_input', newVal);
   }
   @Watch('option.classes')

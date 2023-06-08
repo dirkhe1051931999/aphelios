@@ -85,8 +85,12 @@
                   <span class="link-type q-ml-sm" @click="handlerClickDetail(props.row)">{{ props.row.username }}</span>
                   <span class="text-grey q-ml-sm">（{{ props.row.nickname }}）</span>
                   <q-avatar size="32px" class="q-ml-sm">
-                    <q-img :src="props.row.avatarUrl"></q-img>
+                    <q-img :src="calacAavatar(props.row.avatarUrl)"></q-img>
                   </q-avatar>
+                </div>
+                <!-- score -->
+                <div v-if="col.name === 'score'">
+                  <span>{{ scoreName(props.row.score) }}</span>
                 </div>
                 <!-- count -->
                 <div v-if="col.name === 'count'">
@@ -106,6 +110,8 @@
                 <div v-if="col.name === 'action'">
                   <span class="in-table-delete-button" @click="handlerClickDelete(props.row)">{{ $t(`action.delete`) }} </span>
                   <span class="in-table-link-button q-ml-md" @click="handlerClickViewPassword(props.row)">查看密码 </span>
+                  <span class="in-table-link-button q-ml-md" @click="handlerClickDisable(props.row)" v-if="props.row.type === 1">禁用 </span>
+                  <span class="in-table-link-button q-ml-md" @click="handlerClickEnable(props.row)" v-if="props.row.type === 2">启用 </span>
                 </div>
               </div>
             </q-td>
@@ -239,7 +245,7 @@
           </MyFormInput>
         </div>
         <!-- 提交按钮 -->
-        <div class="row justify-center q-mt-lg full-width">
+        <div class="row justify-center q-mt-lg full-width" v-if="dialogDetailParams.dialogType === 'add'">
           <q-btn
             color="primary"
             label="确定"
@@ -262,6 +268,7 @@ import { getCurrentInstance } from 'vue';
 import { isValidEmail, isValidUsername } from 'src/utils/validate';
 import setting from 'src/setting.json';
 import { RSAEnCrypty } from 'src/utils/tools';
+import { getAuthorLevel, getAuthorLevelName } from './utils';
 
 const CONST_PARAMS: any = {
   query: { username: '', type: '' },
@@ -283,6 +290,17 @@ const CONST_PARAMS: any = {
 export default class BlogPostUserComponent extends Vue {
   /**instance */
   declare $refs: any;
+
+  get scoreName() {
+    return (score: number) => {
+      return `Lv.${getAuthorLevel(score)} ${getAuthorLevelName(score)}`;
+    };
+  }
+  get calacAavatar() {
+    return (path: string) => {
+      return `${setting.ip}${path}`;
+    };
+  }
 
   mounted() {
     this.getData();
@@ -333,6 +351,12 @@ export default class BlogPostUserComponent extends Vue {
       {
         name: 'username',
         label: '用户名',
+        align: 'left',
+        inSlot: true,
+      },
+      {
+        name: 'score',
+        label: '等级',
         align: 'left',
         inSlot: true,
       },
@@ -545,8 +569,8 @@ export default class BlogPostUserComponent extends Vue {
     this.dialogDetailParams.params.nickname = row.nickname;
     this.dialogDetailParams.params.email = row.email;
     this.dialogDetailParams.params.password = '********';
-    this.dialogDetailParams.params.avatarUrl = row.avatarUrl;
-    if (row.avatarUrl.indexOf(setting.ip) !== -1) {
+    this.dialogDetailParams.params.avatarUrl = `${setting.ip}${row.avatarUrl}`;
+    if (`${setting.ip}${row.avatarUrl}`.indexOf(setting.ip) !== -1) {
       this.dialogDetailParams.avatarList = this.dialogDetailParams.defaultAvatarList as any;
     } else {
       this.dialogDetailParams.avatarList = [row.avatarUrl, ...this.dialogDetailParams.defaultAvatarList] as any;
@@ -735,7 +759,37 @@ export default class BlogPostUserComponent extends Vue {
       this.$q.dialog({
         title: row.username,
         message: result,
+        transitionHide: 'jump-up',
+        transitionShow: 'jump-down',
       });
+    } catch (error) {}
+  }
+
+  public async handlerClickDisable(row: any) {
+    try {
+      const result = await BlogPostModule.setPostUserStatus({
+        id: row.id,
+        status: 2,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: 'Successfully',
+      });
+      this.getData();
+    } catch (error) {}
+  }
+
+  public async handlerClickEnable(row: any) {
+    try {
+      const result = await BlogPostModule.setPostUserStatus({
+        id: row.id,
+        status: 1,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: 'Successfully',
+      });
+      this.getData();
     } catch (error) {}
   }
 }

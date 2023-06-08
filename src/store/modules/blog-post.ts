@@ -17,7 +17,7 @@ import {
   getAllPostUser,
   getAllSheet,
   getAreaData,
-  getCommentsByPostId,
+  getLevel1CommentsByPostId,
   getCompanyAuthorVerifyInfo,
   getIP,
   getPostContentById,
@@ -33,6 +33,7 @@ import {
   removePostAuthor,
   removeSheet,
   setCommentStatus,
+  setPostUserStatus,
   updateChannelName,
   updateChannelPos,
   updateChildDirectory,
@@ -43,6 +44,9 @@ import {
   uploadPostImgs,
   verifyCompanyAuthor,
   viewUserPassword,
+  getLevel2CommentsByTopId,
+  setMood,
+  replyComment,
 } from 'src/api/blog-post';
 
 interface IBlogPost {}
@@ -381,14 +385,32 @@ class BlogPost extends VuexModule implements IBlogPost {
   }
 
   @Action({ rawError: true })
-  public async getCommentsByPostId(data: any) {
-    const result = await getCommentsByPostId(data);
+  public async getLevel1CommentsByPostId(data: any) {
+    const result = await getLevel1CommentsByPostId(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async getLevel2CommentsByTopId(data: any) {
+    const result = await getLevel2CommentsByTopId(data);
     return Promise.resolve(result);
   }
 
   @Action({ rawError: true })
   public async setCommentStatus(data: any) {
     const result = await setCommentStatus(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async setMood(data: any) {
+    const result = await setMood(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async replyComment(data: any) {
+    const result = await replyComment(data);
     return Promise.resolve(result);
   }
 
@@ -425,6 +447,12 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async viewUserPassword(data: any) {
     const result = await viewUserPassword(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async setPostUserStatus(data: any) {
+    const result = await setPostUserStatus(data);
     return Promise.resolve(result);
   }
 }

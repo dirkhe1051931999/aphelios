@@ -10,6 +10,7 @@ declare module '@vue/runtime-core' {
     $i18n: any;
     defaultFill: (data: any) => string;
     parseTime: (data: number | string | null | undefined) => string;
+    upToNowParseTime: (data: number | string | null | undefined) => string;
   }
   // export interface Window {
   //   jsVectorMap: any;

@@ -36,14 +36,18 @@ const api = {
   verifyCompanyAuthor: 'management/blog/post_author/verifyCompanyAuthor',
   getCompanyAuthorVerifyInfo: 'management/blog/post_author/getCompanyAuthorVerifyInfo',
   removeCompanyAuthorVerify: 'management/blog/post_author/removeCompanyAuthorVerify',
-  getCommentsByPostId: 'management/blog/post/getCommentsByPostId',
+  getLevel1CommentsByPostId: 'management/blog/post/getLevel1CommentsByPostId',
+  getLevel2CommentsByTopId: 'management/blog/post/getLevel2CommentsByTopId',
   setCommentStatus: 'management/blog/post/setCommentStatus',
+  setMood: 'management/blog/post/setMood',
+  replyComment: 'management/blog/post/replyComment',
   getAllPostUser: 'management/blog/post_user/getAllPostUser',
   getAreaData: `${setting.minio}/blog-service-oss/province_city_region_town/`,
   getIP: 'web/app/getIP',
   addPostUser: 'management/blog/post_user/addPostUser',
   deletePostUser: 'management/blog/post_user/deletePostUser',
   viewUserPassword: 'management/blog/post_user/viewUserPassword',
+  setPostUserStatus: 'management/blog/post_user/setPostUserStatus',
 };
 
 export const getPostList = (data: any): any =>
@@ -251,15 +255,33 @@ export const removeCompanyAuthorVerify = (data: any): any =>
     method: 'post',
     data,
   });
-export const getCommentsByPostId = (data: any): any =>
+export const getLevel1CommentsByPostId = (data: any): any =>
   request({
-    url: api.getCommentsByPostId,
+    url: api.getLevel1CommentsByPostId,
+    method: 'post',
+    data,
+  });
+export const getLevel2CommentsByTopId = (data: any): any =>
+  request({
+    url: api.getLevel2CommentsByTopId,
     method: 'post',
     data,
   });
 export const setCommentStatus = (data: any): any =>
   request({
     url: api.setCommentStatus,
+    method: 'post',
+    data,
+  });
+export const setMood = (data: any): any =>
+  request({
+    url: api.setMood,
+    method: 'post',
+    data,
+  });
+export const replyComment = (data: any): any =>
+  request({
+    url: api.replyComment,
     method: 'post',
     data,
   });
@@ -295,6 +317,12 @@ export const deletePostUser = (data: any): any =>
 export const viewUserPassword = (data: any): any =>
   request({
     url: api.viewUserPassword,
+    method: 'post',
+    data,
+  });
+export const setPostUserStatus = (data: any): any =>
+  request({
+    url: api.setPostUserStatus,
     method: 'post',
     data,
   });

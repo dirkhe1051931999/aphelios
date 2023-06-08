@@ -87,6 +87,14 @@
                 <div v-if="col.name === 'title'">
                   <span class="link-type q-mr-sm" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
                   <q-icon v-if="props.row.haveImg" color="grey" size="18px" name="o_image"></q-icon>
+
+                  <q-btn dense size="small" label="评论一下" color="negative" outline class="q-ml-md">
+                    <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
+                      <q-banner style="min-width: 20vw" class="q-pa-md">
+                        <SimpleRichTextInput @submit="submitReplyComment($event, props.row)" />
+                      </q-banner>
+                    </q-popup-proxy>
+                  </q-btn>
                 </div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
@@ -114,7 +122,7 @@
                   <span class="link-type" v-if="props.row.comment" @click="openCommentDialog(props.row)">{{ defaultFill(props.row.comment) }} </span>
                   <span v-else>--</span>
                   <span class="q-mx-sm">/</span>
-                  <span class="link-type" v-if="props.row.view">{{ defaultFill(props.row.view) }}</span>
+                  <span v-if="props.row.view">{{ defaultFill(props.row.view) }}</span>
                   <span v-else>--</span>
                 </div>
                 <!-- action -->
@@ -142,6 +150,7 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
+import { TEST_ACCOUNT } from './utils';
 
 const CONST_PARAMS: any = {
   query: { channelId: '', status: '', authorId: '', haveComment: '' },
@@ -576,5 +585,44 @@ export default class BlogPostComponent extends Vue {
       }
     } catch (error) {}
   }
+  public async submitReplyComment(content: any, item: any) {
+    try {
+      console.log(content, item);
+      let obj = {
+        topId: !item.topId && !item.replyId ? item.id2 : item.topId,
+        content,
+        postId: item.postId,
+        userId: TEST_ACCOUNT.id,
+        replyId: null,
+      };
+      // this.$q.loading.show();
+      // // await BlogPostModule.replyComment(obj);
+      // this.$q.loading.hide();
+      // this.$globalMessage.show({
+      //   type: 'success',
+      //   content: '回复成功',
+      // });
+      // for (let item of this.$refs.replyInputProxyRef) {
+      //   item.hide();
+      // }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
 </script>
+<style lang="scss">
+.body--dark {
+  .reply-input-proxy {
+    box-shadow: 0px 6px 16px -1px rgba($color: #ffffff, $alpha: 0.15) !important;
+  }
+}
+.body--light {
+  .reply-input-proxy {
+    box-shadow: 0px 6px 16px -1px rgba($color: #000000, $alpha: 0.15) !important;
+  }
+}
+.reply-input-proxy {
+  border-radius: 8px !important;
+}
+</style>

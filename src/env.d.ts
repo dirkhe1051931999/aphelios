@@ -9,4 +9,5 @@ declare namespace NodeJS {
 }
 declare interface Window {
   wangEditor: any;
+  EmojiMart: any;
 }

@@ -316,11 +316,8 @@
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { cloneDeep } from 'lodash';
 import { Component, Prop, Vue, Watch } from 'vue-facing-decorator';
-import { defaultFill, sleep } from 'src/utils/tools';
 import MonacoEditor from 'src/components/MonacoEditor/index.vue';
-import { getCurrentInstance } from 'vue';
 import { supportCodeType } from './utils';
 import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
@@ -501,7 +498,7 @@ export default class myBlogPostDialogComponent extends Vue {
             <span class="link-type fs-12 absolute right-50 top-10" id="${this.dialogAddUpdateParams.addCode.copyId}${this.dialogAddUpdateParams.codeNum + 1}">复制</span>
             <span class="link-type fs-12 absolute right-10 top-10" id="${this.dialogAddUpdateParams.addCode.deleteId}${this.dialogAddUpdateParams.codeNum + 1}">删除</span>
             </div>
-            &nbsp;`
+            &nbsp;`,
             );
             this.$refs.qEditor.focus();
             this.dialogAddUpdateParams.codeNum++;
@@ -620,7 +617,7 @@ export default class myBlogPostDialogComponent extends Vue {
         'insertHTML',
         `&nbsp;
           ${html}
-      &nbsp;`
+      &nbsp;`,
       );
       this.$refs.qEditor.focus();
       this.dialogUpload.visiable = false;
