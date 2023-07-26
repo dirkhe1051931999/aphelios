@@ -4,23 +4,23 @@ This is a full-stack integrated service project with multiple server-side and cl
 
 ## Full-stack integrated services
 
-- Server-side: used to handle business logic and provide interfaces for clients to call.
-- Backend management system: used to manage the data on the server side, including user information, order information, etc.
+- ✅ Server-side: used to handle business logic and provide interfaces for clients to call.
+- ✅ Backend management system: used to manage the data on the server side, including user information, order information, etc.
 - Web page: used to display the information and functions of the service, which can be accessed through the browser.
-- H5 page: used to display the information and functions of the service on the mobile terminal, which can be accessed through the browser.
-- Mobile App: Used to display the information and functions of the service on mobile devices to provide a better user experience.
-- Windows Client: Used to display the information and functions of the service on desktop devices, providing a better user experience and operational experience.
-- Generate data: The collected data will be organized and converted into SQL file format. Some images or resources will be stored in OSS (Object Storage Service).
+- ⏳ H5 page: used to display the information and functions of the service on the mobile terminal, which can be accessed through the browser.
+- ⏳ Mobile App: Used to display the information and functions of the service on mobile devices to provide a better user experience.
+- ⏳ Windows Client: Used to display the information and functions of the service on desktop devices, providing a better user experience and operational experience.
+- ✅ Generate data: The collected data will be organized and converted into SQL file format. Some images or resources will be stored in OSS (Object Storage Service).
 
 ## Branching
 
-- Server branch->service, technologies used koa, docker, redis, minio, mysql
-- backend management branch->management, technology stack is quasar
-- web page branch->web, technology stack vue (server-side rendering)
-- h5 page branch->h5, the technology stack is vant
-- app page branch->app, technology stack is flutter
-- windows client branch->desktop, technology stack is electron
-- Capture data branch->generate, technology stack is python
+- ✅ Server branch->[service](https://github.com/dirkhe1051931999/aphelios/tree/service), technologies used koa, docker, redis, minio, mysql
+- ✅ backend management branch->[management](https://github.com/dirkhe1051931999/aphelios/tree/management), technology stack is quasar
+- ⏳ web page branch->[web](https://github.com/dirkhe1051931999/aphelios/tree/web), technology stack vue (server-side rendering)
+- ⏳ h5 page branch->[h5](https://github.com/dirkhe1051931999/aphelios/tree/h5), the technology stack is vant
+- ⏳ app page branch->[app](https://github.com/dirkhe1051931999/aphelios/tree/app), technology stack is flutter
+- ⏳ windows client branch->[desktop](https://github.com/dirkhe1051931999/aphelios/tree/desktop), technology stack is electron
+- ✅ generate data branch->[generate](https://github.com/dirkhe1051931999/aphelios/tree/generate), technology stack is python
 
 ## installation environment
 
