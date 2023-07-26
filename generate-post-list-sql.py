@@ -15,12 +15,16 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 data_dir = "./data"
 sql_dir = "./sql"
-url = "192.168.200.134:9000"
+url = "10.18.2.134:9000"
 bucket_name = "blog-service-oss"
 client = Minio(
     url,
-    access_key="9RSB8iL0VQ0J7PGs",
-    secret_key="5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr",
+    # 下面是200.134环境的
+    # access_key="9RSB8iL0VQ0J7PGs",
+    # secret_key="5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr",
+    # 下面是2.134环境的
+    access_key="qrCX3RbPTSoryHikrxeI",
+    secret_key="dfe4EJ5h5ca7mppvqL7l1gmuEcFbRLFO72200fbC",
     secure=False,
 )
 today = datetime.today().strftime("%Y%m%d")
