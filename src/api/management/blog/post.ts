@@ -1,6 +1,7 @@
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
 import {
+  addComment,
   addPost,
   deletePost,
   getLevel1CommentsByPostId,
@@ -92,5 +93,10 @@ export class ManagementBlogPostAPIController {
   @Route('/replyComment', HTTP_METHODS.POST)
   async replyComment(ctx: Koa.Context, next: Koa.Next) {
     return replyComment(ctx);
+  }
+
+  @Route('/addComment', HTTP_METHODS.POST)
+  async addComment(ctx: Koa.Context, next: Koa.Next) {
+    return addComment(ctx);
   }
 }

@@ -61,7 +61,7 @@ interface Config {
 const config: Config = {
   db: {
     mysql: {
-      host: '192.168.200.134',
+      host: '10.18.2.134',
       user: 'hejian',
       password: 'Hejian@123',
       port: 3306,
@@ -70,7 +70,7 @@ const config: Config = {
     },
     redis: {
       port: 6380,
-      host: '192.168.200.134',
+      host: '10.18.2.134',
       db: 3,
       options: {
         return_buffers: false,
@@ -78,11 +78,15 @@ const config: Config = {
       },
     },
     minio: {
-      endPoint: '192.168.200.134',
+      endPoint: '10.18.2.134',
       port: 9000,
       useSSL: false,
-      accessKey: '9RSB8iL0VQ0J7PGs',
-      secretKey: '5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr',
+      // 下面是200.134的
+      // accessKey: '9RSB8iL0VQ0J7PGs',
+      // secretKey: '5UhXn4p4Ff6HBZzhw6mKqpeG2UMVWibr',
+      // 下面是2.134的
+      accessKey: 'qrCX3RbPTSoryHikrxeI',
+      secretKey: 'dfe4EJ5h5ca7mppvqL7l1gmuEcFbRLFO72200fbC',
       buckets: 'blog-service-oss',
     },
     db_salt: 'LGGKqbCrRKRnywHv3uqFZw==',

@@ -335,7 +335,7 @@ export const getPostLevel1CommentsById = async (ctx) => {
     let sql1 = `
     SELECT COUNT(*) as commentCount 
     FROM sm_board_comment 
-    WHERE postId = (SELECT srcTopicId FROM sm_board_post_list WHERE id = ${id});
+    WHERE postId = (SELECT srcTopicId FROM sm_board_post_list WHERE id = '${id}');
     `;
     let sql2 = `
       SELECT
@@ -374,7 +374,7 @@ export const getPostLevel1CommentsById = async (ctx) => {
       LEFT JOIN sm_board_comment c ON p.srcTopicId = c.postId
       LEFT JOIN sm_board_user u ON c.userId = u.id
       LEFT JOIN sm_board_comment sc ON c.id2 = sc.topId
-      WHERE p.id = ${id} AND c.replyId IS NULL
+      WHERE p.id = '${id}' AND c.replyId IS NULL
       GROUP BY c.id
       ORDER BY c.postTime DESC
       LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};      

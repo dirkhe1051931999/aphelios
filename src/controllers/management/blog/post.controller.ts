@@ -99,7 +99,7 @@ export const getPostRowById = async (ctx) => {
   }
   try {
     let result = await ctx.execSql(
-      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType  FROM sm_board_post_list WHERE id = ${id}`
+      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType  FROM sm_board_post_list WHERE id = '${id}'`
     );
     ctx.success(ctx, result[0]);
   } catch (error) {
@@ -114,7 +114,7 @@ export const getPostContentById = async (ctx) => {
     ctx.error(ctx, '404#id');
   }
   try {
-    let result = await ctx.execSql(`SELECT content FROM sm_board_post_list WHERE id = ${id}`);
+    let result = await ctx.execSql(`SELECT content FROM sm_board_post_list WHERE id = '${id}'`);
     ctx.success(ctx, result[0].content);
   } catch (error) {
     console.log(error);
@@ -143,9 +143,10 @@ export const addPost = async (ctx) => {
     return;
   }
   try {
+    let id = uuidv4().replace(/-/g, '');
     let results = await ctx.execSql([
-      `INSERT INTO sm_board_post_list (title, content,poster, authorId, categoryId,channelId, codeCount, postType, status, createTime, updateTime, view, comment) 
-      VALUES ('${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}',${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment});`,
+      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, codeCount, postType, status, createTime, updateTime, view, comment, srcTopicId) 
+      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}',${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}');`,
     ]);
     if (results[0].affectedRows > 0) {
       ctx.success(ctx, { id: results[0].insertId });
@@ -165,8 +166,8 @@ export const deletePost = async (ctx) => {
     return;
   }
   try {
-    let results = await ctx.execSql(`DELETE FROM sm_board_post_list WHERE id = ?`, id);
-    ge: ctx.success(ctx, null);
+    let results = await ctx.execSql(`DELETE FROM sm_board_post_list WHERE id = '${id}'`);
+    ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 405);
@@ -191,7 +192,7 @@ export const updatePost = async (ctx) => {
       channelId = '${channelId}',
       codeCount = ${codeCount},
       updateTime = ${updateTime}
-      WHERE id = ${id};`,
+      WHERE id = '${id}';`,
     ]);
     ctx.success(ctx, null);
   } catch (error) {
@@ -207,7 +208,7 @@ export const offlinePost = async (ctx) => {
     return;
   }
   try {
-    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'OFFLINE' WHERE id = ?`, id);
+    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'OFFLINE' WHERE id = '${id}'`);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
@@ -222,7 +223,7 @@ export const publishPost = async (ctx) => {
     return;
   }
   try {
-    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'PUBLISHED' WHERE id = ?`, id);
+    await ctx.execSql(`UPDATE sm_board_post_list SET status = 'PUBLISHED' WHERE id = '${id}'`);
     ctx.success(ctx, null);
   } catch (error) {
     console.log(error);
@@ -276,7 +277,7 @@ export const getLevel1CommentsByPostId = async (ctx) => {
     LEFT JOIN sm_board_comment c ON p.srcTopicId = c.postId
     LEFT JOIN sm_board_user u ON c.userId = u.id
     LEFT JOIN sm_board_comment sc ON c.id2 = sc.topId
-    WHERE p.id = ${id} AND c.replyId IS NULL
+    WHERE p.id = '${id}' AND c.replyId IS NULL
     GROUP BY c.id
     ORDER BY c.postTime DESC
     LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
@@ -450,6 +451,31 @@ export const replyComment = async (ctx) => {
     let sql = `
     INSERT INTO sm_board_comment (id, id2, topId, content, postId, userId, replyId, postTime, status, \`like\`, unlike)
     VALUES ('${id}', '${id2}', '${topId}', '${content}', '${postId}', '${userId}', '${replyId}', ${postTime}, ${status}, ${like}, ${unlike});
+    `;
+    await ctx.execSql(sql);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+
+export const addComment = async (ctx) => {
+  let { content, postId, userId } = ctx.request.body;
+  if (ctx.isFalsy([content, postId, userId])) {
+    ctx.error(ctx, '404#content,postId,userId');
+    return;
+  }
+  try {
+    let id = uuidv4().replace(/\-/g, '');
+    let id2 = uuidv4().replace(/\-/g, '');
+    let postTime = new Date().getTime();
+    let status = 1;
+    let like = 0;
+    let unlike = 0;
+    let sql = `
+    INSERT INTO sm_board_comment (id, id2, content, postId, userId, postTime, status, \`like\`, unlike)
+    VALUES ('${id}', '${id2}', '${content}', '${postId}', '${userId}', ${postTime}, ${status}, ${like}, ${unlike});
     `;
     await ctx.execSql(sql);
     ctx.success(ctx, null);
