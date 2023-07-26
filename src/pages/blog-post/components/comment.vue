@@ -106,7 +106,7 @@
             </li>
           </ul>
           <div class="text-grey row items-center justify-center h-32" v-if="this._commentDetail.loadingMore"><q-spinner color="primary" size="16px" class="q-mr-sm" /> 加载中...</div>
-          <div class="text-grey text-center h-32 lh-32" v-if="this._commentDetail.noData">已经到底部了...</div>
+          <div class="text-grey text-center h-32 lh-32 q-mt-md" v-if="this._commentDetail.noData">已经到底部了...</div>
         </q-card-section>
       </q-card>
     </q-dialog>

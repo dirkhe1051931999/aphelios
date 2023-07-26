@@ -47,6 +47,7 @@ import {
   getLevel2CommentsByTopId,
   setMood,
   replyComment,
+  addComment,
 } from 'src/api/blog-post';
 
 interface IBlogPost {}
@@ -411,6 +412,12 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async replyComment(data: any) {
     const result = await replyComment(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async addComment(data: any) {
+    const result = await addComment(data);
     return Promise.resolve(result);
   }
 

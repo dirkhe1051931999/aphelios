@@ -41,6 +41,7 @@ const api = {
   setCommentStatus: 'management/blog/post/setCommentStatus',
   setMood: 'management/blog/post/setMood',
   replyComment: 'management/blog/post/replyComment',
+  addComment: 'management/blog/post/addComment',
   getAllPostUser: 'management/blog/post_user/getAllPostUser',
   getAreaData: `${setting.minio}/blog-service-oss/province_city_region_town/`,
   getIP: 'web/app/getIP',
@@ -282,6 +283,12 @@ export const setMood = (data: any): any =>
 export const replyComment = (data: any): any =>
   request({
     url: api.replyComment,
+    method: 'post',
+    data,
+  });
+export const addComment = (data: any): any =>
+  request({
+    url: api.addComment,
     method: 'post',
     data,
   });

@@ -19,11 +19,11 @@
           @close="textToInputCloseForEmail"
         >
         </TextToInput>
-        <span class="link-type q-ml-md" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
-        <span class="delete-type q-ml-md" @click="handlerClickDelete(item)">{{ $t(`action.delete`) }} </span>
-        <p class="q-ml-md">
-          共计：<span class="link-type q-ml-sm" @click="toPostList(item)">{{ item.count }}</span>
-        </p>
+        <span class="link-type q-ml-sm" @click="toPostList(item)">({{ item.count }})</span>
+        <div class="q-ml-auto">
+          <span class="link-type" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
+          <span class="delete-type q-ml-sm" @click="handlerClickDelete(item)">删除 </span>
+        </div>
       </div>
     </div>
     <div v-else>暂无数据</div>

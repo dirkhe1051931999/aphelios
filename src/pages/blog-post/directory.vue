@@ -193,24 +193,24 @@
                                     <div class="row items-center q-mt-sm">
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm">{{ post.view }}</span>
+                                        <span class="q-ml-sm text-grey">{{ post.view }}</span>
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
                                         <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
-                                        <span v-else>--</span>
+                                        <span v-else class="q-ml-sm text-grey">--</span>
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm">{{ parseTime(post.createTime) }}</span>
+                                        <span class="q-ml-sm text-grey">{{ parseTime(post.createTime) }}</span>
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_update" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm">{{ parseTime(post.updateTime) }}</span>
+                                        <span class="q-ml-sm text-grey">{{ parseTime(post.updateTime) }}</span>
                                       </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_person" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm">{{ postAuthor(post.authorId) }}</span>
+                                        <span class="q-ml-sm text-grey">{{ postAuthor(post.authorId) }}</span>
                                       </p>
                                     </div>
                                     <div class="row items-cener q-mt-sm">
@@ -259,24 +259,24 @@
                             <div class="row items-center q-mt-sm">
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm">{{ post.view }}</span>
+                                <span class="q-ml-sm text-grey">{{ post.view }}</span>
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
                                 <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
-                                <span v-else>--</span>
+                                <span v-else class="q-ml-sm text-grey">--</span>
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm">{{ parseTime(post.createTime) }}</span>
+                                <span class="q-ml-sm text-grey">{{ parseTime(post.createTime) }}</span>
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_update" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm">{{ parseTime(post.updateTime) }}</span>
+                                <span class="q-ml-sm text-grey">{{ parseTime(post.updateTime) }}</span>
                               </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_person" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm">{{ postAuthor(post.authorId) }}</span>
+                                <span class="q-ml-sm text-grey">{{ postAuthor(post.authorId) }}</span>
                               </p>
                             </div>
                             <div class="row items-cener q-mt-sm">
@@ -541,6 +541,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       });
       const item = findItemById(result.categoryId, this.sheetParams.data);
       let index = item.childrenPost.findIndex((post: any) => post.id === result.id);
+      console.log(result);
       item.childrenPost[index] = result;
       BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
     }

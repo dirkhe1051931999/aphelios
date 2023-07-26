@@ -3,8 +3,6 @@
     <Hamburger :is-active="sidebar.opened" class="hamburger" @toggleClick="toggleSidebar" />
     <Breadcrumb class="breadcrumb" />
     <div class="right-menu">
-      <a class="right-menu-item" href="https://dirkhe1051931999.github.io/quasar/" target="__blank">vue2 with quasar and use vue-class-decorator</a>
-      <q-icon name="arrow_forward_ios" class="fs-18 text-white m-r-12"></q-icon>
       <q-separator dark vertical />
       <div class="right-menu-item" :id="`${appTitle}-version`">{{ version }}</div>
       <q-separator dark vertical />

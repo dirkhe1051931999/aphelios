@@ -1,152 +1,156 @@
 <template>
   <div class="editor-wrap" ref="editorWrap">
     <div class="editor-content thin-shadow" v-if="blogEditorPostVisiable">
-      <div class="q-pb-md">
-        <q-btn color="primary" label="确定" class="q-mr-md" @click="dialogAddUpdateConfirmEvent" />
-        <q-btn color="primary" label="存为草稿" class="q-mr-md" />
-        <q-btn color="primary" outline label="取消" @click="hideDialog" flat></q-btn>
-      </div>
-      <div id="editor-toolbar"></div>
-      <q-input
-        v-model.trim="dialogAddUpdateParams.row.title"
-        type="text"
-        label="请输入标题"
-        autocapitalize="off"
-        autocomplete="new-password"
-        autocorrect="off"
-        clearable
-        dense
-        outlined
-        class="q-my-md"
-        dropdown-icon="app:topbar-arrow-bottom"
-        clear-icon="app:clear"
-        :spellcheck="false"
-      />
-      <div class="row q-my-md items-center">
-        <q-select
-          outlined
-          class="w-p-20 q-mr-md"
-          v-model="dialogAddUpdateParams.row.authorId"
-          :options="authorOptions"
-          label="选择作者"
-          color="primary"
-          :spellcheck="false"
-          autocapitalize="off"
-          autocomplete="new-password"
-          autocorrect="off"
-          clearable
-          dense
-          options-dense
-          emit-value
-          dropdown-icon="app:topbar-arrow-bottom"
-          clear-icon="app:clear"
-          map-options
-        >
-          <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps">
-              <q-item-section avatar>
-                <q-avatar color="primary" text-color="white">
-                  <q-img :src="scope.opt.avatarUrl"> </q-img>
-                </q-avatar>
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
-                <q-item-label caption>{{ scope.opt.description }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </template>
-        </q-select>
-        <q-btn
-          class="q-mr-md w-p-30 h-40 category-select"
-          :label="postCategory(dialogAddUpdateParams.row) === '--' ? '选择主题' : '主题：' + postCategory(dialogAddUpdateParams.row)"
-          icon-right="o_keyboard_arrow_down"
-          outline
-          align="left"
-          :disable="disableSelectCategory"
-        >
-          <q-menu class="w-p-10">
-            <q-list>
-              <q-item clickable v-for="item in categoryOptions" :key="item.id" v-close-popup="!item.children.length">
-                <q-item-section class="q-px-none">
-                  <q-item-label>{{ item.name }}</q-item-label>
-                  <q-item-label caption>{{ item.description }}</q-item-label>
+      <div class="left">
+        <div class="row q-mb-sm items-center justify-between">
+          <q-select
+            outlined
+            v-model="dialogAddUpdateParams.row.authorId"
+            :options="authorOptions"
+            label="选择作者"
+            class="w-p-31"
+            color="primary"
+            :spellcheck="false"
+            autocapitalize="off"
+            autocomplete="new-password"
+            autocorrect="off"
+            clearable
+            dense
+            options-dense
+            emit-value
+            dropdown-icon="app:topbar-arrow-bottom"
+            clear-icon="app:clear"
+            map-options
+          >
+            <template v-slot:option="scope">
+              <q-item v-bind="scope.itemProps">
+                <q-item-section avatar>
+                  <q-avatar color="primary" text-color="white">
+                    <q-img :src="scope.opt.avatarUrl"> </q-img>
+                  </q-avatar>
                 </q-item-section>
-                <q-item-section side v-if="item.children.length">
-                  <q-icon name="keyboard_arrow_right" />
+                <q-item-section>
+                  <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                  <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                 </q-item-section>
-                <q-menu anchor="top end" self="top start" v-if="item.children.length" class="w-p-10">
-                  <q-list>
-                    <q-item
-                      v-for="directory in item.children"
-                      :key="directory.id"
-                      clickable
-                      v-close-popup="!directory.children.length"
-                      @click.stop.prevent="!directory.children.length ? (dialogAddUpdateParams.row.categoryId = directory.id) : () => 0"
-                    >
-                      <q-item-section>
-                        <q-item-label>{{ directory.name }}</q-item-label>
-                        <q-item-label caption>{{ directory.subName }}</q-item-label>
-                      </q-item-section>
-                      <q-item-section side v-if="directory.children.length">
-                        <q-icon name="keyboard_arrow_right" />
-                      </q-item-section>
-                      <q-menu auto-close anchor="top end" self="top start" v-if="directory.children.length" class="w-p-10">
-                        <q-list>
-                          <q-item
-                            v-for="childDirectory in directory.children"
-                            :key="childDirectory"
-                            clickable
-                            v-close-popup="!childDirectory.children"
-                            @click.stop.prevent="dialogAddUpdateParams.row.categoryId = childDirectory.id"
-                          >
-                            <q-item-section>
-                              <q-item-label>{{ childDirectory.name }}</q-item-label>
-                              <q-item-label caption>{{ childDirectory.subName }}</q-item-label>
-                            </q-item-section>
-                          </q-item>
-                        </q-list>
-                      </q-menu>
-                    </q-item>
-                  </q-list>
-                </q-menu>
               </q-item>
-            </q-list>
-          </q-menu>
-        </q-btn>
-        <q-select
-          v-model="dialogAddUpdateParams.row.channelId"
-          :options="channelOptions"
-          label="请选择频道"
-          class="w-p-20"
-          :spellcheck="false"
+            </template>
+          </q-select>
+          <q-btn
+            class="w-p-31 h-40 category-select"
+            :label="postCategory(dialogAddUpdateParams.row) === '--' ? '选择主题' : '主题：' + postCategory(dialogAddUpdateParams.row)"
+            icon-right="o_keyboard_arrow_down"
+            outline
+            align="left"
+            :disable="disableSelectCategory"
+          >
+            <q-menu class="w-p-7">
+              <q-list dense>
+                <q-item clickable v-for="item in categoryOptions" :key="item.id" v-close-popup="!item.children.length">
+                  <q-item-section class="q-px-none">
+                    <q-item-label>{{ item.name }}</q-item-label>
+                    <q-item-label caption>{{ item.description }}</q-item-label>
+                  </q-item-section>
+                  <q-item-section side v-if="item.children.length">
+                    <q-icon name="keyboard_arrow_right" />
+                  </q-item-section>
+                  <q-menu anchor="top end" self="top start" v-if="item.children.length" class="w-p-7">
+                    <q-list dense>
+                      <q-item
+                        v-for="directory in item.children"
+                        :key="directory.id"
+                        clickable
+                        v-close-popup="!directory.children.length"
+                        @click.stop.prevent="!directory.children.length ? (dialogAddUpdateParams.row.categoryId = directory.id) : () => 0"
+                      >
+                        <q-item-section>
+                          <q-item-label>{{ directory.name }}</q-item-label>
+                          <q-item-label caption>{{ directory.subName }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side v-if="directory.children.length">
+                          <q-icon name="keyboard_arrow_right" />
+                        </q-item-section>
+                        <q-menu auto-close anchor="top end" self="top start" v-if="directory.children.length" class="w-p-7">
+                          <q-list dense>
+                            <q-item
+                              v-for="childDirectory in directory.children"
+                              :key="childDirectory"
+                              clickable
+                              v-close-popup="!childDirectory.children"
+                              @click.stop.prevent="dialogAddUpdateParams.row.categoryId = childDirectory.id"
+                            >
+                              <q-item-section>
+                                <q-item-label>{{ childDirectory.name }}</q-item-label>
+                                <q-item-label caption>{{ childDirectory.subName }}</q-item-label>
+                              </q-item-section>
+                            </q-item>
+                          </q-list>
+                        </q-menu>
+                      </q-item>
+                    </q-list>
+                  </q-menu>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
+          <q-select
+            v-model="dialogAddUpdateParams.row.channelId"
+            :options="channelOptions"
+            class="w-p-31"
+            label="请选择频道"
+            :spellcheck="false"
+            autocapitalize="off"
+            autocomplete="new-password"
+            autocorrect="off"
+            clearable
+            dense
+            options-dense
+            outlined
+            emit-value
+            dropdown-icon="app:topbar-arrow-bottom"
+            clear-icon="app:clear"
+            map-options
+          />
+        </div>
+        <div class="poster q-mb-md relative q-pa-md">
+          <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
+          <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" v-if="dialogAddUpdateParams.row.poster" fit="contain">
+            <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
+          </q-img>
+          <div v-else class="h-300 row items-center justify-center">
+            <div class="text-center cursor-pointer" @click.stop.prevent="handleOpenUploadPosterContainer">
+              <q-icon name="o_add" size="80px"></q-icon>
+              <p class="q-mt-md">上传封面</p>
+            </div>
+          </div>
+          <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click.stop.prevent="handleOpenUploadPosterContainer" v-if="dialogAddUpdateParams.row.poster">修改</span>
+        </div>
+        <div>
+          <q-btn color="primary" label="确定" class="q-mr-md" @click="dialogAddUpdateConfirmEvent" />
+          <q-btn color="primary" label="存为草稿" class="q-mr-md" />
+          <q-btn color="primary" outline label="取消" @click="hideDialog" flat></q-btn>
+        </div>
+      </div>
+      <div class="right">
+        <q-input
+          v-model.trim="dialogAddUpdateParams.row.title"
+          type="text"
+          label="请输入标题"
           autocapitalize="off"
           autocomplete="new-password"
           autocorrect="off"
           clearable
           dense
-          options-dense
           outlined
-          emit-value
+          class="q-mb-sm"
           dropdown-icon="app:topbar-arrow-bottom"
           clear-icon="app:clear"
-          map-options
+          :spellcheck="false"
         />
-      </div>
-      <div class="poster q-my-lg relative q-pa-md">
-        <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
-        <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" v-if="dialogAddUpdateParams.row.poster" fit="contain">
-          <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
-        </q-img>
-        <div v-else class="h-300 row items-center justify-center">
-          <div class="text-center cursor-pointer" @click.stop.prevent="handleOpenUploadPosterContainer">
-            <q-icon name="o_add" size="80px"></q-icon>
-            <p class="q-mt-md">上传封面</p>
-          </div>
+        <div id="editor-toolbar"></div>
+        <div id="editor-container">
+          <div id="editor-text-area" style="min-height: 500px"></div>
         </div>
-        <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click.stop.prevent="handleOpenUploadPosterContainer" v-if="dialogAddUpdateParams.row.poster">修改</span>
-      </div>
-      <div id="editor-container">
-        <div id="editor-text-area" style="min-height: 300px"></div>
       </div>
     </div>
   </div>
@@ -460,7 +464,9 @@ export default class myBlogEditorPostDialogComponent extends Vue {
             content: this.$t('messages.success'),
           });
           BlogPostModule.SET_ADDED_POST_ID(id);
-          BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(true);
+          setTimeout(() => {
+            BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(true);
+          }, 1000);
         } catch (error) {
           this.$q.loading.hide();
         }
@@ -473,7 +479,9 @@ export default class myBlogEditorPostDialogComponent extends Vue {
             type: 'success',
             content: this.$t('messages.success'),
           });
-          BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(true);
+          setTimeout(() => {
+            BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(true);
+          }, 1000);
         } catch (error) {
           this.$q.loading.hide();
         }
@@ -544,7 +552,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   z-index: 99999;
 }
 .w-e-text-container {
-  min-height: 300px;
+  min-height: 500px;
   border-radius: 8px;
 }
 .w-e-bar {
@@ -591,24 +599,29 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   z-index: 1003;
   background: rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
-  // transition: all 0.3s;
   transform: translateY(-100vh);
   .editor-content {
+    width: 50vw;
+    display: flex;
     position: absolute;
-    padding: 16px;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    height: 100%;
-    width: 100%;
-    overflow-y: scroll;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 16px 32px 32px;
+    justify-content: space-between;
+    .left {
+      width: 50%;
+    }
+    .right {
+      width: 48%;
+    }
   }
   .poster {
     border-radius: 8px;
   }
   #editor-toolbar {
     border-radius: 8px;
+    margin-bottom: 8px;
   }
 }
 </style>

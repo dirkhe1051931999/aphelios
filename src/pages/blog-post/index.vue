@@ -87,8 +87,7 @@
                 <div v-if="col.name === 'title'">
                   <span class="link-type q-mr-sm" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
                   <q-icon v-if="props.row.haveImg" color="grey" size="18px" name="o_image"></q-icon>
-
-                  <q-btn dense size="small" label="评论一下" color="negative" outline class="q-ml-md">
+                  <q-btn dense size="8px" color="primary" flat class="q-ml-md" icon="chat_bubble_outline" round>
                     <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
                       <q-banner style="min-width: 20vw" class="q-pa-md">
                         <SimpleRichTextInput @submit="submitReplyComment($event, props.row)" />
@@ -151,6 +150,7 @@ import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
 import { TEST_ACCOUNT } from './utils';
+import { v4 as uuidv4 } from 'uuid';
 
 const CONST_PARAMS: any = {
   query: { channelId: '', status: '', authorId: '', haveComment: '' },
@@ -587,24 +587,22 @@ export default class BlogPostComponent extends Vue {
   }
   public async submitReplyComment(content: any, item: any) {
     try {
-      console.log(content, item);
       let obj = {
-        topId: !item.topId && !item.replyId ? item.id2 : item.topId,
         content,
-        postId: item.postId,
+        postId: item.srcTopicId ? item.srcTopicId : item.id,
         userId: TEST_ACCOUNT.id,
-        replyId: null,
       };
-      // this.$q.loading.show();
-      // // await BlogPostModule.replyComment(obj);
-      // this.$q.loading.hide();
-      // this.$globalMessage.show({
-      //   type: 'success',
-      //   content: '回复成功',
-      // });
-      // for (let item of this.$refs.replyInputProxyRef) {
-      //   item.hide();
-      // }
+      this.$q.loading.show();
+      await BlogPostModule.addComment(obj);
+      this.$q.loading.hide();
+      this.$globalMessage.show({
+        type: 'success',
+        content: '回复成功',
+      });
+      for (let item of this.$refs.replyInputProxyRef) {
+        item.hide();
+      }
+      this.getData();
     } catch (error) {
       console.log(error);
     }
