@@ -3,7 +3,7 @@ import CONFIG from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { channelId, authorId, status, page, rowsPerPage, haveComment } = ctx.request.body;
+  let { channelId, authorId, status, page, rowsPerPage, haveComment, orderProperty, orderDir } = ctx.request.body;
   channelId = channelId || '';
   status = status || '';
   authorId = authorId || '';
@@ -53,9 +53,11 @@ export const getPostList = async (ctx) => {
             OR ('${haveComment}' = '0' AND COUNT(c.postId) = 0) 
             OR '${haveComment}' = ''
         )
-    ORDER BY 
-        p.createTime DESC 
-    LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
+    ${
+      orderProperty
+        ? `ORDER BY ${orderProperty} ${orderDir} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
+        : `ORDER BY p.createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
+    };
     `;
     let results = await ctx.execSql([sql1, sql2]);
     ctx.success(ctx, {
