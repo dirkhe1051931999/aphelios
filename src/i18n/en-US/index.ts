@@ -10,6 +10,7 @@ export default {
     'blog-post-directory': 'Blog post directory',
     'blog-post-author': 'Blog post author',
     'blog-post-user': 'Blog post user',
+    'blog-post-cover-lib': 'Blog post cover',
     audit: 'Audit',
     'audit-company-certification': 'Company certification',
     'audit-comment': 'Comment',

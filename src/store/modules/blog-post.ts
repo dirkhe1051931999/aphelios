@@ -48,6 +48,15 @@ import {
   setMood,
   replyComment,
   addComment,
+  getAllCover,
+  addCover,
+  updateCover,
+  deleteCover,
+  batchAddCover,
+  batchDelteCover,
+  deleteCategory,
+  queryCategory,
+  addCategory,
 } from 'src/api/blog-post';
 
 interface IBlogPost {}
@@ -69,6 +78,7 @@ class BlogPost extends VuexModule implements IBlogPost {
       categoryId: '',
       channelId: '',
       title: '',
+      status: '',
       poster: '',
       content: '',
       id: '',
@@ -460,6 +470,60 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async setPostUserStatus(data: any) {
     const result = await setPostUserStatus(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async getAllCover(data: any) {
+    const result = await getAllCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async addCover(data: any) {
+    const result = await addCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async updateCover(data: any) {
+    const result = await updateCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async deleteCover(data: any) {
+    const result = await deleteCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async batchAddCover(data: any) {
+    const result = await batchAddCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async batchDelteCover(data: any) {
+    const result = await batchDelteCover(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async addCategory(data: any) {
+    const result = await addCategory(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async deleteCategory(data: any) {
+    const result = await deleteCategory(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async queryCategory(data: any) {
+    const result = await queryCategory(data);
     return Promise.resolve(result);
   }
 }

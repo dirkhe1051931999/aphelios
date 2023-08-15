@@ -60,22 +60,33 @@
         hide-pagination
         :no-data-label="$t(`tip.noData`)"
         class="my-table"
+        row-key="id"
+        @request="sortTableData"
+        binary-state-sort
       >
         <template #top>
           <div class="full-width justify-end row">
             <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
           </div>
         </template>
+
         <template v-slot:header="props">
           <q-tr :props="props">
             <!-- other -->
             <q-th v-for="col in props.cols" :key="col.name" :props="props" style="text-align: left">
-              {{ col.label.indexOf('$') !== -1 ? $t(`table.${col.label.replace('$', '')}`) : col.label }}
+              <div v-if="col.name === 'view'">
+                {{ col.label }}
+                <q-icon name="arrow_upward" size="14px" v-show="queryParams.params.orderProperty === 'view' && queryParams.params.orderDir === 'ASC'" />
+                <q-icon name="arrow_downward" size="14px" v-show="queryParams.params.orderProperty === 'view' && queryParams.params.orderDir === 'DESC'" />
+              </div>
+              <div v-else-if="col.name === 'comment'">
+                {{ col.label }}
+                <q-icon name="arrow_upward" size="14px" v-show="queryParams.params.orderProperty === 'comment' && queryParams.params.orderDir === 'ASC'" />
+                <q-icon name="arrow_downward" size="14px" v-show="queryParams.params.orderProperty === 'comment' && queryParams.params.orderDir === 'DESC'" />
+              </div>
+              <span v-else>{{ col.label.indexOf('$') !== -1 ? $t(`table.${col.label.replace('$', '')}`) : col.label }}</span>
             </q-th>
           </q-tr>
-        </template>
-        <template v-slot:header-cell-action="props">
-          <q-th :props="props"> </q-th>
         </template>
         <template v-slot:body="props">
           <q-tr :props="props">
@@ -116,12 +127,16 @@
                   <span v-if="props.row.channelId">{{ postChannel(props.row) }}</span>
                   <span v-else>--</span>
                 </div>
-                <!-- count -->
-                <div v-if="col.name === 'count'">
-                  <span class="link-type" v-if="props.row.comment" @click="openCommentDialog(props.row)">{{ defaultFill(props.row.comment) }} </span>
-                  <span v-else>--</span>
-                  <span class="q-mx-sm">/</span>
+                <!-- view -->
+                <div v-if="col.name === 'view'">
+                  <q-icon name="visibility" v-if="props.row.view" class="q-mr-sm"></q-icon>
                   <span v-if="props.row.view">{{ defaultFill(props.row.view) }}</span>
+                  <span v-else>--</span>
+                </div>
+                <!-- comment -->
+                <div v-if="col.name === 'comment'">
+                  <q-icon name="chat" v-if="props.row.comment" class="text-blue q-mr-sm cursor-pointer" @click="openCommentDialog(props.row)"></q-icon>
+                  <span class="link-type" v-if="props.row.comment" @click="openCommentDialog(props.row)">{{ defaultFill(props.row.comment) }} </span>
                   <span v-else>--</span>
                 </div>
                 <!-- action -->
@@ -153,7 +168,7 @@ import { TEST_ACCOUNT } from './utils';
 import { v4 as uuidv4 } from 'uuid';
 
 const CONST_PARAMS: any = {
-  query: { channelId: '', status: '', authorId: '', haveComment: '' },
+  query: { channelId: '', status: '', authorId: '', haveComment: '', orderProperty: '', orderDir: 'ASC' /* DESC:降序 ,ASC:升序 */ },
 };
 
 @Component({
@@ -250,7 +265,6 @@ export default class BlogPostComponent extends Vue {
   @Watch('addPostSuccessFlag')
   public async watchAddPostSuccessFlag(newVal: string) {
     if (newVal) {
-      console.log('add id', this.addedPostId);
       this.getData();
       BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(false);
     }
@@ -372,9 +386,17 @@ export default class BlogPostComponent extends Vue {
         inSlot: true,
       },
       {
-        name: 'count',
-        label: '评论数/阅读数',
+        name: 'view',
+        label: '阅读数',
         align: 'left',
+        sortable: true,
+        inSlot: true,
+      },
+      {
+        name: 'comment',
+        label: '评论数',
+        align: 'left',
+        sortable: true,
         inSlot: true,
       },
       {
@@ -428,6 +450,7 @@ export default class BlogPostComponent extends Vue {
     BlogPostModule.SET_POST_DETAIL({
       row: {
         authorId: row.authorId,
+        status: row.status,
         categoryId: row.categoryId,
         channelId: row.channelId,
         title: row.title,
@@ -446,6 +469,17 @@ export default class BlogPostComponent extends Vue {
     BlogPostModule.SET_COMMENT_DETAIL(detail);
     BlogPostModule.SET_COMMENT_VISIABLE(true);
   }
+  public sortTableData(props: any) {
+    try {
+      const { sortBy } = props.pagination;
+      this.tableParams.pagination.page = 1;
+      this.queryParams.params.orderProperty = sortBy;
+      this.queryParams.params.orderDir = this.queryParams.params.orderDir === 'DESC' ? 'ASC' : 'DESC';
+      this.getData();
+    } catch (error) {
+      console.log(error);
+    }
+  }
   /**http */
   public async getData() {
     try {
@@ -455,6 +489,8 @@ export default class BlogPostComponent extends Vue {
         status: this.queryParams.params.status,
         authorId: this.queryParams.params.authorId,
         haveComment: this.queryParams.params.haveComment,
+        orderProperty: this.queryParams.params.orderProperty,
+        orderDir: this.queryParams.params.orderDir,
         page: this.tableParams.pagination.page,
         rowsPerPage: this.tableParams.pagination.rowsPerPage,
       });
@@ -609,6 +645,11 @@ export default class BlogPostComponent extends Vue {
   }
 }
 </script>
+<style lang="scss">
+th.sortable i.q-table__sort-icon {
+  display: none;
+}
+</style>
 <style lang="scss">
 .body--dark {
   .reply-input-proxy {

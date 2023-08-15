@@ -122,6 +122,15 @@ export const asyncRoutes: RouteRecordRaw[] = [
           pagePermissionId: ['BlogPostUser'],
         },
       },
+      {
+        path: 'cover-lib',
+        component: () => import(/* webpackChunkName: "blog-post-cover-lib" */ 'src/pages/blog-post/cover-lib.vue'),
+        name: 'BlogPostCoverLib',
+        meta: {
+          title: 'blog-post-cover-lib',
+          pagePermissionId: ['BlogPostCoverLib'],
+        },
+      },
     ],
   },
   {

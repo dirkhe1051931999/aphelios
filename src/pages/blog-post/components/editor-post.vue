@@ -113,7 +113,6 @@
           />
         </div>
         <div class="poster q-mb-md relative q-pa-md">
-          <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
           <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" v-if="dialogAddUpdateParams.row.poster" fit="contain">
             <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
           </q-img>
@@ -125,6 +124,7 @@
           </div>
           <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click.stop.prevent="handleOpenUploadPosterContainer" v-if="dialogAddUpdateParams.row.poster">修改</span>
         </div>
+        <div class="q-mb-md">状态 ：{{ postStatus }}</div>
         <div>
           <q-btn color="primary" label="确定" class="q-mr-md" @click="dialogAddUpdateConfirmEvent" />
           <q-btn color="primary" label="存为草稿" class="q-mr-md" />
@@ -149,20 +149,24 @@
         />
         <div id="editor-toolbar"></div>
         <div id="editor-container">
-          <div id="editor-text-area" style="min-height: 500px"></div>
+          <div id="editor-text-area" style="min-height: 500px; max-height: 1000px"></div>
         </div>
       </div>
     </div>
+    <PostAlbumComponent ref="PostAlbumComponentRef" @pick="pickSuccess" @hide="postAlbumComponentHide" />
   </div>
 </template>
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
-
+import PostAlbumComponent from './album.vue';
+let registerEditorAction = false;
 @Component({
   name: 'myBlogEditorPostDialogComponent',
-  components: {},
+  components: {
+    PostAlbumComponent,
+  },
 })
 export default class myBlogEditorPostDialogComponent extends Vue {
   $refs: any;
@@ -215,10 +219,14 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       }
     };
   }
+  get postStatus() {
+    return this.dialogAddUpdateParams.row.status === 'OFFLINE' ? '已下线' : this.dialogAddUpdateParams.row.status === 'PUBLISHED' ? '已上线' : '草稿';
+  }
   @Watch('blogEditorPostVisiable')
   onBlogEditorPostVisiableChanged(val: boolean, oldVal: boolean) {
     const initForm = () => {
       this.dialogAddUpdateParams.row.authorId = '';
+      this.dialogAddUpdateParams.row.status = '';
       this.dialogAddUpdateParams.row.categoryId = '';
       this.dialogAddUpdateParams.row.channelId = '';
       this.dialogAddUpdateParams.row.title = '';
@@ -230,6 +238,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           categoryId: '',
           channelId: '',
           title: '',
+          status: '',
           poster: '',
           content: '',
           id: '',
@@ -245,6 +254,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           // html: '',
           config: this.editorConfig,
         });
+
         this.editor.on('modalOrPanelShow', (modalOrPanel: any) => {
           if (modalOrPanel.type !== 'modal') return;
           const { $elem } = modalOrPanel; // modal element
@@ -255,11 +265,16 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         this.editor.on('modalOrPanelHide', () => {
           // 隐藏蒙层
         });
+
         this.toolbar = window.wangEditor.createToolbar({
           editor: this.editor,
           selector: '#editor-toolbar',
           config: {
             excludeKeys: 'fullScreen',
+            insertKeys: {
+              index: 0,
+              keys: ['albumCover'], // show menu in toolbar
+            },
           },
         });
         document.getElementById('editor-text-area')!.addEventListener('click', (e: any) => {
@@ -278,6 +293,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         } else {
           this.editor.setHtml('');
           this.dialogAddUpdateParams.row.authorId = this.postDetail.row.authorId;
+          this.dialogAddUpdateParams.row.status = this.postDetail.row.status;
           this.dialogAddUpdateParams.row.categoryId = this.postDetail.row.categoryId;
           this.dialogAddUpdateParams.row.channelId = this.postDetail.row.channelId;
           this.dialogAddUpdateParams.row.title = this.postDetail.row.title;
@@ -296,29 +312,27 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       }
     });
   }
-  mounted() {}
+  mounted() {
+    if (!registerEditorAction) {
+      this.registerEditorAction();
+      registerEditorAction = true;
+    }
+  }
+  public editCutomeAction = {
+    active: false,
+    editorInstance: null,
+  };
   public dialogAddUpdateParams = {
     row: {
       title: '',
       authorId: '',
+      status: '',
       categoryId: '',
       channelId: '',
       content: '',
       poster: '',
       id: '',
     },
-  };
-  public dialogUpload = {
-    id: 'dialog-upload-img',
-    fileID: 'dialog_upload_img',
-    clickLoading: false,
-    getDataLoading: false,
-    visiable: false,
-    maxCount: 1,
-    title: '',
-    type: 'poster',
-    accept: '.png,.jpg',
-    posterFile: null,
   };
   public editorConfig = {
     placeholder: '请输入内容',
@@ -341,7 +355,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           } catch (error) {
             this.$globalMessage.show({
               type: 'error',
-              content: '上传图片失败',
+              content: '上传图片失败了',
             });
           }
         },
@@ -362,32 +376,55 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(false);
   }
   public handleOpenUploadPosterContainer() {
-    this.$refs[this.dialogUpload.fileID].type = 'text';
-    setTimeout(() => {
-      this.$refs[this.dialogUpload.fileID].type = 'file';
-      this.$refs[this.dialogUpload.fileID].value = '';
-      this.$refs[this.dialogUpload.fileID].click();
-    }, 100);
+    this.$refs.PostAlbumComponentRef.init();
   }
-  public async uploadFileSuccess() {
-    const files = this.$refs[this.dialogUpload.fileID].files;
-    let postFiles = Array.prototype.slice.call(files);
-    postFiles = postFiles.slice(0, 1);
-    function getBase64(file: any) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          resolve(reader.result);
-        };
-        reader.onerror = (error) => {
-          reject(error);
-        };
-      });
+  public pickSuccess(data: any) {
+    if (this.editCutomeAction.active && this.editCutomeAction.editorInstance) {
+      (this.editCutomeAction.editorInstance as any).dangerouslyInsertHtml(`<img src="${data.source}" />`);
+      this.editCutomeAction.active = false;
+      this.editCutomeAction.editorInstance = null;
+      return;
     }
-    const base64 = await getBase64(postFiles[0]);
-    this.dialogAddUpdateParams.row.poster = base64 as any;
-    this.dialogUpload.posterFile = postFiles[0];
+    this.dialogAddUpdateParams.row.poster = data.source;
+  }
+  public postAlbumComponentHide() {
+    this.editCutomeAction.active = false;
+    this.editCutomeAction.editorInstance = null;
+  }
+  public registerEditorAction() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
+    class AlbumCover {
+      title: string;
+      tag: string;
+      constructor() {
+        this.title = '图库上传';
+        // this.iconSvg = '<svg >...</svg>'
+        this.tag = 'button';
+      }
+      getValue(editor: any) {
+        return '';
+      }
+      isActive(editor: any) {
+        return false; // or true
+      }
+      isDisabled(editor: any) {
+        return false; // or true
+      }
+      exec(editor: any, value: any) {
+        // do something
+        that.editCutomeAction.active = true;
+        that.editCutomeAction.editorInstance = editor;
+        that.$refs.PostAlbumComponentRef.init();
+      }
+    }
+    const albumCoverConf = {
+      key: 'albumCover',
+      factory() {
+        return new AlbumCover();
+      },
+    };
+    window.wangEditor.Boot.registerMenu(albumCoverConf);
   }
   /* http */
   public async dialogAddUpdateConfirmEvent() {
@@ -430,21 +467,6 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     });
     if (result) {
       this.$q.loading.show();
-      if (this.dialogAddUpdateParams.row.poster.indexOf('data:image') !== -1) {
-        // 判断this.dialogAddUpdateParams.row.poster是否是base64
-        try {
-          const posterform = new FormData();
-          posterform.append('file', this.dialogUpload.posterFile as any);
-          const imgUrl = await BlogPostModule.uploadPostImgs(posterform);
-          this.dialogAddUpdateParams.row.poster = imgUrl;
-        } catch (error) {
-          this.$q.loading.hide();
-          this.$globalMessage.show({
-            type: 'error',
-            content: '上传图片失败',
-          });
-        }
-      }
       let postParams: any = {
         title: this.dialogAddUpdateParams.row.title,
         content: this.dialogAddUpdateParams.row.content,
@@ -486,7 +508,6 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           this.$q.loading.hide();
         }
       }
-      this.dialogUpload.posterFile = null;
       this.$q.loading.hide();
     }
   }
@@ -557,6 +578,10 @@ export default class myBlogEditorPostDialogComponent extends Vue {
 }
 .w-e-bar {
   border-radius: 8px;
+}
+.w-e-scroll {
+  overflow: auto !important;
+  max-height: 500px;
 }
 </style>
 <style lang="scss" scoped>

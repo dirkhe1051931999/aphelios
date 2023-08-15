@@ -19,6 +19,9 @@
   .link-type:hover {
     color: #ffffff;
   }
+  .border-all {
+    border: 1px solid #333333;
+  }
 }
 .body--light {
   .in-table-link-button {
@@ -38,6 +41,9 @@
   }
   .link-type:hover {
     color: #000000;
+  }
+  .border-all {
+    border: 1px solid #eeeeee;
   }
 }
 // 可点击的link

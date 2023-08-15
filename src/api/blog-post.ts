@@ -49,6 +49,16 @@ const api = {
   deletePostUser: 'management/blog/post_user/deletePostUser',
   viewUserPassword: 'management/blog/post_user/viewUserPassword',
   setPostUserStatus: 'management/blog/post_user/setPostUserStatus',
+  getAllCover: 'management/blog/post_cover_lib/getAllCover',
+  addCover: 'management/blog/post_cover_lib/addCover',
+  batchAddCover: 'management/blog/post_cover_lib/batchAddCover',
+  updateCover: 'management/blog/post_cover_lib/updateCover',
+  deleteCover: 'management/blog/post_cover_lib/deleteCover',
+  batchDelteCover: 'management/blog/post_cover_lib/batchDelteCover',
+  addCategory: 'management/blog/post_cover_lib/addCategory',
+  updateCategory: 'management/blog/post_cover_lib/updateCategory',
+  deleteCategory: 'management/blog/post_cover_lib/deleteCategory',
+  queryCategory: 'management/blog/post_cover_lib/queryCategory',
 };
 
 export const getPostList = (data: any): any =>
@@ -330,6 +340,61 @@ export const viewUserPassword = (data: any): any =>
 export const setPostUserStatus = (data: any): any =>
   request({
     url: api.setPostUserStatus,
+    method: 'post',
+    data,
+  });
+export const getAllCover = (data: any): any =>
+  request({
+    url: api.getAllCover,
+    method: 'post',
+    data,
+  });
+export const addCover = (data: any): any =>
+  request({
+    url: api.addCover,
+    method: 'post',
+    data,
+  });
+
+export const updateCover = (data: any): any =>
+  request({
+    url: api.updateCover,
+    method: 'post',
+    data,
+  });
+export const deleteCover = (data: any): any =>
+  request({
+    url: api.deleteCover,
+    method: 'post',
+    data,
+  });
+export const batchAddCover = (data: any): any =>
+  request({
+    url: api.batchAddCover,
+    method: 'post',
+    data,
+  });
+export const batchDelteCover = (data: any): any =>
+  request({
+    url: api.batchDelteCover,
+    method: 'post',
+    data,
+  });
+export const addCategory = (data: any): any =>
+  request({
+    url: api.addCategory,
+    method: 'post',
+    data,
+  });
+export const deleteCategory = (data: any): any =>
+  request({
+    url: api.deleteCategory,
+    method: 'post',
+    data,
+  });
+export const queryCategory = (data: any): any =>
+  request({
+    url: api.queryCategory,
     method: 'post',
     data,
   });
