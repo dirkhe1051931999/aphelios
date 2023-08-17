@@ -186,8 +186,14 @@ export const queryCategory = async (ctx): Promise<void> => {
 export const deleteCategory = async (ctx): Promise<void> => {
   try {
     const { id } = ctx.request.body;
-    const sql = `DELETE FROM sm_board_cover_lib_category WHERE id=${id}`;
-    await ctx.execSql(sql);
+    // 如果id 对应的sm_board_covert_lib中有数据，则不允许删除
+    const sql1 = `SELECT * FROM sm_board_cover_lib WHERE JSON_CONTAINS(category, '${id}')`;
+    const sql2 = `DELETE FROM sm_board_cover_lib_category WHERE id=${id}`;
+    const results = await ctx.execSql(sql1);
+    if (results.length > 0) {
+      return ctx.error(ctx, 801);
+    }
+    await ctx.execSql(sql2);
     return ctx.success(ctx, {});
   } catch (error) {
     console.log(error);

@@ -222,26 +222,26 @@ export const getPostDetailById = async (ctx) => {
         sm_board_child_directory cd ON p.categoryId = cd.id
       LEFT JOIN
         sm_board_directory d ON p.categoryId = d.id
-      WHERE p.id = ${id} AND p.status = 'PUBLISHED' 
+      WHERE p.id = '${id}' AND p.status = 'PUBLISHED' 
       GROUP BY
         p.id, p.title, p.poster, p.createTime, p.view, p.commentId, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
     ), comment_hierarchy AS (
       SELECT
-        id, title, poster, createTime, view, commentId, srcTopicId, postType, totalComment, author, channel, category
+        id, title, poster, createTime, view, commentId, srcTopicId, postType, content, totalComment, author, channel, category
       FROM
         comment_tree
       WHERE
         category IS NOT NULL
       UNION ALL
       SELECT
-        c.id, c.title, c.poster, c.createTime, c.view, c.commentId, c.srcTopicId, c.postType, c.totalComment, c.author, c.channel, c.category
+        c.id, c.title, c.poster, c.createTime, c.view, c.commentId, c.srcTopicId, c.postType, c.content, c.totalComment, c.author, c.channel, c.category
       FROM
         comment_tree c
       JOIN
         comment_hierarchy ch ON JSON_EXTRACT(ch.category, "$.id") = c.category->"$.parent_id"
     )
     SELECT
-      h.id, h.title, h.poster, h.createTime, h.view, h.commentId, h.srcTopicId, h.postType, h.totalComment, h.author, h.channel, h.category
+      h.id, h.title, h.poster, h.createTime, h.view, h.commentId, h.srcTopicId, h.postType, h.content, h.totalComment, h.author, h.channel, h.category
     FROM
       comment_hierarchy h;
     `;

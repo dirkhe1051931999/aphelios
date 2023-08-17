@@ -41,6 +41,7 @@
     "koa-static-cache": "^5.1.4",
     "koa-views": "^8.0.0",
     "koa2-cors": "^2.0.6",
+    "koa2-swagger-ui": "^5.8.0",
     "minio": "^7.0.33",
     "moment": "^2.29.4",
     "mysql2": "^3.2.1",
@@ -53,6 +54,7 @@
     "request-ip": "^3.3.0",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1",
+    "swagger-jsdoc": "^6.2.8",
     "unzipper": "^0.10.14",
     "uuid": "^9.0.0",
     "wechat-oauth": "^1.5.0"

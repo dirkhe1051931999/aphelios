@@ -39,4 +39,5 @@ export const errorCode = {
   607: ['名称重复', 'Name already exists'],
   608: ['该企业已提交认证', 'The enterprise has been verified'],
   701: ['用户名已存在', 'Username already exists'],
+  801: ['该分类下有数据，不允许删除', 'There is data under this category, deletion is not allowed'],
 };
