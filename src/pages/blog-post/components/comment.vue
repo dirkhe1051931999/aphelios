@@ -33,9 +33,9 @@
                   </div>
                   <div class="cursor-pointer q-ml-sm" v-if="!item.clickUnLike" @click="setMood(item, 0, 'unlike')"><q-icon name="o_thumb_down" color="grey"></q-icon></div>
                   <div class="cursor-pointer q-ml-sm" v-if="item.clickUnLike" @click="setMood(item, 0, 'cancel-unlike')"><q-icon name="thumb_down" color="primary"></q-icon> <span>1</span></div>
-                  <span class="link-type q-ml-sm" @click="setCommentStatus(item, 2)" v-if="item.status === 1">拉黑</span>
-                  <span class="link-type q-ml-sm" @click="setCommentStatus(item, 1)" v-if="item.status === 2 || item.status === 3">恢复</span>
-                  <span class="delete-type q-ml-sm" @click="setCommentStatus(item, 3)">删除</span>
+                  <span class="link-type q-ml-sm hide" @click="setCommentStatus(item, 2)" v-if="item.status === 1">拉黑</span>
+                  <span class="link-type q-ml-sm hide" @click="setCommentStatus(item, 1)" v-if="item.status === 2 || item.status === 3">恢复</span>
+                  <span class="delete-type q-ml-sm hide" @click="setCommentStatus(item, 3)">删除</span>
                 </div>
               </div>
               <div class="content q-ml-xl flex items-center" :class="{ 'level-1': item.children && item.children.length }">

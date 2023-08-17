@@ -1,0 +1,25 @@
+// 设置 display: grid
+.grid {
+  display: grid;
+}
+
+// 设置列数
+@for $i from 1 through 12 {
+  .columns-#{$i} {
+    grid-template-columns: repeat($i, 1fr);
+  }
+}
+
+// 设置行间距
+@for $i from 5 through 50 {
+  .row-gap-#{$i} {
+    grid-row-gap: #{$i}px;
+  }
+}
+
+// 设置列间距
+@for $i from 5 through 50 {
+  .col-gap-#{$i} {
+    grid-column-gap: #{$i}px;
+  }
+}

@@ -73,7 +73,7 @@
               <div v-if="col.name === 'source'">
                 <photo-provider>
                   <photo-consumer v-for="src in [props.row[col.name]]" :intro="src" :key="src" :src="src">
-                    <img :src="src" style="max-width: 140px" />
+                    <img :src="src" style="max-width: 140px; border-radius: 8px" class="cursor-pointer" />
                   </photo-consumer>
                 </photo-provider>
 
@@ -98,8 +98,10 @@
     <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     <q-dialog v-model="categoryParams.model" position="top" transition-show="jump-up" transition-hide="jump-down">
       <q-card style="max-width: 50vw; width: 40vw">
-        <q-card-section class="row items-center">
-          <ul>
+        <q-card-section> 分类 </q-card-section>
+        <div class="split-line h-1"></div>
+        <q-card-section class="scroll" style="max-height: 200px">
+          <ul class="categoryList">
             <li v-for="(item, index) in categoryParams.data" :key="item.id" class="q-mb-md">
               <span class="w-100 inline-block q-pa-sm border-all cursor-pointer">{{ index + 1 }}. {{ item.label }}</span>
               <q-icon name="close" v-if="!item.default" @click.prevent.stop="removeCategory(item)" class="q-ml-md cursor-pointer"></q-icon>
@@ -119,12 +121,12 @@
                 </q-input>
               </q-popup-edit>
             </li>
-            <!-- 新增 -->
-            <li>
-              <q-btn color="primary" icon="add" label="新增" @click="newCategory" />
-            </li>
           </ul>
         </q-card-section>
+        <div class="split-line h-1"></div>
+        <q-card-actions vertical align="left" class="q-pa-md">
+          <q-btn color="primary" icon="add" label="新增" @click="newCategory" />
+        </q-card-actions>
       </q-card>
     </q-dialog>
     <MyDialog
@@ -143,17 +145,11 @@
       @before-hide="dialogUploadBeforeHideEvent"
     >
       <div class="dialog-upload-form">
-        <q-img :src="dialogUpload.imgBase64" class="h-200" v-if="dialogUpload.imgBase64"></q-img>
+        <q-img :src="dialogUpload.imgBase64" class="h-200" v-if="dialogUpload.imgBase64" fit="contain"></q-img>
         <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
-        <div class="container q-my-md">
-          <div class="center" @click="handleClickUploadFile">
-            <q-icon name="o_cloud_upload" class="fs-50" color="primary"></q-icon>
-            <p class="click">Click to upload</p>
-            <p class="format">File type is: {{ dialogUpload.accept.split(',').join(' ,') }}</p>
-            <p class="fileName" v-if="dialogUpload.params.fileName">
-              {{ dialogUpload.params.fileName }}
-            </p>
-          </div>
+        <div class="text-center q-pa-md">
+          <q-btn color="primary" icon="add" label="点击上传" outline class="q-mb-md" @click="handleClickUploadFile" />
+          <p class="format">File type is: {{ dialogUpload.accept.split(',').join(' ,') }}</p>
         </div>
         <div v-for="(item, index) in dialogUpload.input" :key="index" class="col-12">
           <MyFormInput
@@ -531,4 +527,10 @@ export default class myBlogPostCoverLib extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.categoryList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-gap: 10px;
+}
+</style>

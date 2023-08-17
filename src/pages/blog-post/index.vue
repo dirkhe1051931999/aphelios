@@ -129,15 +129,15 @@
                 </div>
                 <!-- view -->
                 <div v-if="col.name === 'view'">
-                  <q-icon name="visibility" v-if="props.row.view" class="q-mr-sm"></q-icon>
+                  <q-icon name="visibility" class="q-mr-sm"></q-icon>
                   <span v-if="props.row.view">{{ defaultFill(props.row.view) }}</span>
-                  <span v-else>--</span>
+                  <span v-else>0</span>
                 </div>
                 <!-- comment -->
                 <div v-if="col.name === 'comment'">
-                  <q-icon name="chat" v-if="props.row.comment" class="text-blue q-mr-sm cursor-pointer" @click="openCommentDialog(props.row)"></q-icon>
+                  <q-icon name="chat" class="q-mr-sm" @click="openCommentDialog(props.row)" :class="{ 'text-blue cursor-pointer': props.row.comment }"></q-icon>
                   <span class="link-type" v-if="props.row.comment" @click="openCommentDialog(props.row)">{{ defaultFill(props.row.comment) }} </span>
-                  <span v-else>--</span>
+                  <span v-else>0</span>
                 </div>
                 <!-- action -->
                 <div v-if="col.name === 'action'">
@@ -156,6 +156,7 @@
       </q-table>
       <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     </div>
+    <PostType ref="PostTypeRef" @pick="onPostTypePick"></PostType>
   </div>
 </template>
 
@@ -165,6 +166,7 @@ import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
 import { TEST_ACCOUNT } from './utils';
+import PostType from './components/post-type.vue';
 import { v4 as uuidv4 } from 'uuid';
 
 const CONST_PARAMS: any = {
@@ -173,7 +175,9 @@ const CONST_PARAMS: any = {
 
 @Component({
   name: 'BlogPostComponent',
-  components: {},
+  components: {
+    PostType,
+  },
 })
 export default class BlogPostComponent extends Vue {
   /**instance */
@@ -441,9 +445,7 @@ export default class BlogPostComponent extends Vue {
     this.queryParams.resetLoading = false;
   }
   public handleClickAdd() {
-    BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
-    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
-    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+    this.$refs.PostTypeRef.show();
   }
   public handlerClickUpdate(row: any) {
     BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
@@ -478,6 +480,23 @@ export default class BlogPostComponent extends Vue {
       this.getData();
     } catch (error) {
       console.log(error);
+    }
+  }
+  public onPostTypePick(data: any) {
+    // 1普通文章，2纯视频，3纯图片，4调查问卷，5内嵌视频，6时政
+    switch (data.id) {
+      case 1:
+        BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
+        BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
+        BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+        break;
+      case 2:
+        BlogPostModule.SET_POST_ADD_OR_UPDATE_VIDEO('add');
+        BlogPostModule.SET_DISABLE_SELECT_CATEGORY_VIDEO(false);
+        BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(true);
+        break;
+      default:
+        break;
     }
   }
   /**http */
@@ -545,6 +564,7 @@ export default class BlogPostComponent extends Vue {
         return { ...item, label: item.name, value: item.id };
       });
       BlogPostModule.SET_ALL_CATEGORY(allSheet.pageData);
+      BlogPostModule.SET_ALL_CATEGORY_VIDEO(allSheet.pageData);
     } finally {
       return Promise.resolve();
     }

@@ -76,6 +76,7 @@
     top: 50%;
     width: 14px;
     height: 14px;
+    font-size: 14px;
     transform: translateY(-50%);
   }
 }
@@ -163,7 +164,7 @@
   -webkit-text-fill-color: transparent;
 }
 .f-bold {
-  font-family: PingFang SC, NotoSans-SemiBold, NotoSansSC-Bold;
+  font-weight: 600;
 }
 .q-icon.f-bold {
   font-family: 'Material Icons';
@@ -239,14 +240,14 @@
     color: $negative;
     background: var(--my-white);
     box-sizing: border-box;
-    font-family: PingFang SC, NotoSansSC-SemiBold, NotoSansSC-Bold;
+    font-weight: 600;
   }
   &.primary {
     border: solid 1px $primary;
     color: $primary;
     background: var(--my-white);
     box-sizing: border-box;
-    font-family: PingFang SC, NotoSansSC-SemiBold, NotoSansSC-Bold;
+    font-weight: 600;
   }
   &.disabled {
     background: var(--my-white);
@@ -258,6 +259,7 @@
 }
 .my-status {
   padding: 0 16px;
+  font-size: 14px;
   position: relative;
   color: $dark;
   &::before {

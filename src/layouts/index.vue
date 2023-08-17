@@ -11,6 +11,7 @@
     </div>
     <div class="sun" ref="sun"></div>
     <BlogEditorPostDialog></BlogEditorPostDialog>
+    <BlogEditorPostVideoDialog></BlogEditorPostVideoDialog>
     <BlogCommentDialog></BlogCommentDialog>
   </div>
 </template>
@@ -25,6 +26,7 @@ import NavigationBar from './components/NavigationBar/index.vue';
 import TagsView from './components/TagsView/index.vue';
 import AppMain from './components/AppMain.vue';
 import BlogEditorPostDialog from 'src/pages/blog-post/components/editor-post.vue';
+import BlogEditorPostVideoDialog from 'src/pages/blog-post/components/editor-post-video.vue';
 import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
 @Component({
   name: 'LayoutIndexComponents',
@@ -34,6 +36,7 @@ import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
     TagsView,
     AppMain,
     BlogEditorPostDialog,
+    BlogEditorPostVideoDialog,
     BlogCommentDialog,
   },
   mixins: [UseResize],

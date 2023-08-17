@@ -400,6 +400,7 @@ export default class DashboardComponent extends Vue {
         return { ...item, label: item.name, value: item.id };
       });
       BlogPostModule.SET_ALL_CATEGORY(allSheet.pageData);
+      BlogPostModule.SET_ALL_CATEGORY_VIDEO(allSheet.pageData);
     } finally {
       return Promise.resolve();
     }

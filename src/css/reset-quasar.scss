@@ -95,7 +95,7 @@
 .q-btn {
   padding: 0 16px;
   &.q-btn--outline {
-    font-family: PingFang SC, NotoSans-SemiBold, NotoSansSC-Bold;
+    font-weight: 600;
   }
 }
 .q-date__content {
@@ -142,7 +142,7 @@
       box-sizing: border-box;
     }
     &.text-primary {
-      font-family: PingFang SC, NotoSans-SemiBold, NotoSansSC-Bold;
+      font-weight: 600;
     }
   }
 }
@@ -167,7 +167,7 @@
   }
   &::before {
     content: '';
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     display: block;
     width: 60px;
     height: 60px;
@@ -199,7 +199,7 @@
   text-align: center;
   i {
     font-size: 30px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
 }
 /* 弹窗 */

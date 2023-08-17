@@ -58,6 +58,7 @@ import {
   queryCategory,
   addCategory,
 } from 'src/api/blog-post';
+import { th } from 'element-plus/es/locale';
 
 interface IBlogPost {}
 
@@ -95,6 +96,76 @@ class BlogPost extends VuexModule implements IBlogPost {
     id: null,
     title: '',
   };
+  /* 悬浮post视频新增编辑 */
+  public allValidAuthorVideo: any[] = [];
+  public allCategoryVideo: any[] = [];
+  public allChannelVideo: any[] = [];
+  public disableSelectCategoryVideo = false;
+  public blogEditorPostVisiableVideo = false;
+  public postDetailVideo = {
+    row: {},
+  };
+  public postAddOrUpdateVideo = 'add';
+  public addedPostIdVideo = '';
+  public currentCategoryIdVideo = '';
+  public updatePostSuccessFlagVideo = false;
+  public addPostSuccessFlagVideo = false;
+  /* 悬浮post纯图片新增编辑 */
+  public allValidAuthorImage: any[] = [];
+  public allCategoryImage: any[] = [];
+  public allChannelImage: any[] = [];
+  public disableSelectCategoryImage = false;
+  public blogEditorPostVisiableImage = false;
+  public postDetailImage = {
+    row: {},
+  };
+  public postAddOrUpdateImage = 'add';
+  public addedPostIdImage = '';
+  public currentCategoryIdImage = '';
+  public updatePostSuccessFlagImage = false;
+  public addPostSuccessFlagImage = false;
+  /* 悬浮post调查问卷新增编辑 */
+  public allValidAuthorQuestion: any[] = [];
+  public allCategoryQuestion: any[] = [];
+  public allChannelQuestion: any[] = [];
+  public disableSelectCategoryQuestion = false;
+  public blogEditorPostVisiableQuestion = false;
+  public postDetailQuestion = {
+    row: {},
+  };
+  public postAddOrUpdateQuestion = 'add';
+  public addedPostIdQuestion = '';
+  public currentCategoryIdQuestion = '';
+  public updatePostSuccessFlagQuestion = false;
+  public addPostSuccessFlagQuestion = false;
+  /* 悬浮post内嵌视频新增编辑 */
+  public allValidAuthorVideoEmbed: any[] = [];
+  public allCategoryVideoEmbed: any[] = [];
+  public allChannelVideoEmbed: any[] = [];
+  public disableSelectCategoryVideoEmbed = false;
+  public blogEditorPostVisiableVideoEmbed = false;
+  public postDetailVideoEmbed = {
+    row: {},
+  };
+  public postAddOrUpdateVideoEmbed = 'add';
+  public addedPostIdVideoEmbed = '';
+  public currentCategoryIdVideoEmbed = '';
+  public updatePostSuccessFlagVideoEmbed = false;
+  public addPostSuccessFlagVideoEmbed = false;
+  /* 悬浮时政新增编辑*/
+  public allValidAuthorPolitical: any[] = [];
+  public allCategoryPolitical: any[] = [];
+  public allChannelPolitical: any[] = [];
+  public disableSelectCategoryPolitical = false;
+  public blogEditorPostVisiablePolitical = false;
+  public postDetailPolitical = {
+    row: {},
+  };
+  public postAddOrUpdatePolitical = 'add';
+  public addedPostIdPolitical = '';
+  public currentCategoryIdPolitical = '';
+  public updatePostSuccessFlagPolitical = false;
+  public addPostSuccessFlagPolitical = false;
 
   @Mutation
   public SET_SCROLL_TOP(scrollTop: number) {
@@ -178,6 +249,52 @@ class BlogPost extends VuexModule implements IBlogPost {
     this.commentDetail = commentDetail;
   }
 
+  /* 悬浮post视频新增编辑 */
+  @Mutation
+  public SET_ALL_VALID_AUTHOR_VIDEO(allAuthor: any[]) {
+    this.allValidAuthorVideo = allAuthor;
+  }
+  @Mutation
+  public SET_ALL_CATEGORY_VIDEO(allCategory: any[]) {
+    this.allCategoryVideo = allCategory;
+  }
+  @Mutation
+  public SET_ALL_CHANNEL_VIDEO(allChannel: any[]) {
+    this.allChannelVideo = allChannel;
+  }
+  @Mutation
+  public SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(blogEditorPostVisiable: boolean) {
+    this.blogEditorPostVisiableVideo = blogEditorPostVisiable;
+  }
+  @Mutation
+  public SET_DISABLE_SELECT_CATEGORY_VIDEO(disableSelectCategory: boolean) {
+    this.disableSelectCategoryVideo = disableSelectCategory;
+  }
+  @Mutation
+  public SET_POST_DETAIL_VIDEO(postDetail: any) {
+    this.postDetailVideo = postDetail;
+  }
+  @Mutation
+  public SET_POST_ADD_OR_UPDATE_VIDEO(postAddOrUpdate: string) {
+    this.postAddOrUpdateVideo = postAddOrUpdate;
+  }
+  @Mutation
+  public SET_ADDED_POST_ID_VIDEO(addedPostId: string) {
+    this.addedPostIdVideo = addedPostId;
+  }
+  @Mutation
+  public SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(updatePostSuccessFlag: boolean) {
+    this.updatePostSuccessFlagVideo = updatePostSuccessFlag;
+  }
+  @Mutation
+  public SET_ADD_POST_SUCCESS_FLAG_VIDEO(addPostSuccessFlag: boolean) {
+    this.addPostSuccessFlagVideo = addPostSuccessFlag;
+  }
+  @Mutation
+  public SET_CURRENT_CATEGORY_ID_VIDEO(currentCategoryId: string) {
+    this.currentCategoryIdVideo = currentCategoryId;
+  }
+
   @Action({ rawError: true })
   public async getPostList(data: any) {
     const result = await getPostList(data);
@@ -246,6 +363,7 @@ class BlogPost extends VuexModule implements IBlogPost {
       return { ...item, label: item.name, value: item.id };
     });
     this.SET_ALL_CHANNEL(pageData);
+    this.SET_ALL_CHANNEL_VIDEO(pageData);
     return Promise.resolve(result);
   }
 
@@ -355,6 +473,7 @@ class BlogPost extends VuexModule implements IBlogPost {
         return { ...item, label: item.name, value: item.id };
       });
       this.SET_ALL_VALID_AUTHOR(pageData);
+      this.SET_ALL_VALID_AUTHOR_VIDEO(pageData);
     }
     return Promise.resolve(result);
   }

@@ -36,3 +36,4 @@ declare module 'prettier-plugin-java';
 declare module 'sortablejs';
 declare module 'jsencrypt/bin/jsencrypt.min.js';
 declare module 'he';
+declare module '@sipec/vue3-tags-input';

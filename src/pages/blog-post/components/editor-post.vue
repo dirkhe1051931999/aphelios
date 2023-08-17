@@ -251,7 +251,6 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         this.editor = window.wangEditor.createEditor({
           selector: '#editor-text-area',
           content: [],
-          // html: '',
           config: this.editorConfig,
         });
 
@@ -270,10 +269,10 @@ export default class myBlogEditorPostDialogComponent extends Vue {
           editor: this.editor,
           selector: '#editor-toolbar',
           config: {
-            excludeKeys: 'fullScreen',
+            excludeKeys: ['fullScreen', 'group-image'],
             insertKeys: {
               index: 0,
-              keys: ['albumCover'], // show menu in toolbar
+              keys: [this.editCutomeAction.imageUploadKey], // show menu in toolbar
             },
           },
         });
@@ -321,6 +320,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   public editCutomeAction = {
     active: false,
     editorInstance: null,
+    imageUploadKey: '',
   };
   public dialogAddUpdateParams = {
     row: {
@@ -394,37 +394,39 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   public registerEditorAction() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    class AlbumCover {
-      title: string;
-      tag: string;
-      constructor() {
-        this.title = '图库上传';
-        // this.iconSvg = '<svg >...</svg>'
-        this.tag = 'button';
-      }
-      getValue(editor: any) {
-        return '';
-      }
-      isActive(editor: any) {
-        return false; // or true
-      }
-      isDisabled(editor: any) {
-        return false; // or true
-      }
-      exec(editor: any, value: any) {
-        // do something
-        that.editCutomeAction.active = true;
-        that.editCutomeAction.editorInstance = editor;
-        that.$refs.PostAlbumComponentRef.init();
-      }
-    }
-    const albumCoverConf = {
-      key: 'albumCover',
+    this.editCutomeAction.imageUploadKey = `albumCover${Math.random().toString()}`;
+    window.wangEditor.Boot.registerMenu({
+      key: this.editCutomeAction.imageUploadKey,
       factory() {
+        class AlbumCover {
+          title: string;
+          tag: string;
+          iconSvg: string;
+          constructor() {
+            this.title = '图片上传';
+            this.iconSvg =
+              '<svg viewBox="0 0 1024 1024"><path d="M959.877 128l0.123 0.123v767.775l-0.123 0.122H64.102l-0.122-0.122V128.123l0.122-0.123h895.775zM960 64H64C28.795 64 0 92.795 0 128v768c0 35.205 28.795 64 64 64h896c35.205 0 64-28.795 64-64V128c0-35.205-28.795-64-64-64zM832 288.01c0 53.023-42.988 96.01-96.01 96.01s-96.01-42.987-96.01-96.01S682.967 192 735.99 192 832 234.988 832 288.01zM896 832H128V704l224.01-384 256 320h64l224.01-192z"></path></svg>';
+            this.tag = 'button';
+          }
+          getValue(editor: any) {
+            return '';
+          }
+          isActive(editor: any) {
+            return false; // or true
+          }
+          isDisabled(editor: any) {
+            return false; // or true
+          }
+          exec(editor: any, value: any) {
+            // do something
+            that.editCutomeAction.active = true;
+            that.editCutomeAction.editorInstance = editor;
+            that.$refs.PostAlbumComponentRef.init();
+          }
+        }
         return new AlbumCover();
       },
-    };
-    window.wangEditor.Boot.registerMenu(albumCoverConf);
+    });
   }
   /* http */
   public async dialogAddUpdateConfirmEvent() {
