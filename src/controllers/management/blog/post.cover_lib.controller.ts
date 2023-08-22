@@ -17,7 +17,7 @@ export const getAllCover = async (ctx): Promise<void> => {
     }
     const offset = (page - 1) * rowsPerPage;
     const countQuery = `SELECT COUNT(*) as total FROM sm_board_cover_lib ${whereClause}`;
-    const dataQuery = `SELECT * FROM sm_board_cover_lib ${whereClause} LIMIT ${rowsPerPage} OFFSET ${offset};`;
+    const dataQuery = `SELECT * FROM sm_board_cover_lib ${whereClause} ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${offset};`;
     const results = await ctx.execSql([countQuery, dataQuery]);
     return ctx.success(ctx, {
       pageData: results[1],

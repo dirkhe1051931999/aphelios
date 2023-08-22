@@ -2,7 +2,7 @@ import { HTTP_METHODS, Route, Upload } from 'src/util/route.decorator';
 import Koa from 'koa';
 import { addCategory, addCover, batchAddCover, batchDelteCover, deleteCategory, deleteCover, getAllCover, queryCategory, updateCover } from 'src/controllers/management/blog/post.cover_lib.controller';
 
-export class ManagementDashboardAPIController {
+export class ManagementCoverLibAPIController {
   @Route('/getAllCover', HTTP_METHODS.POST)
   async getAllCover(ctx: Koa.Context, next: Koa.Next) {
     return getAllCover(ctx);

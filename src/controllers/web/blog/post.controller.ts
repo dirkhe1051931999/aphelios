@@ -14,7 +14,7 @@ export const getPostList = async (ctx) => {
     const sql2 = `
     WITH RECURSIVE comment_tree AS (
       SELECT
-        p.id, p.title, p.poster, p.createTime, p.view, p.commentId, p.srcTopicId, p.postType,
+        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType,
         COUNT(c.postId) AS comment,
         JSON_OBJECT(
           'id', a.id,
@@ -93,24 +93,24 @@ export const getPostList = async (ctx) => {
       WHERE
         p.status = 'PUBLISHED'
       GROUP BY
-        p.id, p.title, p.poster, p.createTime, p.view, p.commentId, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
+        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
     ), comment_hierarchy AS (
       SELECT
-        id, title, poster, createTime, view, commentId, srcTopicId, postType, comment, author, channel, category
+        id, title, poster, createTime, view, srcTopicId, postType, comment, author, channel, category
       FROM
         comment_tree
       WHERE
         category IS NOT NULL
       UNION ALL
       SELECT
-        c.id, c.title, c.poster, c.createTime, c.view, c.commentId, c.srcTopicId, c.postType, c.comment, c.author, c.channel, c.category
+        c.id, c.title, c.poster, c.createTime, c.view, c.srcTopicId, c.postType, c.comment, c.author, c.channel, c.category
       FROM
         comment_tree c
       JOIN
         comment_hierarchy ch ON JSON_EXTRACT(ch.category, '$.id') = c.category->'$.parent_id'
     )
     SELECT
-      h.id, h.title, h.poster, h.createTime, h.view, h.commentId, h.srcTopicId, h.postType, h.comment, h.author, h.channel, h.category
+      h.id, h.title, h.poster, h.createTime, h.view, h.srcTopicId, h.postType, h.comment, h.author, h.channel, h.category
     FROM
       comment_hierarchy h
     ORDER BY
@@ -143,7 +143,6 @@ export const getPostDetailById = async (ctx) => {
         p.title,
         p.poster,
         p.createTime,
-        p.commentId,
         p.srcTopicId,
         p.view,
         (SELECT COUNT(*) FROM sm_board_comment WHERE postId = p.srcTopicId) AS totalComment,
@@ -224,24 +223,24 @@ export const getPostDetailById = async (ctx) => {
         sm_board_directory d ON p.categoryId = d.id
       WHERE p.id = '${id}' AND p.status = 'PUBLISHED' 
       GROUP BY
-        p.id, p.title, p.poster, p.createTime, p.view, p.commentId, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
+        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
     ), comment_hierarchy AS (
       SELECT
-        id, title, poster, createTime, view, commentId, srcTopicId, postType, content, totalComment, author, channel, category
+        id, title, poster, createTime, view, srcTopicId, postType, content, totalComment, author, channel, category
       FROM
         comment_tree
       WHERE
         category IS NOT NULL
       UNION ALL
       SELECT
-        c.id, c.title, c.poster, c.createTime, c.view, c.commentId, c.srcTopicId, c.postType, c.content, c.totalComment, c.author, c.channel, c.category
+        c.id, c.title, c.poster, c.createTime, c.view, c.srcTopicId, c.postType, c.content, c.totalComment, c.author, c.channel, c.category
       FROM
         comment_tree c
       JOIN
         comment_hierarchy ch ON JSON_EXTRACT(ch.category, "$.id") = c.category->"$.parent_id"
     )
     SELECT
-      h.id, h.title, h.poster, h.createTime, h.view, h.commentId, h.srcTopicId, h.postType, h.content, h.totalComment, h.author, h.channel, h.category
+      h.id, h.title, h.poster, h.createTime, h.view, h.srcTopicId, h.postType, h.content, h.totalComment, h.author, h.channel, h.category
     FROM
       comment_hierarchy h;
     `;
@@ -257,7 +256,7 @@ export const getPostDetailById = async (ctx) => {
 export const getTopFivePost = async (ctx) => {
   try {
     const results = await ctx.execSql(`
-      SELECT id,title,poster,createTime,view,comment,authorId,commentId,categoryId,channelId,postType
+      SELECT id,title,poster,createTime,view,comment,authorId,categoryId,channelId,postType
       FROM sm_board_post_list
       WHERE (status = 'PUBLISHED') AND (poster != '')
       ORDER BY view DESC
@@ -497,7 +496,7 @@ export const getPostListByAuthorId = async (ctx) => {
     SELECT COUNT(*) as total FROM sm_board_post_list WHERE authorId = '${id}';
     `;
     let sql2 = `
-      SELECT id,title,poster,createTime,view,comment,authorId,commentId,categoryId,channelId,postType
+      SELECT id,title,poster,createTime,view,comment,authorId,categoryId,channelId,postType
       FROM sm_board_post_list
       WHERE authorId = '${id}'
       ORDER BY createTime DESC

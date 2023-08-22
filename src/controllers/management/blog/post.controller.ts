@@ -34,8 +34,8 @@ export const getPostList = async (ctx) => {
     let sql2 = `
     SELECT 
         p.id, p.title, p.createTime, p.updateTime, p.status, 
-        p.poster, p.view, p.authorId, p.commentId, p.categoryId, 
-        p.channelId, p.codeCount, p.postType, p.srcTopicId,
+        p.poster, p.view, p.authorId, p.categoryId, 
+        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,
         COUNT(c.postId) AS comment
     FROM 
         sm_board_post_list AS p
@@ -79,7 +79,7 @@ export const getPostListByCategoryId = async (ctx) => {
     let results = await ctx.execSql([
       `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, authorId, commentId, categoryId,channelId, codeCount, postType,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
+          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
           FROM sm_board_post_list 
           WHERE (categoryId = '${categoryId}') 
           ORDER BY createTime DESC
@@ -101,7 +101,7 @@ export const getPostRowById = async (ctx) => {
   }
   try {
     let result = await ctx.execSql(
-      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, commentId, categoryId,channelId, codeCount, postType  FROM sm_board_post_list WHERE id = '${id}'`
+      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public, postType  FROM sm_board_post_list WHERE id = '${id}'`
     );
     ctx.success(ctx, result[0]);
   } catch (error) {
@@ -125,7 +125,7 @@ export const getPostContentById = async (ctx) => {
 };
 export const uploadPostImgs = async (ctx) => {
   try {
-    const { url } = await uploadFileToMinio(ctx, false);
+    const { url } = await uploadFileToMinio(ctx, false, null);
     ctx.success(ctx, url);
   } catch (error) {
     console.log(error);
@@ -134,21 +134,21 @@ export const uploadPostImgs = async (ctx) => {
 };
 // 添加文章
 export const addPost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId, codeCount, postType } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId } = ctx.request.body;
   let status = 'OFFLINE';
   let createTime = new Date().getTime();
   let updateTime = createTime;
   let view = 0;
   let comment = 0;
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, codeCount, postType])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId, codeCount, postType');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId');
     return;
   }
   try {
     let id = uuidv4().replace(/-/g, '');
     let results = await ctx.execSql([
-      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, codeCount, postType, status, createTime, updateTime, view, comment, srcTopicId) 
-      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}',${codeCount}, ${postType}, '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}');`,
+      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, status, createTime, updateTime, view, comment, srcTopicId) 
+      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}');`,
     ]);
     if (results[0].affectedRows > 0) {
       ctx.success(ctx, { id: results[0].insertId });
@@ -177,10 +177,10 @@ export const deletePost = async (ctx) => {
 };
 // 更新文章
 export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId, codeCount, id } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId, id } = ctx.request.body;
   let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, codeCount, id])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,codeCount, postType,id');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, id])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,id');
     return;
   }
   try {
@@ -192,7 +192,6 @@ export const updatePost = async (ctx) => {
       authorId = '${authorId}',
       categoryId = '${categoryId}',
       channelId = '${channelId}',
-      codeCount = ${codeCount},
       updateTime = ${updateTime}
       WHERE id = '${id}';`,
     ]);

@@ -102,7 +102,7 @@ export const removePostAuthor = async (ctx): Promise<void> => {
 // 进行企业认证
 export const verifyCompanyAuthor = async (ctx): Promise<void> => {
   try {
-    const { url, data } = await uploadFileToMinio(ctx, true);
+    const { url, data } = await uploadFileToMinio(ctx, true, null);
     const { companyName, companyCode, companyType, authorId } = data;
     const haveAuthor = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
     if (haveAuthor[0].count > 0) {

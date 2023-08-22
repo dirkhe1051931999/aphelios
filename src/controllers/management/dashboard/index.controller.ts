@@ -131,8 +131,8 @@ export const getChannelSheetUserAuthorLimit5 = async (ctx): Promise<void> => {
       `
         SELECT 
             p.id, p.title, p.createTime, p.updateTime, p.status, 
-            p.poster, p.view, p.authorId, p.commentId, p.categoryId, 
-            p.channelId, p.codeCount, p.postType, p.srcTopicId, p.poster,
+            p.poster, p.view, p.authorId, p.categoryId, 
+            p.channelId, p.postType, p.srcTopicId, p.poster,p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,
             COUNT(c.postId) AS comment
         FROM 
             sm_board_post_list AS p
