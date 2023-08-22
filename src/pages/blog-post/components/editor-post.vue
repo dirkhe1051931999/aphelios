@@ -462,10 +462,10 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       return;
     }
     const result = await this.$globalConfirm.show({
-      title: '💕💕💕 提示',
+      title: '友情提示',
       color: 'primary',
-      content: '确定要执行该操作吗 :) ?',
-      confirmButtonText: '嗯，是的',
+      content: '确定吗？老铁！？',
+      confirmButtonText: '非常确定',
     });
     if (result) {
       this.$q.loading.show();
@@ -476,7 +476,6 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         authorId: this.dialogAddUpdateParams.row.authorId,
         categoryId: this.dialogAddUpdateParams.row.categoryId,
         channelId: this.dialogAddUpdateParams.row.channelId,
-        codeCount: 0,
         postType: 1,
       };
       if (this.postAddOrUpdate === 'add') {

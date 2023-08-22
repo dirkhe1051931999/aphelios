@@ -983,10 +983,10 @@ export default class BlogPostDirectoryComponent extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.deletePost({
@@ -1007,8 +1007,8 @@ export default class BlogPostDirectoryComponent extends Vue {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 上线提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.publishPost({
@@ -1031,8 +1031,8 @@ export default class BlogPostDirectoryComponent extends Vue {
       const result = await this.$globalConfirm.show({
         title: '💕💕💕 下线提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.offlinePost({
@@ -1166,10 +1166,10 @@ export default class BlogPostDirectoryComponent extends Vue {
   public async removeItem(event: any, type: string, item: any) {
     this.dialogAddUpdateParams.isAdd = false;
     const result = await this.$globalConfirm.show({
-      title: '💕💕💕 提示',
+      title: '友情提示',
       color: 'primary',
-      content: '确定要执行该操作吗 :) ?',
-      confirmButtonText: '嗯，是的',
+      content: '确定吗？老铁！？',
+      confirmButtonText: '非常确定',
     });
     if (!result) {
       event.reset();

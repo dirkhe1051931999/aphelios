@@ -11,6 +11,7 @@ export default {
     'blog-post-author': '博文作者',
     'blog-post-user': '博文用户',
     'blog-post-cover-lib': '博文背景图',
+    'blog-post-video-lib': '博文视频库',
     audit: '审核管理',
     'audit-company-certification': '企业认证审核',
     'audit-comment': '评论审核',
@@ -124,7 +125,7 @@ export default {
   messages: {
     failed: '😔😔😔 真不幸，失败了!',
     success: '🎉🎉🎉 恭喜，成功了!',
-    tishi: '💕💕💕 提示',
+    tishi: '友情提示',
     addConfirm: '确定要新增吗？',
     deleteConfirm: '确定要删除吗？',
     updateConfirm: '确定要更新吗？',

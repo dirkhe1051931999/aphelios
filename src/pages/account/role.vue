@@ -35,8 +35,8 @@
               <span v-if="!col.inSlot">{{ col.value }}</span>
               <div class="text-left" v-else>
                 <!-- permissionList -->
-                <div v-if="col.name === 'permissionList'">
-                  <q-badge color="primary" v-for="(item, index) in permissionList(props.row.permissionList)" :key="index" class="q-mr-sm">{{ item }} </q-badge>
+                <div v-if="col.name === 'permissionList'" style="width: 300px; white-space: wrap">
+                  <q-badge color="primary" v-for="(item, index) in permissionList(props.row.permissionList)" :key="index" class="q-mb-xs q-mr-xs">{{ item }} </q-badge>
                 </div>
                 <!-- action -->
                 <div v-if="col.name === 'action'">
@@ -413,10 +413,10 @@ export default class AccountRoleComponent extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AccountModule.deleteRole({

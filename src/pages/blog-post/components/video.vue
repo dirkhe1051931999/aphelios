@@ -1,12 +1,12 @@
 <template>
-  <q-dialog v-model="albumParams.model" position="top" transition-show="jump-up" transition-hide="jump-down">
+  <q-dialog v-model="videoParams.model" position="top" transition-show="jump-up" transition-hide="jump-down">
     <q-card style="max-width: 50vw; width: 50vw">
       <q-card-actions align="left" class="q-pa-md">
         <span class="fs-20 q-mr-md">图库</span>
         <q-select
           style="width: 300px"
-          v-model="albumParams.params.category"
-          :options="albumParams.category"
+          v-model="videoParams.params.category"
+          :options="videoParams.category"
           label="选择分类"
           :spellcheck="false"
           autocapitalize="off"
@@ -27,11 +27,10 @@
       </q-card-actions>
       <div class="split-line h-1"></div>
       <q-card-section style="max-height: 500px" class="scroll">
-        <ul class="album-list">
-          <li v-for="(item, index) in albumParams.data" :key="index" @click="pickAlbum(item)" :class="{ active: this.albumParams.currentPick === item.id }">
-            <q-img :src="item.source" :alt="item.title" fit="contain" class="img">
-              <q-badge v-for="(categoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(categoryId)" class="q-ml-md" floating />
-            </q-img>
+        <ul class="video-list">
+          <li v-for="(item, index) in videoParams.data" :key="index" @click="pickVideo(item)" :class="{ active: this.videoParams.currentPick === item.id }">
+            <video :src="item.source" class="video h-200" controls :poster="item.poster" muted :autoplay="false"></video>
+            <q-badge v-for="(categoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(categoryId)" class="q-ml-md" floating />
             <div class="banner">
               {{ item.title }}
             </div>
@@ -41,8 +40,8 @@
       <div class="split-line h-1"></div>
       <q-card-actions align="right">
         <MyPagination
-          :paginationParams="albumParams.pagination"
-          v-if="albumParams.pagination.rowsNumber > 0"
+          :paginationParams="videoParams.pagination"
+          v-if="videoParams.pagination.rowsNumber > 0"
           @pagination="paginationInput"
           style="margin-top: -26px; margin-right: 16px"
         ></MyPagination>
@@ -57,15 +56,15 @@
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Component, Vue } from 'vue-facing-decorator';
 
-@Component({ name: 'myPostAlbumComponent', emits: ['pick', 'hide'] })
-export default class myPostAlbumComponent extends Vue {
+@Component({ name: 'myPostVideoComponent', emits: ['pick', 'hide'] })
+export default class myPostVideoComponent extends Vue {
   get categoryName() {
     return (id: any) => {
-      const item: any = this.albumParams.category.find((item: any) => item.id === id);
+      const item: any = this.videoParams.category.find((item: any) => item.id === id);
       return item ? item.label : '';
     };
   }
-  public albumParams = {
+  public videoParams = {
     model: false,
     data: [],
     category: [],
@@ -81,69 +80,69 @@ export default class myPostAlbumComponent extends Vue {
   };
   /* event */
   public paginationInput(data: any) {
-    this.albumParams.pagination = data;
+    this.videoParams.pagination = data;
     this.getData();
   }
   public handleClickQuery() {
-    this.albumParams.pagination.page = 1;
+    this.videoParams.pagination.page = 1;
     this.getData();
   }
   public show() {
-    this.albumParams.model = true;
+    this.videoParams.model = true;
   }
   public hide() {
-    this.albumParams.model = false;
+    this.videoParams.model = false;
     this.$emit('hide');
   }
   public confirmPick() {
-    const item = this.albumParams.data.find((item: any) => item.id === this.albumParams.currentPick);
-    this.albumParams.model = false;
-    this.albumParams.currentPick = null;
+    const item = this.videoParams.data.find((item: any) => item.id === this.videoParams.currentPick);
+    this.videoParams.model = false;
+    this.videoParams.currentPick = null;
     this.$emit('pick', item);
     this.$emit('hide');
   }
-  public pickAlbum(item: any) {
-    this.albumParams.currentPick = item.id;
+  public pickVideo(item: any) {
+    this.videoParams.currentPick = item.id;
   }
   public init() {
     this.show();
-    this.albumParams.data = [];
-    this.albumParams.params.category = [];
-    this.albumParams.pagination.rowsNumber = 0;
-    this.albumParams.pagination.page = 1;
+    this.videoParams.data = [];
+    this.videoParams.params.category = [];
+    this.videoParams.pagination.rowsNumber = 0;
+    this.videoParams.pagination.page = 1;
     this.getData();
-    this.getAlbumCategory();
+    this.getVideoCategory();
   }
   /* http */
   public async getData() {
     try {
-      const { pageData, total } = await BlogPostModule.getAllCover({
-        categoryIds: this.albumParams.params.category,
-        page: this.albumParams.pagination.page,
-        rowsPerPage: this.albumParams.pagination.rowsPerPage,
+      const { pageData, total } = await BlogPostModule.getAllVideo({
+        categoryIds: this.videoParams.params.category,
+        page: this.videoParams.pagination.page,
+        rowsPerPage: this.videoParams.pagination.rowsPerPage,
       });
       if (pageData && pageData.length) {
-        this.albumParams.data = pageData;
-        this.albumParams.pagination.rowsNumber = total;
+        this.videoParams.data = pageData;
+        this.videoParams.pagination.rowsNumber = total;
       } else {
-        this.albumParams.data = [];
-        this.albumParams.pagination.rowsNumber = 0;
+        this.videoParams.data = [];
+        this.videoParams.pagination.rowsNumber = 0;
       }
     } catch (error) {}
   }
-  public async getAlbumCategory() {
+  public async getVideoCategory() {
     try {
-      this.albumParams.category = [];
-      const result = await BlogPostModule.queryCategory({});
+      this.videoParams.category = [];
+      const result = await BlogPostModule.queryVideoCategory({});
       if (result && result.length) {
-        this.albumParams.category = result.map((item: any) => {
+        this.videoParams.category = result.map((item: any) => {
           return {
             value: item.id,
             ...item,
           };
         });
       } else {
-        this.albumParams.category = [];
+        this.videoParams.category = [];
       }
     } catch (error) {}
   }
@@ -151,7 +150,7 @@ export default class myPostAlbumComponent extends Vue {
 </script>
 
 <style scoped lang="scss">
-.album-list {
+.video-list {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 10px;
@@ -163,7 +162,7 @@ export default class myPostAlbumComponent extends Vue {
     &.active {
       border: solid 2px $primary;
     }
-    .img {
+    .video {
       width: 100%;
       height: 100%;
       border-radius: 8px !important;

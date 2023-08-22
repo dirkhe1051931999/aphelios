@@ -5,6 +5,7 @@
       <q-card-section class="text-h6">
         {{ dialogEditorParams.title }}
       </q-card-section>
+      <div class="split-line h-1"></div>
       <q-card-section class="editor-post-card-content">
         <div class="left-content">
           <div class="q-mb-md">
@@ -120,7 +121,7 @@
             </q-select>
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">作者</p>
+            <p class="q-mb-sm">频道</p>
             <q-select
               class="full-width q-mb-md"
               label="请选择"
@@ -151,20 +152,41 @@
             />
           </div>
           <div class="q-mb-md">
+            <p class="q-mb-sm">其他</p>
+            <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked" />
+          </div>
+          <div class="q-mb-md">
             <p class="q-mb-sm">内容</p>
             <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
               <q-editor ref="editorRef" v-model="dialogEditorParams.params.editor" />
             </form>
           </div>
         </div>
-        <div class="right-content">1</div>
+        <div class="right-content">
+          <div class="q-mb-md">
+            <p class="q-mb-sm">视频 <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense /></p>
+            <div class="border-all h-300 row items-center justify-center b-r-6">
+              <div v-if="!dialogEditorParams.params.videoUrl">上传视频</div>
+              <video
+                :src="dialogEditorParams.params.videoUrl"
+                class="video h-300"
+                controls
+                muted
+                :autoplay="false"
+                :poster="dialogEditorParams.params.videoPoster"
+                v-if="dialogEditorParams.params.videoUrl"
+              ></video>
+            </div>
+          </div>
+          <div class="text-right q-mt-xl">
+            <q-btn flat label="取消" color="primary" @click="hide" />
+            <q-btn label="确定" color="primary" class="q-ml-md" @click="handleConfirmAddOrUpdate" />
+          </div>
+        </div>
       </q-card-section>
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" @click="hide" />
-        <q-btn flat label="Turn on Wifi" color="primary" />
-      </q-card-actions>
     </q-card>
   </q-dialog>
+  <PostVideoComponent ref="PostVideoComponentRef" @pick="pickVideoSuccess"></PostVideoComponent>
 </template>
 
 <script lang="ts">
@@ -172,6 +194,7 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Component, Vue } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
+import PostVideoComponent from './video.vue';
 
 const CONST_PARAMS = {
   add_or_edit: {
@@ -184,16 +207,22 @@ const CONST_PARAMS = {
     tags: [],
     tag: '',
     editor: '',
+    checked: [],
+    videoUrl: '',
+    videoPoster: '',
   },
 };
 @Component({
   name: 'myEditorPostVideoComponent',
   components: {
     VueTagsInput,
+    PostVideoComponent,
   },
 })
 export default class myEditorPostVideoComponent extends Vue {
-  $refs: any;
+  declare $refs: {
+    PostVideoComponentRef: PostVideoComponent;
+  };
   get blogEditorPostVisiableVideo() {
     if (BlogPostModule.blogEditorPostVisiableVideo) {
       this.dialogEditorParams.model = true;
@@ -240,65 +269,48 @@ export default class myEditorPostVideoComponent extends Vue {
   }
   public dialogEditorParams: any = {
     model: false,
-    splitterModel: 150,
     title: '新增视频',
     params: cloneDeep(CONST_PARAMS.add_or_edit),
-    input: [
-      {
-        placeholder: '标题',
-        type: 'text',
-        class: 'm-b-15',
-        id: 'title',
-        inputType: 'text',
-      },
-      {
-        placeholder: '作者',
-        type: 'select',
-        class: 'm-b-15',
-        selectOption: [],
-        id: 'authorId',
-      },
-      {
-        placeholder: '频道',
-        type: 'select',
-        class: 'm-b-15',
-        selectOption: [],
-        id: 'channelId',
-      },
-      {
-        type: 'category',
-      },
-      {
-        type: 'tags',
-      },
-      {
-        type: 'editor',
-      },
+    checkedOptions: [
+      { label: '置顶', value: 'pinned' },
+      { label: '推荐', value: 'recommend' },
+      { label: '精选', value: 'featured' },
+      { label: '热门', value: 'hot' },
+      { label: '原创', value: 'original' },
+      { label: '付费', value: 'paid' },
+      { label: '免费', value: 'free' },
+      { label: '私密', value: 'private' },
+      { label: '公开', value: 'public' },
     ],
   };
   /* event */
   public hide() {
     this.dialogEditorParams.model = false;
+    this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(false);
   }
   public onTagsChanges() {
     this.dialogEditorParams.params.tags = this.dialogEditorParams.params.tag;
   }
-  public onPaste(evt: any) {
-    // Let inputs do their thing, so we don't break pasting of links.
-    if (evt.target.nodeName === 'INPUT') return;
-    let text, onPasteStripFormattingIEPaste;
-    evt.preventDefault();
-    evt.stopPropagation();
-    if (evt.originalEvent && evt.originalEvent.clipboardData.getData) {
-      text = evt.originalEvent.clipboardData.getData('text/plain');
-      this.$refs.editorRef.value.runCmd('insertText', text);
-    } else if (evt.clipboardData && evt.clipboardData.getData) {
-      text = evt.clipboardData.getData('text/plain');
-      this.$refs.editorRef.value.runCmd('insertText', text);
-    }
+  public handleClickUploadVideo() {
+    this.$refs.PostVideoComponentRef.init();
+  }
+  public pickVideoSuccess(data: any) {
+    this.dialogEditorParams.params.videoUrl = data.source;
+    this.dialogEditorParams.params.videoPoster = data.poster || '';
   }
   /* http */
+  public async handleConfirmAddOrUpdate() {
+    const result = await this.$globalConfirm.show({
+      title: '友情提示',
+      color: 'primary',
+      content: '确定吗？老铁！？',
+      confirmButtonText: '非常确定',
+    });
+    try {
+      console.log(this.dialogEditorParams.params);
+    } catch (error) {}
+  }
 }
 </script>
 <style lang="scss">
@@ -335,8 +347,6 @@ export default class myEditorPostVideoComponent extends Vue {
 }
 .editor-post-card {
   .editor-post-card-content {
-    height: 85vh;
-    overflow: auto;
     display: flex;
     justify-content: space-between;
     .left-content {
@@ -345,6 +355,7 @@ export default class myEditorPostVideoComponent extends Vue {
       border: solid 1px #eeeeee;
       border-radius: 8px;
       padding: 16px;
+      height: 100%;
     }
     .right-content {
       width: 29%;
@@ -352,6 +363,7 @@ export default class myEditorPostVideoComponent extends Vue {
       border: solid 1px #eeeeee;
       border-radius: 8px;
       padding: 16px;
+      height: 100%;
     }
   }
 }

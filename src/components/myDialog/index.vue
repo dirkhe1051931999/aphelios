@@ -119,10 +119,10 @@ export default class MyDialogComponent extends Vue {
       this.$refs[this.myDialogParams.id].validate().then(async (valid: boolean) => {
         if (valid) {
           const result = await this.$globalConfirm.show({
-            title: '💕💕💕 提示',
+            title: '友情提示',
             color: 'primary',
-            content: '确定要执行该操作吗 :) ?',
-            confirmButtonText: '嗯，是的',
+            content: '确定吗？老铁！？',
+            confirmButtonText: '非常确定',
           });
           if (result) {
             this.$emit('confirm', { type: this.myDialogParams.dialogType });

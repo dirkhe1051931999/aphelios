@@ -49,6 +49,7 @@ const api = {
   deletePostUser: 'management/blog/post_user/deletePostUser',
   viewUserPassword: 'management/blog/post_user/viewUserPassword',
   setPostUserStatus: 'management/blog/post_user/setPostUserStatus',
+  /* video lib */
   getAllCover: 'management/blog/post_cover_lib/getAllCover',
   addCover: 'management/blog/post_cover_lib/addCover',
   batchAddCover: 'management/blog/post_cover_lib/batchAddCover',
@@ -59,6 +60,17 @@ const api = {
   updateCategory: 'management/blog/post_cover_lib/updateCategory',
   deleteCategory: 'management/blog/post_cover_lib/deleteCategory',
   queryCategory: 'management/blog/post_cover_lib/queryCategory',
+  /* video lib */
+  getAllVideo: 'management/blog/post_video_lib/getAllVideo',
+  addVideo: 'management/blog/post_video_lib/addVideo',
+  batchAddVideo: 'management/blog/post_video_lib/batchAddVideo',
+  updateVideo: 'management/blog/post_video_lib/updateVideo',
+  deleteVideo: 'management/blog/post_video_lib/deleteVideo',
+  batchDelteVideo: 'management/blog/post_video_lib/batchDelteVideo',
+  addVideoCategory: 'management/blog/post_video_lib/addCategory',
+  updateVideoCategory: 'management/blog/post_video_lib/updateCategory',
+  deleteVideoCategory: 'management/blog/post_video_lib/deleteCategory',
+  queryVideoCategory: 'management/blog/post_video_lib/queryCategory',
 };
 
 export const getPostList = (data: any): any =>
@@ -395,6 +407,60 @@ export const deleteCategory = (data: any): any =>
 export const queryCategory = (data: any): any =>
   request({
     url: api.queryCategory,
+    method: 'post',
+    data,
+  });
+export const getAllVideo = (data: any): any =>
+  request({
+    url: api.getAllVideo,
+    method: 'post',
+    data,
+  });
+export const addVideo = (data: any): any =>
+  request({
+    url: api.addVideo,
+    method: 'post',
+    data,
+  });
+export const updateVideo = (data: any): any =>
+  request({
+    url: api.updateVideo,
+    method: 'post',
+    data,
+  });
+export const deleteVideo = (data: any): any =>
+  request({
+    url: api.deleteVideo,
+    method: 'post',
+    data,
+  });
+export const batchAddVideo = (data: any): any =>
+  request({
+    url: api.batchAddVideo,
+    method: 'post',
+    data,
+  });
+export const batchDelteVideo = (data: any): any =>
+  request({
+    url: api.batchDelteVideo,
+    method: 'post',
+    data,
+  });
+export const addVideoCategory = (data: any): any =>
+  request({
+    url: api.addVideoCategory,
+    method: 'post',
+    data,
+  });
+export const deleteVideoCategory = (data: any): any =>
+  request({
+    url: api.deleteVideoCategory,
+    method: 'post',
+    data,
+  });
+export const queryVideoCategory = (data: any): any =>
+  request({
+    url: api.queryVideoCategory,
     method: 'post',
     data,
   });

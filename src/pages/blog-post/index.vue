@@ -97,7 +97,6 @@
                 <!-- title -->
                 <div v-if="col.name === 'title'">
                   <span class="link-type q-mr-sm" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
-                  <q-icon v-if="props.row.haveImg" color="grey" size="18px" name="o_image"></q-icon>
                   <q-btn dense size="8px" color="primary" flat class="q-ml-md" icon="chat_bubble_outline" round>
                     <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
                       <q-banner style="min-width: 20vw" class="q-pa-md">
@@ -584,10 +583,10 @@ export default class BlogPostComponent extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.deletePost({
@@ -604,10 +603,10 @@ export default class BlogPostComponent extends Vue {
   public async handlerClickOnline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.publishPost({
@@ -624,10 +623,10 @@ export default class BlogPostComponent extends Vue {
   public async handlerClickOffline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.offlinePost({

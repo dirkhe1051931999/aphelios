@@ -131,6 +131,15 @@ export const asyncRoutes: RouteRecordRaw[] = [
           pagePermissionId: ['BlogPostCoverLib'],
         },
       },
+      {
+        path: 'video-lib',
+        component: () => import(/* webpackChunkName: "blog-post-video-lib" */ 'src/pages/blog-post/video-lib.vue'),
+        name: 'BlogPostVideoLib',
+        meta: {
+          title: 'blog-post-video-lib',
+          pagePermissionId: ['BlogPostVideoLib'],
+        },
+      },
     ],
   },
   {

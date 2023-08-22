@@ -293,10 +293,10 @@ export default class MyAudioCommentPage extends Vue {
     }
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: ids, status: 2 });
@@ -325,10 +325,10 @@ export default class MyAudioCommentPage extends Vue {
     }
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: ids, status: 3 });
@@ -357,10 +357,10 @@ export default class MyAudioCommentPage extends Vue {
     }
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: ids, status: 1 });
@@ -377,10 +377,10 @@ export default class MyAudioCommentPage extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: row.id, status: 3 });
@@ -395,10 +395,10 @@ export default class MyAudioCommentPage extends Vue {
   public async handlerClickBan(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: row.id, status: 2 });
@@ -413,10 +413,10 @@ export default class MyAudioCommentPage extends Vue {
   public async handlerClickRecover(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await AuditModule.setPostCommentStatus({ id: row.id, status: 1 });

@@ -205,10 +205,10 @@ export default class BlogPostChannelComponent extends Vue {
     if (diff.length > 0) {
       try {
         const result = await this.$globalConfirm.show({
-          title: '💕💕💕 提示',
+          title: '友情提示',
           color: 'primary',
-          content: '确定要执行该操作吗 :) ?',
-          confirmButtonText: '嗯，是的',
+          content: '确定吗？老铁！？',
+          confirmButtonText: '非常确定',
         });
         if (result) {
           await BlogPostModule.updateChannelPos({
@@ -255,10 +255,10 @@ export default class BlogPostChannelComponent extends Vue {
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
-        title: '💕💕💕 提示',
+        title: '友情提示',
         color: 'primary',
-        content: '确定要执行该操作吗 :) ?',
-        confirmButtonText: '嗯，是的',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
       if (result) {
         await BlogPostModule.removeChannel({

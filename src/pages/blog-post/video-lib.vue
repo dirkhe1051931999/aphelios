@@ -1,7 +1,6 @@
 <template>
   <div>
     <q-table
-      title="图库"
       flat
       :rows="tableParams.data"
       :columns="tableParams.columns"
@@ -19,8 +18,8 @@
         <div class="row">
           <q-select
             style="width: 300px"
-            v-model="coverLib.params.category"
-            :options="coverLib.categoryOptions"
+            v-model="videoLib.params.category"
+            :options="videoLib.categoryOptions"
             label="选择分类"
             :spellcheck="false"
             autocapitalize="off"
@@ -66,17 +65,12 @@
             <q-checkbox color="primary" v-model="props.selected" />
           </q-td>
           <!-- other -->
-          <q-td v-for="col in props.cols" :key="col.name" :props="props" class="text-left" :style="col.name === 'source' || col.name === 'category' ? 'width:400px' : ''">
+          <q-td v-for="col in props.cols" :key="col.name" :props="props" class="text-left" :style="col.name === 'source' || col.name === 'category' ? 'width:600px' : ''">
             <span v-if="!col.inSlot">{{ col.value }}</span>
             <div class="text-left" v-else>
               <!-- source -->
-              <div v-if="col.name === 'source'">
-                <photo-provider>
-                  <photo-consumer v-for="src in [props.row[col.name]]" :intro="src" :key="src" :src="src">
-                    <img :src="src" style="max-width: 140px; border-radius: 8px" class="cursor-pointer" />
-                  </photo-consumer>
-                </photo-provider>
-
+              <div v-if="col.name === 'source'" class="row items-center">
+                <video :src="props.row.source" style="width: 340px; border-radius: 8px; height: 200px" class="cursor-pointer" :poster="props.row.poster" controls />
                 <q-btn color="primary" outline label="编辑" @click="onUpdate(props.row)" dense class="q-ml-md" />
                 <q-btn color="negative" outline label="删除" @click="handleClickDelete(props.row)" dense class="q-ml-md" />
               </div>
@@ -145,11 +139,21 @@
       @before-hide="dialogUploadBeforeHideEvent"
     >
       <div class="dialog-upload-form">
-        <q-img :src="dialogUpload.imgBase64" class="h-200" v-if="dialogUpload.imgBase64" fit="contain"></q-img>
-        <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
-        <div class="text-center q-pa-md" v-if="dialogUpload.dialogType === 'add'">
-          <q-btn color="primary" icon="add" label="点击上传" outline class="q-mb-md" @click="handleClickUploadFile" />
-          <p class="format">File type is: {{ dialogUpload.accept.split(',').join(' ,') }}</p>
+        <div>
+          <div class="row items-center justify-between">
+            <div class="text-center w-p-50 q-py-sm">封面 <q-btn color="primary" icon="add" label="点击上传封面" flat @click="handleClickUploadPoster" dense class="q-ml-sm" /></div>
+            <div class="text-center w-p-50 q-py-sm">
+              视频 <q-btn color="primary" icon="add" label="点击上传视频" flat @click="handleClickUploadVideo" dense class="q-ml-sm" v-if="dialogUpload.dialogType === 'add'" />
+            </div>
+          </div>
+          <div class="split-line h-1"></div>
+        </div>
+        <div class="row items-center justify-between q-my-md">
+          <input type="file" class="hide" :ref="dialogUpload.videoFileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
+          <q-img :src="dialogUpload.params.poster" v-if="dialogUpload.params.poster" class="w-p-49 h-200 border-all" fit="contain" />
+          <div class="h-200 row items-center justify-center w-p-49 border-all q-my-md b-r-6 bg-grey-2" v-else>上传封面</div>
+          <video :src="dialogUpload.videoBase64" controls class="w-p-50 h-200 border-all" autoplay v-if="dialogUpload.videoBase64"></video>
+          <div class="h-200 row items-center justify-center w-p-50 border-all b-r-6 q-my-md bg-grey-2" v-else>上传视频格式为：{{ dialogUpload.accept.split(',').join(' ,') }}</div>
         </div>
         <div v-for="(item, index) in dialogUpload.input" :key="index" class="col-12">
           <MyFormInput
@@ -181,6 +185,7 @@
         </div>
       </div>
     </MyDialog>
+    <PostAlbumComponent ref="PostAlbumComponentRef" @pick="pickSuccess" />
   </div>
 </template>
 
@@ -188,9 +193,15 @@
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { getCurrentInstance } from 'vue';
 import { Component, Vue } from 'vue-facing-decorator';
+import PostAlbumComponent from './components/album.vue';
 
-@Component({ name: 'myBlogPostCoverLib' })
-export default class myBlogPostCoverLib extends Vue {
+@Component({
+  name: 'myBlogPostVideoLib',
+  components: {
+    PostAlbumComponent,
+  },
+})
+export default class myBlogPostVideoLib extends Vue {
   $refs: any;
   get getCategoryName() {
     return (category: number) => {
@@ -204,7 +215,7 @@ export default class myBlogPostCoverLib extends Vue {
   }
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
-  public coverLib = {
+  public videoLib = {
     categoryOptions: [],
     zipFile: '',
     zipFileName: '',
@@ -220,7 +231,7 @@ export default class myBlogPostCoverLib extends Vue {
     selected: [],
     loading: false,
     columns: [
-      { name: 'source', label: '图片', align: 'left', inSlot: true },
+      { name: 'source', label: '视频', align: 'left', inSlot: true },
       { name: 'category', label: '分类', align: 'left', inSlot: true },
       {
         name: 'title',
@@ -241,13 +252,13 @@ export default class myBlogPostCoverLib extends Vue {
   };
   public dialogUpload = {
     id: 'dialog-upload-file',
-    fileID: 'dialog_upload_file',
+    videoFileID: 'dialog_upload_file',
     clickLoading: false,
     getDataLoading: false,
     visiable: false,
     title: '',
-    imgBase64: '',
-    accept: '.jpg,.png,.jpeg',
+    videoBase64: '',
+    accept: '.mp4',
     dialogType: 'add',
     input: [
       {
@@ -282,7 +293,7 @@ export default class myBlogPostCoverLib extends Vue {
         label: '分类',
       },
     ],
-    params: { file: '', fileName: '', title: '', description: '', category: [], id: '' },
+    params: { video: '', videoName: '', title: '', description: '', poster: '', category: [], id: '' },
   };
 
   /* event */
@@ -298,13 +309,23 @@ export default class myBlogPostCoverLib extends Vue {
     this.dialogUpload.title = 'Upload';
     this.dialogUpload.dialogType = 'add';
     this.$nextTick(() => {
-      this.$refs[this.dialogUpload.fileID].type = 'text';
-      this.dialogUpload.params.fileName = '';
-      this.dialogUpload.params.file = '';
-      this.dialogUpload.imgBase64 = '';
+      this.$refs[this.dialogUpload.videoFileID].type = 'text';
+      this.dialogUpload.params.videoName = '';
+      this.dialogUpload.params.video = '';
+      this.dialogUpload.videoBase64 = '';
       setTimeout(() => {
-        this.$refs[this.dialogUpload.fileID].type = 'file';
-        this.$refs[this.dialogUpload.fileID].value = '';
+        this.$refs[this.dialogUpload.videoFileID].type = 'file';
+        this.$refs[this.dialogUpload.videoFileID].value = '';
+      }, 100);
+    });
+  }
+  public handleClickBatchUpload() {
+    this.$nextTick(() => {
+      this.$refs.batchUpload.type = 'text';
+      setTimeout(() => {
+        this.$refs.batchUpload.type = 'file';
+        this.$refs.batchUpload.value = '';
+        this.$refs.batchUpload.click();
       }, 100);
     });
   }
@@ -324,54 +345,39 @@ export default class myBlogPostCoverLib extends Vue {
     this.dialogUpload.dialogType = 'update';
     this.dialogUpload.params.id = row.id;
     this.dialogUpload.params.title = row.title;
+    this.dialogUpload.params.poster = row.poster;
     this.dialogUpload.params.description = row.description;
     this.dialogUpload.params.category = row.category;
-    this.dialogUpload.params.file = row.source;
-    this.dialogUpload.imgBase64 = row.source;
+    this.dialogUpload.params.video = row.source;
+    this.dialogUpload.videoBase64 = row.source;
   }
-  public handleClickBatchUpload() {
-    this.$nextTick(() => {
-      this.$refs.batchUpload.type = 'text';
-      setTimeout(() => {
-        this.$refs.batchUpload.type = 'file';
-        this.$refs.batchUpload.value = '';
-        this.$refs.batchUpload.click();
-      }, 100);
-    });
+  public handleClickUploadPoster() {
+    this.$refs.PostAlbumComponentRef.init();
   }
-  public handleClickUploadFile() {
-    this.$refs[this.dialogUpload.fileID].type = 'text';
-    this.dialogUpload.params.fileName = '';
-    this.dialogUpload.params.file = '';
-    this.dialogUpload.imgBase64 = '';
+  public handleClickUploadVideo() {
+    this.$refs[this.dialogUpload.videoFileID].type = 'text';
+    this.dialogUpload.params.videoName = '';
+    this.dialogUpload.params.video = '';
+    this.dialogUpload.videoBase64 = '';
     setTimeout(() => {
-      this.$refs[this.dialogUpload.fileID].type = 'file';
-      this.$refs[this.dialogUpload.fileID].value = '';
-      this.$refs[this.dialogUpload.fileID].click();
+      this.$refs[this.dialogUpload.videoFileID].type = 'file';
+      this.$refs[this.dialogUpload.videoFileID].value = '';
+      this.$refs[this.dialogUpload.videoFileID].click();
     }, 100);
   }
   public uploadFileSuccess() {
-    const files = this.$refs[this.dialogUpload.fileID].files;
+    const files = this.$refs[this.dialogUpload.videoFileID].files;
     let postFiles = Array.prototype.slice.call(files);
     postFiles = postFiles.slice(0, 1);
     postFiles.forEach((rawFile: any) => {
       const reader = new FileReader();
       reader.readAsDataURL(rawFile);
       reader.onload = () => {
-        this.dialogUpload.imgBase64 = reader.result as string;
+        this.dialogUpload.videoBase64 = reader.result as string;
       };
-      this.dialogUpload.params.fileName = rawFile.name;
-      this.dialogUpload.params.file = rawFile;
+      this.dialogUpload.params.videoName = rawFile.name;
+      this.dialogUpload.params.video = rawFile;
     });
-  }
-  public monitorDialogUploadHide() {
-    this.dialogUpload.params.id = '';
-    this.dialogUpload.params.fileName = '';
-    this.dialogUpload.params.file = '';
-    this.dialogUpload.imgBase64 = '';
-    this.dialogUpload.params.title = '';
-    this.dialogUpload.params.description = '';
-    this.dialogUpload.params.category = [];
   }
   public dialogUploadCloseEvent(data: { type: string }) {
     this.dialogUpload.visiable = false;
@@ -381,10 +387,13 @@ export default class myBlogPostCoverLib extends Vue {
       this.dialogUpload.params = data.params;
     }
   }
+  public pickSuccess(data: any) {
+    this.dialogUpload.params.poster = data.source;
+  }
   /* http */
   public async getData() {
-    const { pageData, total } = await BlogPostModule.getAllCover({
-      categoryIds: this.coverLib.params.category,
+    const { pageData, total } = await BlogPostModule.getAllVideo({
+      categoryIds: this.videoLib.params.category,
       page: this.tableParams.pagination.page,
       rowsPerPage: this.tableParams.pagination.rowsPerPage,
     });
@@ -396,10 +405,27 @@ export default class myBlogPostCoverLib extends Vue {
       this.tableParams.pagination.rowsNumber = 0;
     }
   }
+  public uploadZipFileSuccess() {
+    const files = this.$refs.batchUpload.files;
+    let postFiles = Array.prototype.slice.call(files);
+    postFiles = postFiles.slice(0, 1);
+    postFiles.forEach(async (rawFile: any) => {
+      const formData = new FormData();
+      formData.append('file', rawFile);
+      const result = await BlogPostModule.batchAddVideo(formData);
+      if (result) {
+        this.$globalMessage.show({
+          type: 'success',
+          content: '上传成功，请刷新页面查看',
+        });
+        this.getData();
+      }
+    });
+  }
   public async queryCategory() {
-    const result = await BlogPostModule.queryCategory({});
+    const result = await BlogPostModule.queryVideoCategory({});
     if (result && result.length) {
-      this.coverLib.categoryOptions = result.map((item: any) => ({ value: item.id, ...item }));
+      this.videoLib.categoryOptions = result.map((item: any) => ({ value: item.id, ...item }));
       this.categoryParams.data = result;
       const index = this.dialogUpload.input.findIndex((item: any) => item.model === 'category');
       this.dialogUpload.input[index].inputSelectOption = result.map((item: any) => ({ value: item.id, ...item }));
@@ -407,28 +433,46 @@ export default class myBlogPostCoverLib extends Vue {
   }
   public async hanleClickUploadConfirm() {
     try {
-      if (!this.dialogUpload.params.file) {
+      if (!this.dialogUpload.params.video) {
         this.$globalMessage.show({
           type: 'error',
-          content: '请上传图片',
+          content: '请上传视频',
+        });
+        return;
+      }
+      if (!this.dialogUpload.params.poster) {
+        this.$globalMessage.show({
+          type: 'error',
+          content: '请上传视频封面',
         });
         return;
       }
       this.dialogUpload.clickLoading = true;
       if (this.dialogUpload.dialogType === 'add') {
-        await BlogPostModule.addCover({
+        const form = new FormData();
+        let obj: any = {
           title: this.dialogUpload.params.title,
           description: this.dialogUpload.params.description,
           categoryIds: this.dialogUpload.params.category,
-          file: this.dialogUpload.imgBase64,
-        });
+          file: this.dialogUpload.params.video,
+          poster: this.dialogUpload.params.poster,
+        };
+        for (let key in obj) {
+          if (key === 'categoryIds') {
+            form.append(key, JSON.stringify(obj[key]));
+          } else {
+            form.append(key, obj[key]);
+          }
+        }
+        await BlogPostModule.addVideo(form);
       } else {
-        await BlogPostModule.updateCover({
+        await BlogPostModule.updateVideo({
           id: this.dialogUpload.params.id,
           title: this.dialogUpload.params.title,
           description: this.dialogUpload.params.description,
           categoryIds: this.dialogUpload.params.category,
-          file: this.dialogUpload.imgBase64,
+          file: this.dialogUpload.videoBase64,
+          poster: this.dialogUpload.params.poster,
         });
       }
       this.$globalMessage.show({
@@ -442,27 +486,10 @@ export default class myBlogPostCoverLib extends Vue {
       this.dialogUpload.clickLoading = false;
     }
   }
-  public uploadZipFileSuccess() {
-    const files = this.$refs.batchUpload.files;
-    let postFiles = Array.prototype.slice.call(files);
-    postFiles = postFiles.slice(0, 1);
-    postFiles.forEach(async (rawFile: any) => {
-      const formData = new FormData();
-      formData.append('file', rawFile);
-      const result = await BlogPostModule.batchAddCover(formData);
-      if (result) {
-        this.$globalMessage.show({
-          type: 'success',
-          content: '上传成功，请刷新页面查看',
-        });
-        this.getData();
-      }
-    });
-  }
   public async confirmAddCategory(scope: any, item: any) {
     try {
       scope.set();
-      await BlogPostModule.addCategory({
+      await BlogPostModule.addVideoCategory({
         id: item.id,
         label: scope.value,
       });
@@ -482,7 +509,7 @@ export default class myBlogPostCoverLib extends Vue {
         confirmButtonText: '非常确定',
       });
       if (result) {
-        await BlogPostModule.deleteCover({
+        await BlogPostModule.deleteVideo({
           id: row.id,
         });
         this.$globalMessage.show({
@@ -501,7 +528,7 @@ export default class myBlogPostCoverLib extends Vue {
       confirmButtonText: '非常确定',
     });
     if (result) {
-      await BlogPostModule.batchDelteCover({
+      await BlogPostModule.batchDelteVideo({
         idList: this.tableParams.selected.map((item: any) => item.id),
       });
       this.$globalMessage.show({
@@ -514,7 +541,7 @@ export default class myBlogPostCoverLib extends Vue {
   }
   public async removeCategory(item: any) {
     try {
-      await BlogPostModule.deleteCategory({
+      await BlogPostModule.deleteVideoCategory({
         id: item.id,
       });
       this.categoryParams.data = this.categoryParams.data.filter((i: any) => i.id !== item.id);

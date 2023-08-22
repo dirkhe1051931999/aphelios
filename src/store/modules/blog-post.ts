@@ -57,6 +57,15 @@ import {
   deleteCategory,
   queryCategory,
   addCategory,
+  getAllVideo,
+  addVideo,
+  updateVideo,
+  deleteVideo,
+  batchAddVideo,
+  batchDelteVideo,
+  addVideoCategory,
+  deleteVideoCategory,
+  queryVideoCategory,
 } from 'src/api/blog-post';
 import { th } from 'element-plus/es/locale';
 
@@ -643,6 +652,60 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async queryCategory(data: any) {
     const result = await queryCategory(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async getAllVideo(data: any) {
+    const result = await getAllVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async addVideo(data: any) {
+    const result = await addVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async updateVideo(data: any) {
+    const result = await updateVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async deleteVideo(data: any) {
+    const result = await deleteVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async batchAddVideo(data: any) {
+    const result = await batchAddVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async batchDelteVideo(data: any) {
+    const result = await batchDelteVideo(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async addVideoCategory(data: any) {
+    const result = await addVideoCategory(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async deleteVideoCategory(data: any) {
+    const result = await deleteVideoCategory(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async queryVideoCategory(data: any) {
+    const result = await queryVideoCategory(data);
     return Promise.resolve(result);
   }
 }

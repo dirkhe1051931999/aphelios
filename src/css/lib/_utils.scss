@@ -240,14 +240,12 @@
     color: $negative;
     background: var(--my-white);
     box-sizing: border-box;
-    font-weight: 600;
   }
   &.primary {
     border: solid 1px $primary;
     color: $primary;
     background: var(--my-white);
     box-sizing: border-box;
-    font-weight: 600;
   }
   &.disabled {
     background: var(--my-white);
