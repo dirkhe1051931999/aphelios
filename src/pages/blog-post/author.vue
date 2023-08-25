@@ -357,7 +357,10 @@ const CONST_PARAMS: any = {
   dialog_add_update: { name: '', nick: '', id: '', type: '1', avatarUrl: '', description: '', coverUrl: '', managementPassword: '', appPassword: '' },
   verify: { companyName: '', companyType: '', companyCode: '', companyLicense: '', id: '' },
 };
-@Component({ name: 'BlogPostAuthorComponent' })
+@Component({
+  name: 'BlogPostAuthorComponent',
+  components: {},
+})
 export default class BlogPostAuthorComponent extends Vue {
   $refs: any;
   get canStepBack() {
@@ -393,7 +396,7 @@ export default class BlogPostAuthorComponent extends Vue {
       avatarID: 'dialog_upload_avatar',
       coverID: 'dialog_upload_cover',
       accept: '.jpg,.png,.jpeg',
-      params: { avatar: '', avatarName: '', cover: '', coverName: '' },
+      params: { avatar: '', avatarName: '', cover: '', coverName: '', avatarRawFile: null, coverRawFile: null },
     },
     input: [
       {
@@ -654,6 +657,7 @@ export default class BlogPostAuthorComponent extends Vue {
         return;
       }
       if (rawFile.size <= 1024 * 1024 * 5) {
+        this.dialogAddUpdateParams.upload.params.avatarRawFile = rawFile;
         const reader = new FileReader();
         reader.onload = (event: any) => {
           const base64String = event.target.result;
@@ -685,6 +689,7 @@ export default class BlogPostAuthorComponent extends Vue {
         return;
       }
       if (rawFile.size <= 1024 * 1024 * 10) {
+        this.dialogAddUpdateParams.upload.params.coverRawFile = rawFile;
         const reader = new FileReader();
         reader.onload = (event: any) => {
           const base64String = event.target.result;
@@ -741,8 +746,10 @@ export default class BlogPostAuthorComponent extends Vue {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
       this.dialogAddUpdateParams.upload.params.avatar = '';
+      this.dialogAddUpdateParams.upload.params.avatarRawFile = null;
       this.dialogAddUpdateParams.upload.params.avatarName = '';
       this.dialogAddUpdateParams.upload.params.cover = '';
+      this.dialogAddUpdateParams.upload.params.coverRawFile = null;
       this.dialogAddUpdateParams.upload.params.coverName = '';
     }
   }
@@ -788,23 +795,37 @@ export default class BlogPostAuthorComponent extends Vue {
     try {
       this.$q.loading.show();
       if (this.dialogAddUpdateParams.dialogType === 'add') {
-        await BlogPostModule.addPostAuthor({
+        const params: any = {
           name: this.dialogAddUpdateParams.params.name,
           nick: this.dialogAddUpdateParams.params.nick,
-          avatar: this.dialogAddUpdateParams.upload.params.avatar,
-          cover: this.dialogAddUpdateParams.upload.params.cover,
+          avatar: this.dialogAddUpdateParams.upload.params.avatarRawFile,
+          cover: this.dialogAddUpdateParams.upload.params.coverRawFile,
           description: this.dialogAddUpdateParams.params.description,
           type: Number(this.dialogAddUpdateParams.params.type),
           managementPassword: enCrypty(this.dialogAddUpdateParams.params.managementPassword),
           appPassword: enCrypty(this.dialogAddUpdateParams.params.appPassword),
+        };
+        const form = new FormData();
+        Object.keys(params).forEach((key) => {
+          form.append(key, params[key]);
         });
+        await BlogPostModule.addPostAuthor(form);
       } else {
+        const params: any = {
+          avatar: this.dialogAddUpdateParams.upload.params.avatarRawFile || this.dialogAddUpdateParams.upload.params.avatar,
+          cover: this.dialogAddUpdateParams.upload.params.coverRawFile || this.dialogAddUpdateParams.upload.params.cover,
+        };
+        const form = new FormData();
+        Object.keys(params).forEach((key) => {
+          form.append(key, params[key]);
+        });
         await BlogPostModule.updatePostAuthor({
-          id: this.dialogAddUpdateParams.params.id,
-          nick: this.dialogAddUpdateParams.params.nick,
-          avatar: this.dialogAddUpdateParams.upload.params.avatar,
-          cover: this.dialogAddUpdateParams.upload.params.cover,
-          description: this.dialogAddUpdateParams.params.description,
+          form: form,
+          params: {
+            id: this.dialogAddUpdateParams.params.id,
+            nick: this.dialogAddUpdateParams.params.nick,
+            description: this.dialogAddUpdateParams.params.description,
+          },
         });
       }
       this.$globalMessage.show({

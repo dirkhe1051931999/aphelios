@@ -2,13 +2,32 @@
   <div class="editor-wrap" ref="editorWrap">
     <div class="editor-content thin-shadow" v-if="blogEditorPostVisiable">
       <div class="left">
-        <div class="row q-mb-sm items-center justify-between">
+        <div class="q-mb-md">
+          <p class="q-mb-sm row items-center">
+            * 标题 <q-badge class="q-ml-sm" :color="dialogEditorParams.params.status === 'OFFLINE' ? 'negative' : 'primary'" v-if="!isAddPost">{{ postStatus(dialogEditorParams.params) }}</q-badge>
+          </p>
+          <q-input
+            v-model.trim="dialogEditorParams.params.title"
+            type="text"
+            autocapitalize="off"
+            autocomplete="new-password"
+            autocorrect="off"
+            clearable
+            dense
+            outlined
+            class="q-mb-sm"
+            dropdown-icon="app:topbar-arrow-bottom"
+            clear-icon="app:clear"
+            :spellcheck="false"
+          />
+        </div>
+        <div class="q-mb-md">
+          <p class="q-mb-sm">* 作者</p>
           <q-select
             outlined
-            v-model="dialogAddUpdateParams.row.authorId"
+            v-model="dialogEditorParams.params.authorId"
             :options="authorOptions"
-            label="选择作者"
-            class="w-p-31"
+            class="q-mb-sm"
             color="primary"
             :spellcheck="false"
             autocapitalize="off"
@@ -36,9 +55,12 @@
               </q-item>
             </template>
           </q-select>
+        </div>
+        <div class="q-mb-md">
+          <p class="q-mb-sm">* 主题</p>
           <q-btn
-            class="w-p-31 h-40 category-select"
-            :label="postCategory(dialogAddUpdateParams.row) === '--' ? '选择主题' : '主题：' + postCategory(dialogAddUpdateParams.row)"
+            class="h-40 category-select full-width"
+            :label="postCategory(dialogEditorParams.params) === '--' ? '选择主题' : '主题：' + postCategory(dialogEditorParams.params)"
             icon-right="o_keyboard_arrow_down"
             outline
             align="left"
@@ -61,7 +83,7 @@
                         :key="directory.id"
                         clickable
                         v-close-popup="!directory.children.length"
-                        @click.stop.prevent="!directory.children.length ? (dialogAddUpdateParams.row.categoryId = directory.id) : () => 0"
+                        @click.stop.prevent="!directory.children.length ? (dialogEditorParams.params.categoryId = directory.id) : () => 0"
                       >
                         <q-item-section>
                           <q-item-label>{{ directory.name }}</q-item-label>
@@ -77,7 +99,7 @@
                               :key="childDirectory"
                               clickable
                               v-close-popup="!childDirectory.children"
-                              @click.stop.prevent="dialogAddUpdateParams.row.categoryId = childDirectory.id"
+                              @click.stop.prevent="dialogEditorParams.params.categoryId = childDirectory.id"
                             >
                               <q-item-section>
                                 <q-item-label>{{ childDirectory.name }}</q-item-label>
@@ -93,11 +115,12 @@
               </q-list>
             </q-menu>
           </q-btn>
+        </div>
+        <div class="q-mb-md">
+          <p class="q-mb-sm">* 频道</p>
           <q-select
-            v-model="dialogAddUpdateParams.row.channelId"
+            v-model="dialogEditorParams.params.channelId"
             :options="channelOptions"
-            class="w-p-31"
-            label="请选择频道"
             :spellcheck="false"
             autocapitalize="off"
             autocomplete="new-password"
@@ -112,44 +135,39 @@
             map-options
           />
         </div>
-        <div class="poster q-mb-md relative q-pa-md">
-          <q-img :src="dialogAddUpdateParams.row.poster" height="300px" style="border-radius: 12px" v-if="dialogAddUpdateParams.row.poster" fit="contain">
-            <template #loading> <q-skeleton height="300px" square width="100%" /> </template>
-          </q-img>
+        <div class="q-mb-md">
+          <p class="q-mb-sm">* 标签</p>
+          <vue-tags-input
+            class="tags-autocomplete"
+            v-model="dialogEditorParams.params.tag"
+            :tags="dialogEditorParams.params.tags"
+            @tags-changed="(newTags) => (dialogEditorParams.params.tags = newTags)"
+          />
+        </div>
+        <div id="editor-toolbar"></div>
+        <div id="editor-container">
+          <div id="editor-text-area" style="min-height: 500px; max-height: 1000px"></div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="poster q-mt-lg q-mb-md relative q-pa-xl">
+          <img :src="dialogEditorParams.params.poster" v-if="dialogEditorParams.params.poster" />
           <div v-else class="h-300 row items-center justify-center">
             <div class="text-center cursor-pointer" @click.stop.prevent="handleOpenUploadPosterContainer">
               <q-icon name="o_add" size="80px"></q-icon>
               <p class="q-mt-md">上传封面</p>
             </div>
           </div>
-          <span class="link-type absolute top-30 right-30 thin-shadow q-py-sm q-px-md" @click.stop.prevent="handleOpenUploadPosterContainer" v-if="dialogAddUpdateParams.row.poster">修改</span>
+          <q-btn color="primary" label="修改" @click.stop.prevent="handleOpenUploadPosterContainer" v-if="dialogEditorParams.params.poster" outline class="absolute top-16 right-10" dense />
         </div>
-        <div class="q-mb-md">状态 ：{{ postStatus }}</div>
+        <div class="q-mb-md">
+          <p class="q-mb-sm">* 其他</p>
+          <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked" />
+        </div>
         <div>
           <q-btn color="primary" label="确定" class="q-mr-md" @click="dialogAddUpdateConfirmEvent" />
           <q-btn color="primary" label="存为草稿" class="q-mr-md" />
           <q-btn color="primary" outline label="取消" @click="hideDialog" flat></q-btn>
-        </div>
-      </div>
-      <div class="right">
-        <q-input
-          v-model.trim="dialogAddUpdateParams.row.title"
-          type="text"
-          label="请输入标题"
-          autocapitalize="off"
-          autocomplete="new-password"
-          autocorrect="off"
-          clearable
-          dense
-          outlined
-          class="q-mb-sm"
-          dropdown-icon="app:topbar-arrow-bottom"
-          clear-icon="app:clear"
-          :spellcheck="false"
-        />
-        <div id="editor-toolbar"></div>
-        <div id="editor-container">
-          <div id="editor-text-area" style="min-height: 500px; max-height: 1000px"></div>
         </div>
       </div>
     </div>
@@ -158,92 +176,50 @@
 </template>
 
 <script lang="ts">
+import { commonPost } from 'src/mixins/post';
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
+import VueTagsInput from '@sipec/vue3-tags-input';
 import PostAlbumComponent from './album.vue';
+import { cloneDeep } from 'lodash';
+import { POST_RADIO_OPTIONS } from '../utils';
 let registerEditorAction = false;
+const PARANS = {
+  authorId: '',
+  status: '',
+  categoryId: '',
+  channelId: '',
+  title: '',
+  poster: '',
+  content: '',
+  checked: [],
+  tags: [],
+  tag: '',
+  id: '',
+};
 @Component({
   name: 'myBlogEditorPostDialogComponent',
   components: {
     PostAlbumComponent,
+    VueTagsInput,
   },
 })
-export default class myBlogEditorPostDialogComponent extends Vue {
+export default class myBlogEditorPostDialogComponent extends commonPost {
   $refs: any;
   get blogEditorPostVisiable() {
     return BlogPostModule.blogEditorPostVisiable;
   }
-  get authorOptions() {
-    return BlogPostModule.allValidAuthor;
-  }
-  get categoryOptions() {
-    return BlogPostModule.allCategory;
-  }
-  get channelOptions() {
-    return BlogPostModule.allChannel;
-  }
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategory;
   }
-  get postAddOrUpdate() {
-    return BlogPostModule.postAddOrUpdate;
-  }
-  get postDetail() {
-    return BlogPostModule.postDetail;
-  }
-  get currentCategoryId() {
-    return BlogPostModule.currentCategoryId;
-  }
-  get postCategory() {
-    return (row: any) => {
-      if (!row.categoryId) return '--';
-      function findItemById(arr: any, id: any): any {
-        for (let item of arr) {
-          if (item.id === id) {
-            return item;
-          }
-          if (item.children) {
-            let foundItem = findItemById(item.children, id);
-            if (foundItem) {
-              return foundItem;
-            }
-          }
-        }
-        return null;
-      }
-      const item = findItemById(this.categoryOptions, row.categoryId);
-      if (item) {
-        return item.name;
-      } else {
-        return '--';
-      }
-    };
-  }
-  get postStatus() {
-    return this.dialogAddUpdateParams.row.status === 'OFFLINE' ? '已下线' : this.dialogAddUpdateParams.row.status === 'PUBLISHED' ? '已上线' : '草稿';
+  get isAddPost() {
+    return BlogPostModule.postAddOrUpdate === 'add';
   }
   @Watch('blogEditorPostVisiable')
   onBlogEditorPostVisiableChanged(val: boolean, oldVal: boolean) {
     const initForm = () => {
-      this.dialogAddUpdateParams.row.authorId = '';
-      this.dialogAddUpdateParams.row.status = '';
-      this.dialogAddUpdateParams.row.categoryId = '';
-      this.dialogAddUpdateParams.row.channelId = '';
-      this.dialogAddUpdateParams.row.title = '';
-      this.dialogAddUpdateParams.row.poster = '';
-      this.dialogAddUpdateParams.row.content = '';
-      BlogPostModule.SET_POST_DETAIL({
-        row: {
-          authorId: '',
-          categoryId: '',
-          channelId: '',
-          title: '',
-          status: '',
-          poster: '',
-          content: '',
-          id: '',
-        },
-      });
+      this.dialogEditorParams.params = cloneDeep(PARANS);
+      BlogPostModule.SET_POST_DETAIL(cloneDeep(this.dialogEditorParams.params));
       this.editor.setHtml('');
     };
     this.$nextTick(async () => {
@@ -264,7 +240,6 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         this.editor.on('modalOrPanelHide', () => {
           // 隐藏蒙层
         });
-
         this.toolbar = window.wangEditor.createToolbar({
           editor: this.editor,
           selector: '#editor-toolbar',
@@ -283,25 +258,39 @@ export default class myBlogEditorPostDialogComponent extends Vue {
             // focus 到末尾
           }
         });
-        if (this.postAddOrUpdate === 'add') {
+        if (BlogPostModule.postAddOrUpdate === 'add') {
           initForm();
-          if (this.currentCategoryId) {
-            this.dialogAddUpdateParams.row.categoryId = this.currentCategoryId;
+          if (BlogPostModule.currentCategoryId) {
+            this.dialogEditorParams.params.categoryId = BlogPostModule.currentCategoryId;
             BlogPostModule.SET_CURRENT_CATEGORY_ID('');
           }
         } else {
           this.editor.setHtml('');
-          this.dialogAddUpdateParams.row.authorId = this.postDetail.row.authorId;
-          this.dialogAddUpdateParams.row.status = this.postDetail.row.status;
-          this.dialogAddUpdateParams.row.categoryId = this.postDetail.row.categoryId;
-          this.dialogAddUpdateParams.row.channelId = this.postDetail.row.channelId;
-          this.dialogAddUpdateParams.row.title = this.postDetail.row.title;
-          this.dialogAddUpdateParams.row.poster = this.postDetail.row.poster;
-          this.dialogAddUpdateParams.row.id = this.postDetail.row.id;
+          const row: any = cloneDeep(BlogPostModule.postDetail.row);
+          this.dialogEditorParams.params.authorId = row.authorId;
+          this.dialogEditorParams.params.status = row.status;
+          this.dialogEditorParams.params.categoryId = row.categoryId;
+          this.dialogEditorParams.params.channelId = row.channelId;
+          this.dialogEditorParams.params.title = row.title;
+          this.dialogEditorParams.params.poster = row.poster;
+          this.dialogEditorParams.params.id = row.id;
+          this.dialogEditorParams.params.tags = row.tags
+            ? row.tags.map((item: any) => {
+                return {
+                  text: item,
+                };
+              })
+            : [];
+          const checkedOptions = this.dialogEditorParams.checkedOptions;
+          for (let item of checkedOptions) {
+            if (row[item.value] && row[item.value] === '1') {
+              (this.dialogEditorParams.params.checked as any).push(item.value);
+            }
+          }
           this.$q.loading.show();
-          const data = await BlogPostModule.getPostContentById({ id: this.postDetail.row.id });
+          const data = await BlogPostModule.getPostContentById({ id: row.id });
           this.$q.loading.hide();
-          this.dialogAddUpdateParams.row.content = data;
+          this.dialogEditorParams.params.content = data;
           this.editor.setHtml(data);
         }
         this.$refs.editorWrap.style = 'transform: translateY(0)';
@@ -322,17 +311,9 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     editorInstance: null,
     imageUploadKey: '',
   };
-  public dialogAddUpdateParams = {
-    row: {
-      title: '',
-      authorId: '',
-      status: '',
-      categoryId: '',
-      channelId: '',
-      content: '',
-      poster: '',
-      id: '',
-    },
+  public dialogEditorParams = {
+    params: cloneDeep(PARANS),
+    checkedOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
   public editorConfig = {
     placeholder: '请输入内容',
@@ -363,7 +344,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     },
     onChange: (editor: any) => {
       if (this.blogEditorPostVisiable) {
-        this.dialogAddUpdateParams.row.content = editor.getHtml();
+        this.dialogEditorParams.params.content = editor.getHtml();
       }
     },
   };
@@ -385,7 +366,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
       this.editCutomeAction.editorInstance = null;
       return;
     }
-    this.dialogAddUpdateParams.row.poster = data.source;
+    this.dialogEditorParams.params.poster = data.source;
   }
   public postAlbumComponentHide() {
     this.editCutomeAction.active = false;
@@ -430,34 +411,46 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   }
   /* http */
   public async dialogAddUpdateConfirmEvent() {
-    if (!this.dialogAddUpdateParams.row.title) {
+    if (!this.dialogEditorParams.params.title) {
       this.$globalMessage.show({
         type: 'error',
         content: '请输入标题',
       });
       return;
-    } else if (!this.dialogAddUpdateParams.row.authorId) {
+    } else if (!this.dialogEditorParams.params.authorId) {
       this.$globalMessage.show({
         type: 'error',
         content: '请选择作者',
       });
       return;
-    } else if (!this.dialogAddUpdateParams.row.categoryId) {
+    } else if (!this.dialogEditorParams.params.categoryId) {
       this.$globalMessage.show({
         type: 'error',
         content: '请选择分类',
       });
       return;
-    } else if (!this.dialogAddUpdateParams.row.content) {
+    } else if (!this.dialogEditorParams.params.content) {
       this.$globalMessage.show({
         type: 'error',
         content: '请输入内容',
       });
       return;
-    } else if (!this.dialogAddUpdateParams.row.poster) {
+    } else if (!this.dialogEditorParams.params.poster) {
       this.$globalMessage.show({
         type: 'error',
         content: '请上传封面',
+      });
+      return;
+    } else if (!this.dialogEditorParams.params.channelId) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请选择频道',
+      });
+      return;
+    } else if (!this.dialogEditorParams.params.tags.length) {
+      this.$globalMessage.show({
+        type: 'error',
+        content: '请选择标签',
       });
       return;
     }
@@ -470,15 +463,28 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     if (result) {
       this.$q.loading.show();
       let postParams: any = {
-        title: this.dialogAddUpdateParams.row.title,
-        content: this.dialogAddUpdateParams.row.content,
-        poster: this.dialogAddUpdateParams.row.poster,
-        authorId: this.dialogAddUpdateParams.row.authorId,
-        categoryId: this.dialogAddUpdateParams.row.categoryId,
-        channelId: this.dialogAddUpdateParams.row.channelId,
+        title: this.dialogEditorParams.params.title,
+        content: this.dialogEditorParams.params.content,
+        poster: this.dialogEditorParams.params.poster,
+        authorId: this.dialogEditorParams.params.authorId,
+        categoryId: this.dialogEditorParams.params.categoryId,
+        channelId: this.dialogEditorParams.params.channelId,
+        tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
         postType: 1,
+        pinned: '0',
+        recommended: '0',
+        featured: '0',
+        hot: '0',
+        original: '0',
+        paid: '0',
+        free: '0',
+        privated: '0',
+        publiced: '0',
       };
-      if (this.postAddOrUpdate === 'add') {
+      for (let item of this.dialogEditorParams.params.checked) {
+        postParams[item] = '1';
+      }
+      if (BlogPostModule.postAddOrUpdate === 'add') {
         try {
           const { id } = await BlogPostModule.addPost(postParams);
           this.hideDialog();
@@ -493,8 +499,8 @@ export default class myBlogEditorPostDialogComponent extends Vue {
         } catch (error) {
           this.$q.loading.hide();
         }
-      } else if (this.postAddOrUpdate === 'update') {
-        postParams['id'] = this.dialogAddUpdateParams.row.id;
+      } else if (BlogPostModule.postAddOrUpdate === 'update') {
+        postParams['id'] = this.dialogEditorParams.params.id;
         try {
           await BlogPostModule.updatePost(postParams);
           this.hideDialog();
@@ -627,7 +633,7 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   box-sizing: border-box;
   transform: translateY(-100vh);
   .editor-content {
-    width: 50vw;
+    height: 100%;
     display: flex;
     position: absolute;
     left: 50%;
@@ -635,6 +641,15 @@ export default class myBlogEditorPostDialogComponent extends Vue {
     transform: translate(-50%, -50%);
     padding: 16px 32px 32px;
     justify-content: space-between;
+    .tags-autocomplete {
+      width: 100%;
+      max-width: 100%;
+      border-radius: 8px;
+      :deep(.ti-input) {
+        height: 40px;
+        border-radius: 8px;
+      }
+    }
     .left {
       width: 50%;
     }
@@ -644,6 +659,13 @@ export default class myBlogEditorPostDialogComponent extends Vue {
   }
   .poster {
     border-radius: 8px;
+    box-sizing: border-box;
+    img {
+      height: 300px;
+      border-radius: 8px;
+      width: 100%;
+      display: inline-block;
+    }
   }
   #editor-toolbar {
     border-radius: 8px;

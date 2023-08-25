@@ -24,6 +24,9 @@
               <q-select
                 v-if="item.type === 'select'"
                 :class="['', item.class]"
+                :multiple="item.multiple"
+                :use-chips="item.multiple"
+                :stack-label="item.multiple"
                 v-model="queryParams.params[item.id]"
                 :options="item.selectOption"
                 :label="item.placeholder"
@@ -59,7 +62,7 @@
         :pagination="tableParams.pagination"
         hide-pagination
         :no-data-label="$t(`tip.noData`)"
-        class="my-table"
+        class="blog-post-list"
         row-key="id"
         @request="sortTableData"
         binary-state-sort
@@ -96,14 +99,30 @@
               <div class="text-left" v-else>
                 <!-- title -->
                 <div v-if="col.name === 'title'">
-                  <span class="link-type q-mr-sm" @click="handlerClickUpdate(props.row)">{{ props.row.title }}</span>
-                  <q-btn dense size="8px" color="primary" flat class="q-ml-md" icon="chat_bubble_outline" round>
-                    <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
-                      <q-banner style="min-width: 20vw" class="q-pa-md">
-                        <SimpleRichTextInput @submit="submitReplyComment($event, props.row)" />
-                      </q-banner>
-                    </q-popup-proxy>
-                  </q-btn>
+                  <div color="primary" outline dense @click="handlerClickUpdate(props.row)">
+                    <q-icon :name="postTypeSvgName(props.row)" size="20px"></q-icon>
+                    <span class="detail-link-type q-mx-sm"> {{ props.row.title }}</span>
+                    <q-btn size="8px" color="grey" flat icon="chat_bubble_outline" round>
+                      <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
+                        <q-banner style="min-width: 20vw" class="q-pa-md">
+                          <SimpleRichTextInput @submit="submitReplyComment($event, props.row)" />
+                        </q-banner>
+                      </q-popup-proxy>
+                    </q-btn>
+                  </div>
+                  <q-chip dense color="red" label="置顶" v-if="props.row.pinned === '1'" text-color="white" />
+                  <q-chip dense color="yellow" label="推荐" v-if="props.row.recommended === '1'" text-color="white" />
+                  <q-chip dense color="pink" label="精选" v-if="props.row.featured === '1'" text-color="white" />
+                  <q-chip dense color="teal" label="热门" v-if="props.row.hot === '1'" text-color="white" />
+                  <q-chip dense color="brown" label="原创" v-if="props.row.original === '1'" text-color="white" />
+                  <q-chip dense color="yellow" label="付费" v-if="props.row.paid === '1'" text-color="white" />
+                  <q-chip dense color="green" label="免费" v-if="props.row.free === '1'" text-color="white" />
+                  <q-chip dense color="orange" label="私密" v-if="props.row.private === '1'" text-color="white" />
+                  <q-chip dense color="purple" label="公开" v-if="props.row.public === '1'" text-color="white" />
+                </div>
+                <div v-if="col.name === 'tag'">
+                  <q-chip :label="item" v-for="(item, index) in props.row.postTags" :key="index" dense />
+                  <span v-if="!props.row.postTags">--</span>
                 </div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
@@ -112,9 +131,13 @@
                   }}</span>
                 </div>
                 <!-- authorId -->
-                <div v-if="col.name === 'authorId'">
-                  <span v-if="props.row.authorId">{{ postAuthor(props.row) }}</span>
-                  <span v-else>--</span>
+                <div v-if="col.name === 'authorId'" class="row items-center">
+                  <div class="border-all q-pa-xs b-r-100 q-mr-sm" v-if="postAuthorImg(props.row)">
+                    <q-avatar size="30px" font-size="22px">
+                      <q-img :src="postAuthorImg(props.row)" spinner-color="primary" spinner-size="12px" />
+                    </q-avatar>
+                  </div>
+                  {{ postAuthor(props.row) || '--' }}
                 </div>
                 <!-- categoryId -->
                 <div v-if="col.name === 'categoryId'">
@@ -164,12 +187,12 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
-import { TEST_ACCOUNT } from './utils';
+import { addWhatPost, POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_OPTION, TEST_ACCOUNT, updatePost } from './utils';
 import PostType from './components/post-type.vue';
-import { v4 as uuidv4 } from 'uuid';
+import { commonPost } from 'src/mixins/post';
 
 const CONST_PARAMS: any = {
-  query: { channelId: '', status: '', authorId: '', haveComment: '', orderProperty: '', orderDir: 'ASC' /* DESC:降序 ,ASC:升序 */ },
+  query: { channelId: '', status: '', authorId: '', haveComment: '', post_radio_option: [], postType: [], orderProperty: '', orderDir: 'ASC' /* DESC:降序 ,ASC:升序 */ },
 };
 
 @Component({
@@ -178,18 +201,9 @@ const CONST_PARAMS: any = {
     PostType,
   },
 })
-export default class BlogPostComponent extends Vue {
+export default class BlogPostComponent extends commonPost {
   /**instance */
   declare $refs: any;
-  get authorOptions() {
-    return BlogPostModule.allValidAuthor;
-  }
-  get categoryOptions() {
-    return BlogPostModule.allCategory;
-  }
-  get channelOptions() {
-    return BlogPostModule.allChannel;
-  }
   get addedPostId() {
     return BlogPostModule.addedPostId;
   }
@@ -199,71 +213,11 @@ export default class BlogPostComponent extends Vue {
   get addPostSuccessFlag() {
     return BlogPostModule.addPostSuccessFlag;
   }
-  get postStatus() {
-    return (row: any) => {
-      const selectOption = this.queryParams.input.find((item: any) => item.id === 'status').selectOption;
-      const item = selectOption.find((item: any) => item.value === row.status);
-      return item.label;
-    };
+  get updatePostSuccessFlagVideo() {
+    return BlogPostModule.updatePostSuccessFlagVideo;
   }
-  get postCategory() {
-    return (row: any) => {
-      if (!row.categoryId) return '--';
-      function findItemById(arr: any, id: any): any {
-        for (let item of arr) {
-          if (item.id === id) {
-            return item;
-          }
-          if (item.children) {
-            let foundItem = findItemById(item.children, id);
-            if (foundItem) {
-              return foundItem;
-            }
-          }
-        }
-        return null;
-      }
-      const item = findItemById(this.categoryOptions, row.categoryId);
-      if (item) {
-        return item.name;
-      } else {
-        return '--';
-      }
-    };
-  }
-  get postAuthor() {
-    return (row: any) => {
-      if (!row.authorId) return '--';
-      const selectOption = this.authorOptions;
-      const item = selectOption.find((item: any) => item.value === row.authorId);
-      if (item) {
-        return item.label;
-      } else {
-        return '--';
-      }
-    };
-  }
-  get postChannel() {
-    return (row: any) => {
-      if (!row.channelId) return '--';
-      const selectOption = this.channelOptions;
-      const item = selectOption.find((item: any) => item.value === row.channelId);
-      if (item) {
-        return item.label;
-      } else {
-        return '--';
-      }
-    };
-  }
-  get canOnline() {
-    return (row: any) => {
-      return row.status === 'OFFLINE';
-    };
-  }
-  get canOffline() {
-    return (row: any) => {
-      return row.status === 'PUBLISHED' || row.status === 'DRAFT';
-    };
+  get addPostSuccessFlagVideo() {
+    return BlogPostModule.addPostSuccessFlagVideo;
   }
   @Watch('addPostSuccessFlag')
   public async watchAddPostSuccessFlag(newVal: string) {
@@ -277,6 +231,20 @@ export default class BlogPostComponent extends Vue {
     if (newVal) {
       this.getData();
       BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
+    }
+  }
+  @Watch('addPostSuccessFlagVideo')
+  public async watchAddPostSuccessFlagVideo(newVal: string) {
+    if (newVal) {
+      this.getData();
+      BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO(false);
+    }
+  }
+  @Watch('updatePostSuccessFlagVideo')
+  public async watchUpdatePostSuccessFlagVideo(newVal: string) {
+    if (newVal) {
+      this.getData();
+      BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(false);
     }
   }
   mounted() {
@@ -307,20 +275,7 @@ export default class BlogPostComponent extends Vue {
         placeholder: '状态',
         type: 'select',
         class: 'w-250 m-r-15 m-b-15',
-        selectOption: [
-          {
-            label: '草稿',
-            value: 'DRAFT',
-          },
-          {
-            label: '已发布',
-            value: 'PUBLISHED',
-          },
-          {
-            label: '已下线',
-            value: 'OFFLINE',
-          },
-        ],
+        selectOption: POST_STATUS,
         id: 'status',
       },
       {
@@ -346,6 +301,22 @@ export default class BlogPostComponent extends Vue {
         ],
         id: 'haveComment',
       },
+      {
+        placeholder: '功能',
+        type: 'select',
+        multiple: true,
+        class: 'w-350 m-r-15 m-b-15',
+        selectOption: POST_RADIO_OPTIONS,
+        id: 'post_radio_option',
+      },
+      {
+        placeholder: '文章类型',
+        type: 'select',
+        multiple: true,
+        class: 'w-350 m-r-15 m-b-15',
+        selectOption: POST_TYPE_OPTION,
+        id: 'postType',
+      },
     ],
   };
   public tableParams = {
@@ -361,6 +332,12 @@ export default class BlogPostComponent extends Vue {
       {
         name: 'title',
         label: '标题',
+        align: 'left',
+        inSlot: true,
+      },
+      {
+        name: 'tag',
+        label: '标签',
         align: 'left',
         inSlot: true,
       },
@@ -447,20 +424,7 @@ export default class BlogPostComponent extends Vue {
     this.$refs.PostTypeRef.show();
   }
   public handlerClickUpdate(row: any) {
-    BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
-    BlogPostModule.SET_POST_DETAIL({
-      row: {
-        authorId: row.authorId,
-        status: row.status,
-        categoryId: row.categoryId,
-        channelId: row.channelId,
-        title: row.title,
-        poster: row.poster,
-        id: row.id,
-      },
-    });
-    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
-    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+    updatePost(row);
   }
   public openCommentDialog(row: any) {
     const detail = {
@@ -482,21 +446,7 @@ export default class BlogPostComponent extends Vue {
     }
   }
   public onPostTypePick(data: any) {
-    // 1普通文章，2纯视频，3纯图片，4调查问卷，5内嵌视频，6时政
-    switch (data.id) {
-      case 1:
-        BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
-        BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
-        BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
-        break;
-      case 2:
-        BlogPostModule.SET_POST_ADD_OR_UPDATE_VIDEO('add');
-        BlogPostModule.SET_DISABLE_SELECT_CATEGORY_VIDEO(false);
-        BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(true);
-        break;
-      default:
-        break;
-    }
+    addWhatPost(data.id);
   }
   /**http */
   public async getData() {
@@ -507,6 +457,8 @@ export default class BlogPostComponent extends Vue {
         status: this.queryParams.params.status,
         authorId: this.queryParams.params.authorId,
         haveComment: this.queryParams.params.haveComment,
+        post_radio_option: this.queryParams.params.post_radio_option,
+        postType: this.queryParams.params.postType,
         orderProperty: this.queryParams.params.orderProperty,
         orderDir: this.queryParams.params.orderDir,
         page: this.tableParams.pagination.page,
@@ -667,6 +619,36 @@ export default class BlogPostComponent extends Vue {
 <style lang="scss">
 th.sortable i.q-table__sort-icon {
   display: none;
+}
+.body--dark {
+  .blog-post-list th:last-child,
+  .blog-post-list td:last-child {
+    box-shadow: rgba($color: #ffffff, $alpha: 0.05) 0px 20px 27px 0px;
+  }
+}
+.body--light {
+  .blog-post-list th:last-child,
+  .blog-post-list td:last-child {
+    box-shadow: rgba($color: #000000, $alpha: 0.05) 0px 20px 27px 0px;
+  }
+}
+.blog-post-list {
+  /* specifying max-width so the example can
+    highlight the sticky column on any browser window */
+  max-width: 100%;
+}
+.blog-post-list thead tr:last-child th:last-child {
+  /* bg color is important for th; just specify one */
+  background-color: var(--my-white);
+}
+.blog-post-list td:last-child {
+  background-color: var(--my-white);
+}
+.blog-post-list th:last-child,
+.blog-post-list td:last-child {
+  position: sticky;
+  right: 0;
+  z-index: 1;
 }
 </style>
 <style lang="scss">

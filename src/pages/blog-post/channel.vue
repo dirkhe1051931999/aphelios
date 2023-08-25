@@ -291,37 +291,4 @@ export default class BlogPostChannelComponent extends Vue {
   }
 }
 </script>
-
-<style lang="scss">
-.body--dark {
-  .my-table th:last-child,
-  .my-table td:last-child {
-    box-shadow: rgba($color: #ffffff, $alpha: 0.05) 0px 20px 27px 0px;
-  }
-}
-.body--light {
-  .my-table th:last-child,
-  .my-table td:last-child {
-    box-shadow: rgba($color: #000000, $alpha: 0.05) 0px 20px 27px 0px;
-  }
-}
-.my-table {
-  /* specifying max-width so the example can
-    highlight the sticky column on any browser window */
-  max-width: 100%;
-}
-.my-table thead tr:last-child th:last-child {
-  /* bg color is important for th; just specify one */
-  background-color: var(--my-white);
-}
-.my-table td:last-child {
-  background-color: var(--my-white);
-}
-.my-table th:last-child,
-.my-table td:last-child {
-  position: sticky;
-  right: 0;
-  z-index: 1;
-}
-</style>
 <style lang="scss" scoped></style>

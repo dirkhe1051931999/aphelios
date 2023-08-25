@@ -8,8 +8,10 @@ const api = {
   getPostContentById: 'management/blog/post/getPostContentById',
   uploadPostImgs: '/management/blog/post/uploadPostImgs',
   addPost: '/management/blog/post/addPost',
+  addVideoPost: '/management/blog/post/addVideoPost',
   deletePost: 'management/blog/post/deletePost',
   updatePost: 'management/blog/post/updatePost',
+  updateVideoPost: 'management/blog/post/updateVideoPost',
   offlinePost: 'management/blog/post/offlinePost',
   publishPost: 'management/blog/post/publishPost',
   getAllChannel: 'management/blog/post_channel/getAllChannel',
@@ -107,6 +109,18 @@ export const uploadPostImgs = (data: any): any =>
 export const addPost = (data: any): any =>
   request({
     url: api.addPost,
+    method: 'post',
+    data,
+  });
+export const addVideoPost = (data: any): any =>
+  request({
+    url: api.addVideoPost,
+    method: 'post',
+    data,
+  });
+export const updateVideoPost = (data: any): any =>
+  request({
+    url: api.updateVideoPost,
     method: 'post',
     data,
   });
@@ -258,7 +272,8 @@ export const updatePostAuthor = (data: any): any =>
   request({
     url: api.updatePostAuthor,
     method: 'post',
-    data,
+    data: data.form,
+    params: data.params,
   });
 export const verifyCompanyAuthor = (data: any): any =>
   request({

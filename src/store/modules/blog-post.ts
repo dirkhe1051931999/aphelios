@@ -66,8 +66,9 @@ import {
   addVideoCategory,
   deleteVideoCategory,
   queryVideoCategory,
+  addVideoPost,
+  updateVideoPost,
 } from 'src/api/blog-post';
-import { th } from 'element-plus/es/locale';
 
 interface IBlogPost {}
 
@@ -83,16 +84,7 @@ class BlogPost extends VuexModule implements IBlogPost {
   public disableSelectCategory = false;
   public blogEditorPostVisiable = false;
   public postDetail = {
-    row: {
-      authorId: '',
-      categoryId: '',
-      channelId: '',
-      title: '',
-      status: '',
-      poster: '',
-      content: '',
-      id: '',
-    },
+    row: {},
   };
   public postAddOrUpdate = 'add';
   public addedPostId = '';
@@ -341,6 +333,12 @@ class BlogPost extends VuexModule implements IBlogPost {
   }
 
   @Action({ rawError: true })
+  public async addVideoPost(data: any) {
+    const result = await addVideoPost(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
   public async deletePost(data: any) {
     const result = await deletePost(data);
     return Promise.resolve(result);
@@ -349,6 +347,12 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async updatePost(data: any) {
     const result = await updatePost(data);
+    return Promise.resolve(result);
+  }
+
+  @Action({ rawError: true })
+  public async updateVideoPost(data: any) {
+    const result = await updateVideoPost(data);
     return Promise.resolve(result);
   }
 

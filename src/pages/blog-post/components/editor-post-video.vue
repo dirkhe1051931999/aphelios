@@ -1,15 +1,15 @@
 <template>
-  <input type="hidden" :value="blogEditorPostVisiableVideo" />
-  <q-dialog v-model="dialogEditorParams.model" persistent transition-show="jump-up" transition-hide="jump-down" full-width full-height @hide="hide">
+  <q-dialog v-model="dialogEditorParams.model" transition-show="jump-up" transition-hide="jump-down" full-height @hide="hide">
     <q-card class="editor-post-card">
-      <q-card-section class="text-h6">
+      <q-card-section class="text-h6 q-pb-none row items-center">
         {{ dialogEditorParams.title }}
+        <q-badge class="q-ml-sm" :color="dialogEditorParams.params.status === 'OFFLINE' ? 'negative' : 'primary'" v-if="!isAddPost">{{ postStatus(dialogEditorParams.params) }}</q-badge>
       </q-card-section>
       <div class="split-line h-1"></div>
       <q-card-section class="editor-post-card-content">
         <div class="left-content">
           <div class="q-mb-md">
-            <p class="q-mb-sm">标题</p>
+            <p class="q-mb-sm">* 标题</p>
             <q-input
               v-model.trim="dialogEditorParams.params.title"
               class="full-width q-mb-md"
@@ -26,7 +26,7 @@
             />
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">主题</p>
+            <p class="q-mb-sm">* 主题</p>
             <q-btn
               class="h-40 category-select full-width"
               :label="postCategory(dialogEditorParams.params.directoryId) === '--' ? '选择主题' : '主题：' + postCategory(dialogEditorParams.params.directoryId)"
@@ -86,7 +86,7 @@
             </q-btn>
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">作者</p>
+            <p class="q-mb-sm">* 作者</p>
             <q-select
               class="full-width q-mb-md"
               v-model="dialogEditorParams.params.authorId"
@@ -121,7 +121,7 @@
             </q-select>
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">频道</p>
+            <p class="q-mb-sm">* 频道</p>
             <q-select
               class="full-width q-mb-md"
               label="请选择"
@@ -143,7 +143,7 @@
             </q-select>
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">标签</p>
+            <p class="q-mb-sm">* 标签</p>
             <vue-tags-input
               class="tags-autocomplete"
               v-model="dialogEditorParams.params.tag"
@@ -152,19 +152,26 @@
             />
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">其他</p>
+            <p class="q-mb-sm">* 其他</p>
             <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked" />
           </div>
           <div class="q-mb-md">
-            <p class="q-mb-sm">内容</p>
+            <p class="q-mb-sm">* 内容</p>
             <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
-              <q-editor ref="editorRef" v-model="dialogEditorParams.params.editor" />
+              <q-editor ref="editorRef" v-model="dialogEditorParams.params.content" />
             </form>
           </div>
         </div>
         <div class="right-content">
           <div class="q-mb-md">
-            <p class="q-mb-sm">视频 <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense /></p>
+            <p class="q-mb-sm">* 海报 <q-btn color="primary" icon="o_add" label="选择海报" @click="handleClickUploadPoster" class="q-ml-sm" dense /></p>
+            <div class="border-all h-300 row items-center justify-center b-r-6">
+              <div v-if="!dialogEditorParams.params.poster">上传海报</div>
+              <img :src="dialogEditorParams.params.poster" class="h-300" v-if="dialogEditorParams.params.poster" />
+            </div>
+          </div>
+          <div class="q-mb-md">
+            <p class="q-mb-sm">* 视频 <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense /></p>
             <div class="border-all h-300 row items-center justify-center b-r-6">
               <div v-if="!dialogEditorParams.params.videoUrl">上传视频</div>
               <video
@@ -187,29 +194,34 @@
     </q-card>
   </q-dialog>
   <PostVideoComponent ref="PostVideoComponentRef" @pick="pickVideoSuccess"></PostVideoComponent>
+  <PostAlbumComponent ref="PostAlbumComponentRef" @pick="pickAlbumSuccess"></PostAlbumComponent>
 </template>
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { Component, Vue } from 'vue-facing-decorator';
+import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
+import { commonPost } from 'src/mixins/post';
 import PostVideoComponent from './video.vue';
+import PostAlbumComponent from './album.vue';
+import { POST_RADIO_OPTIONS } from '../utils';
 
 const CONST_PARAMS = {
   add_or_edit: {
+    id: '',
     authorId: '',
     directoryId: '',
     channelId: '',
-    poster: '',
     title: '',
     content: '',
-    tags: [],
     tag: '',
-    editor: '',
+    tags: [],
     checked: [],
     videoUrl: '',
     videoPoster: '',
+    poster: '',
+    status: '',
   },
 };
 @Component({
@@ -217,71 +229,66 @@ const CONST_PARAMS = {
   components: {
     VueTagsInput,
     PostVideoComponent,
+    PostAlbumComponent,
   },
 })
-export default class myEditorPostVideoComponent extends Vue {
+export default class myEditorPostVideoComponent extends commonPost {
   declare $refs: {
     PostVideoComponentRef: PostVideoComponent;
+    PostAlbumComponentRef: PostAlbumComponent;
   };
+  get isAddPost() {
+    return BlogPostModule.postAddOrUpdateVideo === 'add';
+  }
   get blogEditorPostVisiableVideo() {
-    if (BlogPostModule.blogEditorPostVisiableVideo) {
-      this.dialogEditorParams.model = true;
-      return true;
-    }
-    return false;
-  }
-  get categoryOptions() {
-    return BlogPostModule.allCategoryVideo;
-  }
-  get channelOptions() {
-    return BlogPostModule.allChannelVideo;
-  }
-  get authorOptions() {
-    return BlogPostModule.allValidAuthorVideo;
+    return BlogPostModule.blogEditorPostVisiableVideo;
   }
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategoryVideo;
   }
-  get postCategory() {
-    return (categoryId: any) => {
-      if (!categoryId) return '--';
-      function findItemById(arr: any, id: any): any {
-        for (let item of arr) {
-          if (item.id === id) {
-            return item;
-          }
-          if (item.children) {
-            let foundItem = findItemById(item.children, id);
-            if (foundItem) {
-              return foundItem;
-            }
+  @Watch('blogEditorPostVisiableVideo')
+  watchBlogEditorPostVisiableVideo(val: boolean) {
+    if (val) {
+      if (BlogPostModule.postAddOrUpdateVideo === 'update') {
+        this.dialogEditorParams.title = '编辑视频';
+        const row: any = BlogPostModule.postDetailVideo.row;
+        this.dialogEditorParams.params.id = row.id;
+        this.dialogEditorParams.params.authorId = row.authorId;
+        this.dialogEditorParams.params.directoryId = row.directoryId;
+        this.dialogEditorParams.params.channelId = row.channelId;
+        this.dialogEditorParams.params.title = row.title;
+        this.dialogEditorParams.params.videoUrl = row.videoUrl;
+        this.dialogEditorParams.params.videoPoster = row.videoPoster;
+        this.dialogEditorParams.params.poster = row.poster;
+        this.dialogEditorParams.params.status = row.status;
+        const checkedOptions = this.dialogEditorParams.checkedOptions;
+        for (let item of checkedOptions) {
+          if (row[item.value] && row[item.value] === '1') {
+            this.dialogEditorParams.params.checked.push(item.value);
           }
         }
-        return null;
-      }
-      const item = findItemById(this.categoryOptions, categoryId);
-      if (item) {
-        return item.name;
+        this.getContent(row.id).then((data: any) => {
+          this.dialogEditorParams.params.content = data;
+        });
+        if (row.tags && row.tags.length) {
+          this.dialogEditorParams.params.tags = row.tags.map((item: any) => {
+            return {
+              text: item,
+            };
+          });
+        }
       } else {
-        return '--';
+        this.dialogEditorParams.title = '新增视频';
       }
-    };
+      this.dialogEditorParams.model = true;
+      return true;
+    }
   }
   public dialogEditorParams: any = {
     model: false,
     title: '新增视频',
     params: cloneDeep(CONST_PARAMS.add_or_edit),
-    checkedOptions: [
-      { label: '置顶', value: 'pinned' },
-      { label: '推荐', value: 'recommend' },
-      { label: '精选', value: 'featured' },
-      { label: '热门', value: 'hot' },
-      { label: '原创', value: 'original' },
-      { label: '付费', value: 'paid' },
-      { label: '免费', value: 'free' },
-      { label: '私密', value: 'private' },
-      { label: '公开', value: 'public' },
-    ],
+    checkedOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
   /* event */
   public hide() {
@@ -289,27 +296,122 @@ export default class myEditorPostVideoComponent extends Vue {
     this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(false);
   }
-  public onTagsChanges() {
-    this.dialogEditorParams.params.tags = this.dialogEditorParams.params.tag;
-  }
   public handleClickUploadVideo() {
     this.$refs.PostVideoComponentRef.init();
+  }
+  public handleClickUploadPoster() {
+    this.$refs.PostAlbumComponentRef.init();
   }
   public pickVideoSuccess(data: any) {
     this.dialogEditorParams.params.videoUrl = data.source;
     this.dialogEditorParams.params.videoPoster = data.poster || '';
   }
+  public pickAlbumSuccess(data: any) {
+    this.dialogEditorParams.params.poster = data.source;
+  }
   /* http */
+  public async getContent(id: string) {
+    const data = await BlogPostModule.getPostContentById({ id: id });
+    return Promise.resolve(data);
+  }
   public async handleConfirmAddOrUpdate() {
+    if (!this.dialogEditorParams.params.title) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请输入标题',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.directoryId) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择主题',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.authorId) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择作者',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.channelId) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择频道',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.tags.length) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择标签',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.poster) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择海报',
+      });
+      return;
+    }
+    if (!this.dialogEditorParams.params.videoUrl) {
+      this.$globalMessage.show({
+        type: 'warning',
+        content: '请选择视频',
+      });
+      return;
+    }
     const result = await this.$globalConfirm.show({
       title: '友情提示',
       color: 'primary',
       content: '确定吗？老铁！？',
       confirmButtonText: '非常确定',
     });
-    try {
-      console.log(this.dialogEditorParams.params);
-    } catch (error) {}
+    if (result) {
+      try {
+        const params: any = {
+          authorId: this.dialogEditorParams.params.authorId,
+          channelId: this.dialogEditorParams.params.channelId,
+          content: this.dialogEditorParams.params.content,
+          directoryId: this.dialogEditorParams.params.directoryId,
+          title: this.dialogEditorParams.params.title,
+          videoUrl: this.dialogEditorParams.params.videoUrl,
+          videoPoster: this.dialogEditorParams.params.videoPoster,
+          poster: this.dialogEditorParams.params.poster,
+          tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
+          pinned: '0',
+          recommended: '0',
+          featured: '0',
+          hot: '0',
+          original: '0',
+          paid: '0',
+          free: '0',
+          privated: '0',
+          publiced: '0',
+        };
+        for (let item of this.dialogEditorParams.params.checked) {
+          params[item] = '1';
+        }
+        this.$q.loading.show();
+        if (BlogPostModule.postAddOrUpdateVideo === 'add') {
+          await BlogPostModule.addVideoPost(params);
+          BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO(true);
+        } else {
+          params.id = this.dialogEditorParams.params.id;
+          await BlogPostModule.updateVideoPost(params);
+          BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(true);
+        }
+        this.hide();
+        this.$q.loading.hide();
+        this.$globalMessage.show({
+          type: 'success',
+          content: '操作成功',
+        });
+      } catch (error) {}
+    }
   }
 }
 </script>
@@ -346,11 +448,13 @@ export default class myEditorPostVideoComponent extends Vue {
   }
 }
 .editor-post-card {
+  max-width: 80vw;
+  width: 60vw;
   .editor-post-card-content {
     display: flex;
     justify-content: space-between;
     .left-content {
-      width: 70%;
+      width: 60%;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       border: solid 1px #eeeeee;
       border-radius: 8px;
@@ -358,7 +462,7 @@ export default class myEditorPostVideoComponent extends Vue {
       height: 100%;
     }
     .right-content {
-      width: 29%;
+      width: 39%;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       border: solid 1px #eeeeee;
       border-radius: 8px;

@@ -1,13 +1,16 @@
 <template>
   <div>
-    <q-dialog v-model="postTypeParams.model" transition-show="jump-up" transition-hide="jump-down" position="top">
-      <q-card style="max-width: 50vw; width: 50vw">
-        <q-card-actions align="left" class="q-pa-md fs-20"> 选择新增类型 </q-card-actions>
+    <q-dialog v-model="postTypeParams.model" transition-show="jump-up" transition-hide="jump-down">
+      <q-card style="max-width: 50vw; width: 20vw">
+        <q-card-actions align="left" class="q-pa-md fs-20"> 选择文章类型 </q-card-actions>
         <q-card-section class="scroll" style="max-height: 50vh">
-          <q-list class="grid columns-3 row-gap-10 col-gap-10">
-            <li v-for="item in postTypeParams.data" :key="item.id" @click="pick(item)">
+          <q-list class="row column">
+            <li v-for="(item, index) in postTypeParams.data" :key="item.id" @click="pick(item)" class="q-mb-md">
               <q-item clickable class="thin-shadow">
-                <q-item-section>{{ item.name }}</q-item-section>
+                <q-item-section class="text-weight-bold">{{ index + 1 }}. {{ item.name }}</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="item.svg" size="40px" />
+                </q-item-section>
               </q-item>
             </li>
           </q-list>
@@ -29,26 +32,32 @@ export default class myPostTypePage extends Vue {
       {
         id: 1,
         name: '普通文章',
+        svg: 'app:post-normal',
       },
       {
         id: 2,
         name: '纯视频',
+        svg: 'app:post-video',
       },
       {
         id: 3,
         name: '纯图片',
+        svg: 'app:post-image',
       },
       {
         id: 4,
         name: '调查问卷',
+        svg: 'app:post-survey',
       },
       {
         id: 5,
         name: '内嵌视频',
+        svg: 'app:post-embed',
       },
       {
         id: 6,
         name: '时政',
+        svg: 'app:post-politics',
       },
     ],
   };
