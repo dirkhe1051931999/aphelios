@@ -1,5 +1,8 @@
-import { uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
+import formidable from 'formidable';
+import { isFieldFile, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
+import { fileToBase64 } from 'src/util/helper';
+import fs from 'fs';
 // 查询所有作者
 export const getAllPostAuthor = async (ctx): Promise<void> => {
   let sql = `SELECT id, name, coverUrl, followCount, status, avatarUrl, articleCount, fansCount, type, nick, score, createTime,updateTime,loginTime,companyVerifyInfoId, defaultUser,description 
@@ -17,49 +20,60 @@ export const getAllPostAuthor = async (ctx): Promise<void> => {
 };
 // 添加作者
 export const addPostAuthor = async (ctx): Promise<void> => {
-  let { name, nick, avatar, cover, description, type, managementPassword, appPassword } = ctx.request.body;
-  if (ctx.isFalsy([name, nick, avatar, cover, description, type, managementPassword, appPassword])) {
-    ctx.error(ctx, '404#name, nick, avatar, cover,description, type, managementPassword, appPassword');
-    return;
-  }
-  const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
-  const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
-  try {
-    const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
-    if (exist[0].count > 0) {
-      ctx.error(ctx, 607);
-    } else {
-      const id = uuidv4().replace(/\-/g, '');
-      let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime) 
-                VALUES ('${id}', '${name}', '${nick}', '${avatarData.url}' ,'${coverData.url}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
-        type === 1 ? 0 : 2
-      },0,0,0,0,${new Date().getTime()})`;
-      await ctx.execSql(sql);
-      ctx.success(ctx, null);
-    }
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
+  const form: any = new formidable.IncomingForm();
+  form.parse(ctx.req, (err, fields, files) => {
+    console.log(fields, files);
+  });
+  // const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
+  // const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
+  // ctx.success(ctx, null);
+  // try {
+  //   const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
+  //   if (exist[0].count > 0) {
+  //     ctx.error(ctx, 607);
+  //   } else {
+  //     const id = uuidv4().replace(/\-/g, '');
+  //     let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime)
+  //               VALUES ('${id}', '${name}', '${nick}', '${avatarData.url}' ,'${coverData.url}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
+  //       type === 1 ? 0 : 2
+  //     },0,0,0,0,${new Date().getTime()})`;
+  //     await ctx.execSql(sql);
+  //     ctx.success(ctx, null);
+  //   }
+  // } catch (error) {
+  //   console.log(error);
+  //   ctx.error(ctx, 405);
+  // }
 };
 // 更新作者
 export const updatePostAuthor = async (ctx): Promise<void> => {
-  let { id, nick, avatar, cover, description } = ctx.request.body;
-  if (ctx.isFalsy([id, nick, avatar, cover, description])) {
-    ctx.error(ctx, '404#id, name, nick, avatar,cover, description, type');
-    return;
+  let avatarUrl, coverUrl;
+  const { avatar, cover } = await isFieldFile(ctx, ['avatar', 'cover']);
+  const { id, nick, description } = ctx.request.query;
+  if (avatar.type === 'file') {
+    const result = await fileToBase64(avatar.value);
+    const { url } = await uploadBase64FileToMinio(result, 'assets/post-author');
+    avatarUrl = url;
+    fs.unlinkSync(avatar.value);
+  } else {
+    avatarUrl = avatar.value;
   }
-  const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
-  const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
+  if (cover.type === 'file') {
+    const result = await fileToBase64(cover.value);
+    const { url } = await uploadBase64FileToMinio(result, 'assets/post-author');
+    coverUrl = url;
+  } else {
+    coverUrl = cover.value;
+  }
   try {
     const sql = `
     UPDATE sm_board_author
-    SET nick = '${nick}', 
-        avatarUrl = '${avatarData.url}', 
-        coverUrl = '${coverData.url}', 
-        description = '${description}', 
+    SET nick = '${nick}',
+        avatarUrl = '${avatarUrl}',
+        coverUrl = '${coverUrl}',
+        description = '${description}',
         updateTime = ${new Date().getTime()}
-    WHERE id = '${id}';        
+    WHERE id = '${id}';
     `;
     await ctx.execSql(sql);
     ctx.success(ctx, null);

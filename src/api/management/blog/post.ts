@@ -3,6 +3,7 @@ import Koa from 'koa';
 import {
   addComment,
   addPost,
+  addVideoPost,
   deletePost,
   getLevel1CommentsByPostId,
   getLevel2CommentsByTopId,
@@ -16,6 +17,7 @@ import {
   setCommentStatus,
   setMood,
   updatePost,
+  updateVideoPost,
   uploadPostImgs,
 } from 'src/controllers/management/blog/post.controller';
 
@@ -45,6 +47,11 @@ export class ManagementBlogPostAPIController {
     return addPost(ctx);
   }
 
+  @Route('/addVideoPost', HTTP_METHODS.POST)
+  async addVideoPost(ctx: Koa.Context, next: Koa.Next) {
+    return addVideoPost(ctx);
+  }
+
   @Route('/deletePost', HTTP_METHODS.POST)
   async deletePost(ctx: Koa.Context, next: Koa.Next) {
     return deletePost(ctx);
@@ -53,6 +60,11 @@ export class ManagementBlogPostAPIController {
   @Route('/updatePost', HTTP_METHODS.POST)
   async updatePost(ctx: Koa.Context, next: Koa.Next) {
     return updatePost(ctx);
+  }
+
+  @Route('/updateVideoPost', HTTP_METHODS.POST)
+  async updateVideoPost(ctx: Koa.Context, next: Koa.Next) {
+    return updateVideoPost(ctx);
   }
 
   @Route('/getPostList', HTTP_METHODS.POST)

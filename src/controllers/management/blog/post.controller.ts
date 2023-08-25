@@ -3,13 +3,26 @@ import CONFIG from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { channelId, authorId, status, page, rowsPerPage, haveComment, orderProperty, orderDir } = ctx.request.body;
+  let { channelId, authorId, status, page, rowsPerPage, haveComment, orderProperty, orderDir, post_radio_option, postType } = ctx.request.body;
   channelId = channelId || '';
   status = status || '';
   authorId = authorId || '';
   haveComment = haveComment || '';
   page = page || 1;
   rowsPerPage = rowsPerPage || 20;
+  post_radio_option = post_radio_option || [];
+  postType = postType || [];
+  post_radio_option = post_radio_option.length ? post_radio_option.join(',').replace('publiced', 'public').replace('privated', 'private').split(',') : [];
+  let postRadioOptionConditions = post_radio_option.map((field) => `(p.${field} = '1')`).join(' AND ');
+  let postTypeConditions = postType.map((field) => `(p.postType = '${field}')`).join(' OR ');
+  if (postRadioOptionConditions) {
+    postRadioOptionConditions = 'AND ' + postRadioOptionConditions;
+  }
+  if (postTypeConditions) {
+    postTypeConditions = 'AND (' + postTypeConditions + ')';
+  }
+  postRadioOptionConditions = post_radio_option.length > 0 ? postRadioOptionConditions : '';
+  postTypeConditions = postType.length > 0 ? postTypeConditions : '';
   try {
     let sql1 = `
     SELECT COUNT(*) as total 
@@ -21,7 +34,8 @@ export const getPostList = async (ctx) => {
             FROM sm_board_comment
             GROUP BY postId
         ) AS c ON p.srcTopicId = c.postId
-        WHERE (p.channelId = '${channelId}' OR '${channelId}' = '') 
+        WHERE 
+        (p.channelId = '${channelId}' OR '${channelId}' = '') 
         AND (p.status = '${status}' OR '${status}'  = '') 
         AND (p.authorId = '${authorId}' OR '${authorId}'  = '')
         AND (
@@ -29,13 +43,15 @@ export const getPostList = async (ctx) => {
             OR ('${haveComment}' = '0' AND (c.commentCount = 0 OR c.commentCount IS NULL))
             OR '${haveComment}' = ''
         )
+        ${postRadioOptionConditions}
+        ${postTypeConditions}
     ) as totals;    
     `;
     let sql2 = `
     SELECT 
         p.id, p.title, p.createTime, p.updateTime, p.status, 
         p.poster, p.view, p.authorId, p.categoryId, 
-        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,
+        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,p.videoPoster,p.videoUrl,p.postTags,
         COUNT(c.postId) AS comment
     FROM 
         sm_board_post_list AS p
@@ -44,7 +60,9 @@ export const getPostList = async (ctx) => {
     WHERE 
         (p.channelId = '${channelId}' OR '${channelId}' = '') 
         AND (p.status = '${status}' OR '${status}' = '') 
-        AND (p.authorId = '${authorId}' OR '${authorId}' = '') 
+        AND (p.authorId = '${authorId}' OR '${authorId}' = '')
+        ${postRadioOptionConditions}
+        ${postTypeConditions}
     GROUP BY 
         p.id
     HAVING 
@@ -79,7 +97,7 @@ export const getPostListByCategoryId = async (ctx) => {
     let results = await ctx.execSql([
       `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
+          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
           FROM sm_board_post_list 
           WHERE (categoryId = '${categoryId}') 
           ORDER BY createTime DESC
@@ -101,7 +119,7 @@ export const getPostRowById = async (ctx) => {
   }
   try {
     let result = await ctx.execSql(
-      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public, postType  FROM sm_board_post_list WHERE id = '${id}'`
+      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags, postType  FROM sm_board_post_list WHERE id = '${id}'`
     );
     ctx.success(ctx, result[0]);
   } catch (error) {
@@ -134,24 +152,26 @@ export const uploadPostImgs = async (ctx) => {
 };
 // 添加文章
 export const addPost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
   let status = 'OFFLINE';
   let createTime = new Date().getTime();
   let updateTime = createTime;
   let view = 0;
   let comment = 0;
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
     return;
   }
   try {
     let id = uuidv4().replace(/-/g, '');
     let results = await ctx.execSql([
-      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, status, createTime, updateTime, view, comment, srcTopicId) 
-      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}');`,
+      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, status, createTime, updateTime, view, comment, srcTopicId, postTags,pinned,recommended,featured,hot,original,paid,free,private,public) 
+      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}', '${JSON.stringify(
+        tags
+      )}', '${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}');`,
     ]);
     if (results[0].affectedRows > 0) {
-      ctx.success(ctx, { id: results[0].insertId });
+      ctx.success(ctx, { id: id });
     } else {
       ctx.error(ctx, 405);
     }
@@ -160,6 +180,39 @@ export const addPost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
+// 添加视频文章
+export const addVideoPost = async (ctx) => {
+  let { authorId, channelId, content, directoryId, title, videoUrl, videoPoster, poster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
+  if (ctx.isFalsy([channelId, content, directoryId, title, videoUrl, poster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#channelId,content,directoryId,title,videoUrl,poster,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
+    return;
+  }
+  try {
+    let id = uuidv4().replace(/-/g, '');
+    let createTime = new Date().getTime();
+    let updateTime = createTime;
+    let status = 'OFFLINE';
+    let view = 0;
+    let comment = 0;
+    videoPoster = videoPoster || '';
+    let sql = `
+    INSERT INTO sm_board_post_list (id,srcTopicId,postType,createTime,updateTime,status,view,comment,authorId,channelId,content,categoryId,title,videoUrl,videoPoster,poster, postTags,pinned,recommended,featured,hot,original,paid,free,private,public)
+    VALUES ('${id}','${id}','2', ${createTime},${updateTime},'${status}',${view},${comment},'${authorId}','${channelId}','${content}','${directoryId}','${title}','${videoUrl}','${videoPoster}','${poster}','${JSON.stringify(
+      tags
+    )}','${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}');
+    `;
+    let results = await ctx.execSql([sql]);
+    if (results[0].affectedRows > 0) {
+      ctx.success(ctx, { id: id });
+    } else {
+      ctx.error(ctx, 405);
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+
 // 删除文章
 export const deletePost = async (ctx) => {
   let { id } = ctx.request.body;
@@ -177,10 +230,10 @@ export const deletePost = async (ctx) => {
 };
 // 更新文章
 export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId, id } = ctx.request.body;
+  let { title, content, poster, authorId, categoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
   let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, id])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,id');
+  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
     return;
   }
   try {
@@ -192,7 +245,17 @@ export const updatePost = async (ctx) => {
       authorId = '${authorId}',
       categoryId = '${categoryId}',
       channelId = '${channelId}',
-      updateTime = ${updateTime}
+      postTags = '${JSON.stringify(tags)}',
+      updateTime = ${updateTime},
+      pinned = '${pinned}',
+      recommended = '${recommended}',
+      featured = '${featured}',
+      hot = '${hot}',
+      original = '${original}',
+      paid = '${paid}',
+      free = '${free}',
+      private = '${privated}',
+      public = '${publiced}'
       WHERE id = '${id}';`,
     ]);
     ctx.success(ctx, null);
@@ -201,6 +264,45 @@ export const updatePost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
+export const updateVideoPost = async (ctx) => {
+  let { title, content, poster, authorId, directoryId, channelId, id, videoUrl, videoPoster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
+  let updateTime = new Date().getTime();
+  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, id, videoUrl, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, directoryId, channelId,id,videoUrl,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
+    return;
+  }
+  videoPoster = videoPoster || '';
+  try {
+    ctx.execSql([
+      `UPDATE sm_board_post_list SET
+      title = '${title}',
+      content = '${content}',
+      poster = '${poster}',
+      authorId = '${authorId}',
+      categoryId = '${directoryId}',
+      channelId = '${channelId}',
+      updateTime = ${updateTime},
+      videoUrl = '${videoUrl}',
+      videoPoster = '${videoPoster}',
+      postTags = '${JSON.stringify(tags)}',
+      pinned = '${pinned}',
+      recommended = '${recommended}',
+      featured = '${featured}',
+      hot = '${hot}',
+      original = '${original}',
+      paid = '${paid}',
+      free = '${free}',
+      private = '${privated}',
+      public = '${publiced}'
+      WHERE id = '${id}';`,
+    ]);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
+
 // 下架文章
 export const offlinePost = async (ctx) => {
   let { id } = ctx.request.body;

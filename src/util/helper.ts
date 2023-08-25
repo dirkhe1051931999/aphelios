@@ -176,3 +176,57 @@ export function formatDate(input: Date | number | null, format: string = 'yyyy-M
   }
   return formattedDate;
 }
+export function isFieldFile(ctx: any, fieldNames: string[]): Promise<{ [key: string]: any }> {
+  return new Promise((resolve, reject) => {
+    const form: any = new formidable.IncomingForm();
+    form.encoding = 'utf-8';
+    form.keepExtensions = true; // 保留后缀
+    form.maxFieldsSize = 200 * 1024 * 1024; // 文件大小200M
+    form.multiples = true;
+    form.uploadDir = path.join(CONFIG.root, CONFIG.appPath, CONFIG.tempUploads);
+    mkdirsSync(form.uploadDir);
+    const result: { [key: string]: any } = {};
+    form.parse(ctx.req, (err, fields, files) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      // 根据提供的字段名判断是否为文件
+      fieldNames.forEach((fieldName) => {
+        if (files[fieldName]) {
+          const extension = path.extname(files[fieldName].originalFilename); // 获取文件扩展名
+          const newFileName = path.join(form.uploadDir, uuidv4().replace(/\-/g, '') + extension);
+          fs.renameSync(files[fieldName].filepath, newFileName); // 重命名文件，加上扩展名
+          result[fieldName] = {
+            type: 'file',
+            extension,
+            value: newFileName,
+          }; // 是文件
+        } else {
+          result[fieldName] = {
+            type: 'string',
+            value: fields[fieldName],
+          }; // 不是文件
+        }
+      });
+      resolve(result);
+    });
+  });
+}
+export function fileToBase64(filePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, (readErr, data) => {
+      if (readErr) {
+        console.error('Error reading file:', readErr);
+        reject(readErr);
+        return;
+      }
+      // 使用mime库获取文件的MIME类型
+      const mimeType = mime.getType(filePath) || 'application/octet-stream';
+      // 将文件内容转换为Base64字符串，并添加适当的前缀
+      const base64File = `data:${mimeType};base64,` + data.toString('base64');
+      // 解析成功，将Base64编码的文件内容解析为Promise的解析值
+      resolve(base64File);
+    });
+  });
+}
