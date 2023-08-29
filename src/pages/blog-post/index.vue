@@ -99,26 +99,33 @@
               <div class="text-left" v-else>
                 <!-- title -->
                 <div v-if="col.name === 'title'">
-                  <div color="primary" outline dense @click="handlerClickUpdate(props.row)">
-                    <q-icon :name="postTypeSvgName(props.row)" size="20px"></q-icon>
-                    <span class="detail-link-type q-mx-sm"> {{ props.row.title }}</span>
-                    <q-btn size="8px" color="grey" flat icon="chat_bubble_outline" round>
+                  <div>
+                    <span class="q-pa-xs b-r-100 bg-grey-2 border-all">
+                      <q-icon :name="postTypeSvgName(props.row)" size="18px">
+                        <q-tooltip anchor="center left" self="center right"> {{ postTypeName(props.row) }} </q-tooltip>
+                      </q-icon>
+                    </span>
+                    <span class="detail-link-type q-mx-sm" @click="handlerClickUpdate(props.row)"> {{ props.row.title }}</span>
+                    <q-btn size="8px" color="grey" outline label="评论">
                       <q-popup-proxy class="reply-input-proxy" ref="replyInputProxyRef">
                         <q-banner style="min-width: 20vw" class="q-pa-md">
                           <SimpleRichTextInput @submit="submitReplyComment($event, props.row)" />
                         </q-banner>
                       </q-popup-proxy>
                     </q-btn>
+                    <q-btn size="8px" color="grey" label="添加问卷" class="q-ml-sm" outline @click="handlerClickAddQuestion(props.row)" />
                   </div>
-                  <q-chip dense color="red" label="置顶" v-if="props.row.pinned === '1'" text-color="white" />
-                  <q-chip dense color="yellow" label="推荐" v-if="props.row.recommended === '1'" text-color="white" />
-                  <q-chip dense color="pink" label="精选" v-if="props.row.featured === '1'" text-color="white" />
-                  <q-chip dense color="teal" label="热门" v-if="props.row.hot === '1'" text-color="white" />
-                  <q-chip dense color="brown" label="原创" v-if="props.row.original === '1'" text-color="white" />
-                  <q-chip dense color="yellow" label="付费" v-if="props.row.paid === '1'" text-color="white" />
-                  <q-chip dense color="green" label="免费" v-if="props.row.free === '1'" text-color="white" />
-                  <q-chip dense color="orange" label="私密" v-if="props.row.private === '1'" text-color="white" />
-                  <q-chip dense color="purple" label="公开" v-if="props.row.public === '1'" text-color="white" />
+                </div>
+                <div v-if="col.name === 'chip'">
+                  <q-chip dense color="red" label="置顶" v-if="props.row.pinned === '1'" outline />
+                  <q-chip dense color="yellow" label="推荐" v-if="props.row.recommended === '1'" outline />
+                  <q-chip dense color="pink" label="精选" v-if="props.row.featured === '1'" outline />
+                  <q-chip dense color="teal" label="热门" v-if="props.row.hot === '1'" outline />
+                  <q-chip dense color="brown" label="原创" v-if="props.row.original === '1'" outline />
+                  <q-chip dense color="yellow" label="付费" v-if="props.row.paid === '1'" outline />
+                  <q-chip dense color="green" label="免费" v-if="props.row.free === '1'" outline />
+                  <q-chip dense color="orange" label="私密" v-if="props.row.private === '1'" outline />
+                  <q-chip dense color="purple" label="公开" v-if="props.row.public === '1'" outline />
                 </div>
                 <div v-if="col.name === 'tag'">
                   <q-chip :label="item" v-for="(item, index) in props.row.postTags" :key="index" dense />
@@ -187,7 +194,7 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
-import { addWhatPost, POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_OPTION, TEST_ACCOUNT, updatePost } from './utils';
+import { addWhatPost, POST_CHECKBOX_OPTIONS, POST_STATUS, POST_TYPE_OPTION, TEST_ACCOUNT, updatePost } from './utils';
 import PostType from './components/post-type.vue';
 import { commonPost } from 'src/mixins/post';
 
@@ -219,33 +226,19 @@ export default class BlogPostComponent extends commonPost {
   get addPostSuccessFlagVideo() {
     return BlogPostModule.addPostSuccessFlagVideo;
   }
-  @Watch('addPostSuccessFlag')
-  public async watchAddPostSuccessFlag(newVal: string) {
-    if (newVal) {
-      this.getData();
-      BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(false);
-    }
+  get updatePostSuccessFlagGallery() {
+    return BlogPostModule.updatePostSuccessFlagGallery;
   }
-  @Watch('updatePostSuccessFlag')
-  public async watchUpdatePostSuccessFlag(newVal: string) {
-    if (newVal) {
-      this.getData();
-      BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
-    }
+  get addPostSuccessFlagGallery() {
+    return BlogPostModule.addPostSuccessFlagGallery;
   }
-  @Watch('addPostSuccessFlagVideo')
-  public async watchAddPostSuccessFlagVideo(newVal: string) {
-    if (newVal) {
-      this.getData();
-      BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO(false);
-    }
-  }
-  @Watch('updatePostSuccessFlagVideo')
-  public async watchUpdatePostSuccessFlagVideo(newVal: string) {
-    if (newVal) {
-      this.getData();
-      BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(false);
-    }
+  created() {
+    this.$watch('addPostSuccessFlag', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG, this).bind(this));
+    this.$watch('updatePostSuccessFlag', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG, this).bind(this));
+    this.$watch('addPostSuccessFlagVideo', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO, this).bind(this));
+    this.$watch('updatePostSuccessFlagVideo', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO, this).bind(this));
+    this.$watch('addPostSuccessFlagGallery', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_GALLERY, this).bind(this));
+    this.$watch('updatePostSuccessFlagGallery', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_GALLERY, this).bind(this));
   }
   mounted() {
     if (this.$route.query.channelId) {
@@ -306,7 +299,7 @@ export default class BlogPostComponent extends commonPost {
         type: 'select',
         multiple: true,
         class: 'w-350 m-r-15 m-b-15',
-        selectOption: POST_RADIO_OPTIONS,
+        selectOption: POST_CHECKBOX_OPTIONS,
         id: 'post_radio_option',
       },
       {
@@ -332,6 +325,12 @@ export default class BlogPostComponent extends commonPost {
       {
         name: 'title',
         label: '标题',
+        align: 'left',
+        inSlot: true,
+      },
+      {
+        name: 'chip',
+        label: '碎片',
         align: 'left',
         inSlot: true,
       },
@@ -426,6 +425,13 @@ export default class BlogPostComponent extends commonPost {
   public handlerClickUpdate(row: any) {
     updatePost(row);
   }
+  public handlerClickAddQuestion(row: any) {
+    BlogPostModule.SET_POST_ADD_OR_UPDATE_QUESTION('add');
+    BlogPostModule.SET_POST_DETAIL_QUESTION({
+      row: row,
+    });
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_QUESTION(true);
+  }
   public openCommentDialog(row: any) {
     const detail = {
       id: row.id,
@@ -447,6 +453,16 @@ export default class BlogPostComponent extends commonPost {
   }
   public onPostTypePick(data: any) {
     addWhatPost(data.id);
+  }
+  public createWatcher(setFlagFunction: (flag: boolean) => void, context: any) {
+    return async function (newVal: string) {
+      if (newVal) {
+        setTimeout(() => {
+          context.getData();
+          setFlagFunction(false);
+        }, 300);
+      }
+    };
   }
   /**http */
   public async getData() {

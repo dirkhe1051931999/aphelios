@@ -28,7 +28,7 @@
       <div class="split-line h-1"></div>
       <q-card-section style="max-height: 500px" class="scroll">
         <ul class="album-list">
-          <li v-for="(item, index) in albumParams.data" :key="index" @click="pickAlbum(item)" :class="{ active: this.albumParams.currentPick === item.id }">
+          <li v-for="(item, index) in albumParams.data" :key="index" @click="pickAlbum(item)" :class="{ active: isPicked(item.id) }">
             <q-img :src="item.source" :alt="item.title" fit="contain" class="img">
               <q-badge v-for="(categoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(categoryId)" class="q-ml-md" floating />
             </q-img>
@@ -47,7 +47,7 @@
           style="margin-top: -26px; margin-right: 16px"
         ></MyPagination>
         <q-btn flat label="取消" color="primary" @click="hide" />
-        <q-btn label="确定" color="primary" @click="confirmPick" />
+        <q-btn label="确定" color="primary" @click="confirmPick" :disable="!albumParams.currentPick || (albumParams.currentPick && !albumParams.currentPick.length)" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -55,21 +55,35 @@
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { Component, Vue } from 'vue-facing-decorator';
+import { Component, Prop, Vue } from 'vue-facing-decorator';
+import { uniqBy } from 'lodash';
 
 @Component({ name: 'myPostAlbumComponent', emits: ['pick', 'hide'] })
 export default class myPostAlbumComponent extends Vue {
+  @Prop({ type: Boolean, default: false }) public readonly multiple!: boolean;
+  @Prop({ type: Number, default: 8 }) public readonly 'maxMultiple'!: number;
   get categoryName() {
     return (id: any) => {
       const item: any = this.albumParams.category.find((item: any) => item.id === id);
       return item ? item.label : '';
     };
   }
+  get isPicked() {
+    return (id: any) => {
+      if (!this.albumParams.currentPick) return false;
+      if (!this.multiple) {
+        return this.albumParams.currentPick === id;
+      } else {
+        return this.albumParams.currentPick.includes(id);
+      }
+    };
+  }
   public albumParams = {
     model: false,
     data: [],
+    allData: [],
     category: [],
-    currentPick: null,
+    currentPick: this.multiple ? ([] as string[]) : null,
     pagination: {
       rowsPerPage: 10,
       rowsNumber: 0,
@@ -96,18 +110,41 @@ export default class myPostAlbumComponent extends Vue {
     this.$emit('hide');
   }
   public confirmPick() {
-    const item = this.albumParams.data.find((item: any) => item.id === this.albumParams.currentPick);
-    this.albumParams.model = false;
-    this.albumParams.currentPick = null;
-    this.$emit('pick', item);
+    if (!this.multiple) {
+      const item = this.albumParams.allData.find((item: any) => item.id === this.albumParams.currentPick);
+      this.albumParams.model = false;
+      this.albumParams.currentPick = null;
+      this.$emit('pick', item);
+    } else {
+      const items = this.albumParams.allData.filter((item: any) => this.albumParams.currentPick!.includes(item.id));
+      this.albumParams.model = false;
+      this.albumParams.currentPick = [];
+      this.$emit('pick', items);
+    }
     this.$emit('hide');
   }
   public pickAlbum(item: any) {
-    this.albumParams.currentPick = item.id;
+    if (!this.multiple) {
+      this.albumParams.currentPick = item.id;
+    } else {
+      if (this.albumParams.currentPick!.includes(item.id)) {
+        this.albumParams.currentPick = this.albumParams.currentPick!.filter((id: any) => id !== item.id);
+        return;
+      }
+      if (this.albumParams.currentPick!.length >= this.maxMultiple) {
+        this.$globalMessage.show({
+          type: 'error',
+          content: `最多只能选择${this.maxMultiple}张图片！`,
+        });
+        return;
+      }
+      this.albumParams.currentPick?.push(item.id);
+    }
   }
   public init() {
     this.show();
     this.albumParams.data = [];
+    this.albumParams.allData = [];
     this.albumParams.params.category = [];
     this.albumParams.pagination.rowsNumber = 0;
     this.albumParams.pagination.page = 1;
@@ -124,6 +161,8 @@ export default class myPostAlbumComponent extends Vue {
       });
       if (pageData && pageData.length) {
         this.albumParams.data = pageData;
+        this.albumParams.allData = this.albumParams.allData.concat(pageData);
+        this.albumParams.allData = uniqBy(this.albumParams.allData, 'id');
         this.albumParams.pagination.rowsNumber = total;
       } else {
         this.albumParams.data = [];

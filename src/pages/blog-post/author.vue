@@ -230,7 +230,7 @@
         </div>
       </div>
     </MyDialog>
-    <q-dialog v-model="dialogVerifyParams.visiable" position="top" @before-hide="dialogVerifyParamsHide">
+    <q-dialog v-model="dialogVerifyParams.visiable" position="top" @before-hide="dialogVerifyParamsHide" transition-show="jump-up" transition-hide="jump-down">
       <q-card style="min-width: 50vw">
         <q-stepper v-model="dialogVerifyParams.step" ref="stepper" color="primary" animated keep-alive>
           <q-step :name="1" title="提交认证申请" icon="feed" :done="dialogVerifyParams.step > 1" style="min-height: 300px">
@@ -796,20 +796,24 @@ export default class BlogPostAuthorComponent extends Vue {
       this.$q.loading.show();
       if (this.dialogAddUpdateParams.dialogType === 'add') {
         const params: any = {
-          name: this.dialogAddUpdateParams.params.name,
-          nick: this.dialogAddUpdateParams.params.nick,
           avatar: this.dialogAddUpdateParams.upload.params.avatarRawFile,
           cover: this.dialogAddUpdateParams.upload.params.coverRawFile,
-          description: this.dialogAddUpdateParams.params.description,
-          type: Number(this.dialogAddUpdateParams.params.type),
-          managementPassword: enCrypty(this.dialogAddUpdateParams.params.managementPassword),
-          appPassword: enCrypty(this.dialogAddUpdateParams.params.appPassword),
         };
         const form = new FormData();
         Object.keys(params).forEach((key) => {
           form.append(key, params[key]);
         });
-        await BlogPostModule.addPostAuthor(form);
+        await BlogPostModule.addPostAuthor({
+          form,
+          params: {
+            name: this.dialogAddUpdateParams.params.name,
+            nick: this.dialogAddUpdateParams.params.nick,
+            description: this.dialogAddUpdateParams.params.description,
+            type: Number(this.dialogAddUpdateParams.params.type),
+            managementPassword: enCrypty(this.dialogAddUpdateParams.params.managementPassword),
+            appPassword: enCrypty(this.dialogAddUpdateParams.params.appPassword),
+          },
+        });
       } else {
         const params: any = {
           avatar: this.dialogAddUpdateParams.upload.params.avatarRawFile || this.dialogAddUpdateParams.upload.params.avatar,

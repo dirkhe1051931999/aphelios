@@ -9,9 +9,11 @@ const api = {
   uploadPostImgs: '/management/blog/post/uploadPostImgs',
   addPost: '/management/blog/post/addPost',
   addVideoPost: '/management/blog/post/addVideoPost',
+  addGalleryPost: '/management/blog/post/addGalleryPost',
   deletePost: 'management/blog/post/deletePost',
   updatePost: 'management/blog/post/updatePost',
   updateVideoPost: 'management/blog/post/updateVideoPost',
+  updateGalleryPost: 'management/blog/post/updateGalleryPost',
   offlinePost: 'management/blog/post/offlinePost',
   publishPost: 'management/blog/post/publishPost',
   getAllChannel: 'management/blog/post_channel/getAllChannel',
@@ -118,9 +120,9 @@ export const addVideoPost = (data: any): any =>
     method: 'post',
     data,
   });
-export const updateVideoPost = (data: any): any =>
+export const addGalleryPost = (data: any): any =>
   request({
-    url: api.updateVideoPost,
+    url: api.addGalleryPost,
     method: 'post',
     data,
   });
@@ -133,6 +135,18 @@ export const deletePost = (data: any): any =>
 export const updatePost = (data: any): any =>
   request({
     url: api.updatePost,
+    method: 'post',
+    data,
+  });
+export const updateVideoPost = (data: any): any =>
+  request({
+    url: api.updateVideoPost,
+    method: 'post',
+    data,
+  });
+export const updateGalleryPost = (data: any): any =>
+  request({
+    url: api.updateGalleryPost,
     method: 'post',
     data,
   });
@@ -260,7 +274,8 @@ export const addPostAuthor = (data: any): any =>
   request({
     url: api.addPostAuthor,
     method: 'post',
-    data,
+    data: data.form,
+    params: data.params,
   });
 export const removePostAuthor = (data: any): any =>
   request({

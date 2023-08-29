@@ -13,7 +13,6 @@ export function getAuthorLevelName(score: number) {
     return '丞相';
   }
 }
-
 export function getAuthorLevel(score: number) {
   if (score < 1000) {
     return '1';
@@ -27,7 +26,6 @@ export function getAuthorLevel(score: number) {
     return '5';
   }
 }
-
 export const companyType = [
   { label: 'IT/互联网/通信', value: 'IT/互联网/通信' },
   { label: '金融/银行/保险', value: '金融/银行/保险' },
@@ -64,8 +62,8 @@ export const TEST_ACCOUNT = {
 };
 export const POST_TYPE_NAME: any = {
   '1': '普通文章',
-  '2': '纯视频',
-  '3': '纯图片',
+  '2': '视频',
+  '3': '图集',
   '4': '调查问卷',
   '5': '内嵌视频',
   '6': '时政',
@@ -73,15 +71,15 @@ export const POST_TYPE_NAME: any = {
 export const POST_TYPE_SVG_NAME: any = {
   '1': 'app:post-normal',
   '2': 'app:post-video',
-  '3': 'app:post-image',
+  '3': 'app:post-gallery',
   '4': 'app:post-survey',
   '5': 'app:post-embed',
   '6': 'app:post-politics',
 };
 export const POST_TYPE_OPTION = [
   { label: '普通文章', value: '1' },
-  { label: '纯视频', value: '2' },
-  { label: '纯图片', value: '3' },
+  { label: '视频', value: '2' },
+  { label: '图集', value: '3' },
   { label: '调查问卷', value: '4' },
   { label: '内嵌视频', value: '5' },
   { label: '时政', value: '6' },
@@ -100,42 +98,70 @@ export const POST_STATUS = [
     value: 'OFFLINE',
   },
 ];
-export const POST_RADIO_OPTIONS = [
-  { label: '置顶', value: 'pinned' },
-  { label: '推荐', value: 'recommended' },
-  { label: '精选', value: 'featured' },
-  { label: '热门', value: 'hot' },
-  { label: '原创', value: 'original' },
-  { label: '付费', value: 'paid' },
-  { label: '免费', value: 'free' },
-  { label: '私密', value: 'privated' },
-  { label: '公开', value: 'publiced' },
+export const POST_CHECKBOX_OPTIONS = [
+  { label: '置顶', value: 'pinned', description: '置顶新闻，通常是头条或核心新闻' },
+  { label: '推荐', value: 'recommended', description: '推荐新闻，通常是首页推荐' },
+  { label: '精选', value: 'featured', description: '精选新闻，通常是首页精选' },
+  { label: '热门', value: 'hot', description: '热门新闻，通常是实时的热门新闻' },
+  { label: '原创', value: 'original', description: '原创新闻，通常是原创作者发布的新闻' },
 ];
-
+export const POST_RADIO_OPTIONS = [
+  {
+    model: 'paidOrFree',
+    option: [
+      { label: '付费', value: 'paid', description: '付费文章，通常是需要付费才能阅读的文章' },
+      { label: '免费', value: 'free', description: '免费文章，通常是免费阅读的文章' },
+    ],
+  },
+  {
+    model: 'privateOrPublic',
+    option: [
+      { label: '私密', value: 'privated', description: '私密文章，通常是指定人才能看到的文章' },
+      { label: '公开', value: 'publiced', description: '公开文章，通常是所有人都能看到的文章' },
+    ],
+  },
+];
+export const COMMON_POST_PARAMS = {
+  id: '',
+  authorId: '',
+  directoryId: '',
+  channelId: '',
+  title: '',
+  content: '',
+  tag: '',
+  tags: [],
+  checked: [],
+  status: '',
+  paidOrFree: 'free',
+  privateOrPublic: 'publiced',
+};
 export const updatePost = (row: any) => {
   const postType = row.postType;
+  const commonData = {
+    authorId: row.authorId,
+    status: row.status,
+    directoryId: row.categoryId,
+    channelId: row.channelId,
+    title: row.title,
+    id: row.id,
+    tags: row.postTags,
+    pinned: row.pinned,
+    recommended: row.recommended,
+    featured: row.featured,
+    hot: row.hot,
+    original: row.original,
+    paid: row.paid,
+    free: row.free,
+    privated: row.private,
+    publiced: row.public,
+  };
   switch (postType) {
     case '1':
       BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
       BlogPostModule.SET_POST_DETAIL({
         row: {
-          authorId: row.authorId,
-          status: row.status,
-          categoryId: row.categoryId,
-          channelId: row.channelId,
-          title: row.title,
-          tags: row.postTags,
           poster: row.poster,
-          id: row.id,
-          pinned: row.pinned,
-          recommended: row.recommended,
-          featured: row.featured,
-          hot: row.hot,
-          original: row.original,
-          paid: row.paid,
-          free: row.free,
-          privated: row.private,
-          publiced: row.public,
+          ...commonData,
         },
       });
       BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
@@ -145,35 +171,32 @@ export const updatePost = (row: any) => {
       BlogPostModule.SET_POST_ADD_OR_UPDATE_VIDEO('update');
       BlogPostModule.SET_POST_DETAIL_VIDEO({
         row: {
-          authorId: row.authorId,
-          status: row.status,
-          directoryId: row.categoryId,
-          channelId: row.channelId,
-          title: row.title,
           poster: row.poster,
-          id: row.id,
-          tags: row.postTags,
           videoUrl: row.videoUrl,
           videoPoster: row.videoPoster,
-          pinned: row.pinned,
-          recommended: row.recommended,
-          featured: row.featured,
-          hot: row.hot,
-          original: row.original,
-          paid: row.paid,
-          free: row.free,
-          privated: row.private,
-          publiced: row.public,
+          ...commonData,
         },
       });
       BlogPostModule.SET_DISABLE_SELECT_CATEGORY_VIDEO(false);
       BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(true);
+      break;
+    case '3':
+      BlogPostModule.SET_POST_ADD_OR_UPDATE_GALLERY('update');
+      BlogPostModule.SET_POST_DETAIL_GALLERY({
+        row: {
+          galleries: row.galleries,
+          ...commonData,
+        },
+      });
+      BlogPostModule.SET_DISABLE_SELECT_CATEGORY_GALLERY(false);
+      BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_GALLERY(true);
+      break;
     default:
       break;
   }
 };
 export const addWhatPost = (id: number) => {
-  // 1普通文章，2纯视频，3纯图片，4调查问卷，5内嵌视频，6时政
+  // 1普通文章，2视频，3图集，4调查问卷，5内嵌视频，6时政
   switch (id) {
     case 1:
       BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
@@ -185,6 +208,10 @@ export const addWhatPost = (id: number) => {
       BlogPostModule.SET_DISABLE_SELECT_CATEGORY_VIDEO(false);
       BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(true);
       break;
+    case 3:
+      BlogPostModule.SET_POST_ADD_OR_UPDATE_GALLERY('add');
+      BlogPostModule.SET_DISABLE_SELECT_CATEGORY_GALLERY(false);
+      BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_GALLERY(true);
     default:
       break;
   }

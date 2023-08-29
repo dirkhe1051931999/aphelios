@@ -60,8 +60,7 @@
           <p class="q-mb-sm">* 主题</p>
           <q-btn
             class="h-40 category-select full-width"
-            :label="postCategory(dialogEditorParams.params) === '--' ? '选择主题' : '主题：' + postCategory(dialogEditorParams.params)"
-            icon-right="o_keyboard_arrow_down"
+            :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ categoryId: dialogEditorParams.params.directoryId })"
             outline
             align="left"
             :disable="disableSelectCategory"
@@ -83,7 +82,7 @@
                         :key="directory.id"
                         clickable
                         v-close-popup="!directory.children.length"
-                        @click.stop.prevent="!directory.children.length ? (dialogEditorParams.params.categoryId = directory.id) : () => 0"
+                        @click.stop.prevent="!directory.children.length ? (dialogEditorParams.params.directoryId = directory.id) : () => 0"
                       >
                         <q-item-section>
                           <q-item-label>{{ directory.name }}</q-item-label>
@@ -99,7 +98,7 @@
                               :key="childDirectory"
                               clickable
                               v-close-popup="!childDirectory.children"
-                              @click.stop.prevent="dialogEditorParams.params.categoryId = childDirectory.id"
+                              @click.stop.prevent="dialogEditorParams.params.directoryId = childDirectory.id"
                             >
                               <q-item-section>
                                 <q-item-label>{{ childDirectory.name }}</q-item-label>
@@ -162,7 +161,31 @@
         </div>
         <div class="q-mb-md">
           <p class="q-mb-sm">* 其他</p>
-          <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked" />
+          <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked">
+            <template #label="opt">
+              <div class="row items-center">
+                <span>{{ opt.label }}</span>
+                <div class="row items-center q-ml-md">
+                  <q-icon name="info" color="grey"></q-icon>
+                  <span class="text-grey q-ml-sm fs-12">{{ opt.description }} </span>
+                </div>
+              </div>
+            </template>
+          </q-option-group>
+          <div class="split-line h-1"></div>
+          <div v-for="(item, index) in dialogEditorParams.radioOptions" :key="index">
+            <q-option-group v-model="dialogEditorParams.params[item.model]" :options="item.option" color="primary">
+              <template #label="opt">
+                <div class="row items-center">
+                  <span>{{ opt.label }}</span>
+                  <div class="row items-center q-ml-md">
+                    <q-icon name="info" color="grey"></q-icon>
+                    <span class="text-grey q-ml-sm fs-12">{{ opt.description }} </span>
+                  </div>
+                </div>
+              </template>
+            </q-option-group>
+          </div>
         </div>
         <div>
           <q-btn color="primary" label="确定" class="q-mr-md" @click="dialogAddUpdateConfirmEvent" />
@@ -182,20 +205,13 @@ import { Component, Vue, Watch } from 'vue-facing-decorator';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import PostAlbumComponent from './album.vue';
 import { cloneDeep } from 'lodash';
-import { POST_RADIO_OPTIONS } from '../utils';
+import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS } from '../utils';
 let registerEditorAction = false;
-const PARANS = {
-  authorId: '',
-  status: '',
-  categoryId: '',
-  channelId: '',
-  title: '',
-  poster: '',
-  content: '',
-  checked: [],
-  tags: [],
-  tag: '',
-  id: '',
+const CONST_PARAMS = {
+  add_or_edit: {
+    ...COMMON_POST_PARAMS,
+    poster: '',
+  },
 };
 @Component({
   name: 'myBlogEditorPostDialogComponent',
@@ -218,7 +234,7 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
   @Watch('blogEditorPostVisiable')
   onBlogEditorPostVisiableChanged(val: boolean, oldVal: boolean) {
     const initForm = () => {
-      this.dialogEditorParams.params = cloneDeep(PARANS);
+      this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
       BlogPostModule.SET_POST_DETAIL(cloneDeep(this.dialogEditorParams.params));
       this.editor.setHtml('');
     };
@@ -261,7 +277,7 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
         if (BlogPostModule.postAddOrUpdate === 'add') {
           initForm();
           if (BlogPostModule.currentCategoryId) {
-            this.dialogEditorParams.params.categoryId = BlogPostModule.currentCategoryId;
+            this.dialogEditorParams.params.directoryId = BlogPostModule.currentCategoryId;
             BlogPostModule.SET_CURRENT_CATEGORY_ID('');
           }
         } else {
@@ -269,7 +285,7 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
           const row: any = cloneDeep(BlogPostModule.postDetail.row);
           this.dialogEditorParams.params.authorId = row.authorId;
           this.dialogEditorParams.params.status = row.status;
-          this.dialogEditorParams.params.categoryId = row.categoryId;
+          this.dialogEditorParams.params.directoryId = row.directoryId;
           this.dialogEditorParams.params.channelId = row.channelId;
           this.dialogEditorParams.params.title = row.title;
           this.dialogEditorParams.params.poster = row.poster;
@@ -287,6 +303,8 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
               (this.dialogEditorParams.params.checked as any).push(item.value);
             }
           }
+          this.dialogEditorParams.params.paidOrFree = row.paid === '1' ? 'paid' : 'free';
+          this.dialogEditorParams.params.privateOrPublic = row.privated === '1' ? 'privated' : 'publiced';
           this.$q.loading.show();
           const data = await BlogPostModule.getPostContentById({ id: row.id });
           this.$q.loading.hide();
@@ -312,8 +330,9 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
     imageUploadKey: '',
   };
   public dialogEditorParams = {
-    params: cloneDeep(PARANS),
-    checkedOptions: cloneDeep(POST_RADIO_OPTIONS),
+    params: cloneDeep(CONST_PARAMS.add_or_edit),
+    checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
+    radioOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
   public editorConfig = {
     placeholder: '请输入内容',
@@ -411,111 +430,70 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
   }
   /* http */
   public async dialogAddUpdateConfirmEvent() {
-    if (!this.dialogEditorParams.params.title) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请输入标题',
+    const validations = cloneDeep(this.commonValidations);
+    validations.push(...[{ key: 'poster', message: '请选择海报', check: (value: any) => !!value }]);
+    if (this.validateParams(this.dialogEditorParams.params, validations)) {
+      const result = await this.$globalConfirm.show({
+        title: '友情提示',
+        color: 'primary',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
-      return;
-    } else if (!this.dialogEditorParams.params.authorId) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请选择作者',
-      });
-      return;
-    } else if (!this.dialogEditorParams.params.categoryId) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请选择分类',
-      });
-      return;
-    } else if (!this.dialogEditorParams.params.content) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请输入内容',
-      });
-      return;
-    } else if (!this.dialogEditorParams.params.poster) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请上传封面',
-      });
-      return;
-    } else if (!this.dialogEditorParams.params.channelId) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请选择频道',
-      });
-      return;
-    } else if (!this.dialogEditorParams.params.tags.length) {
-      this.$globalMessage.show({
-        type: 'error',
-        content: '请选择标签',
-      });
-      return;
-    }
-    const result = await this.$globalConfirm.show({
-      title: '友情提示',
-      color: 'primary',
-      content: '确定吗？老铁！？',
-      confirmButtonText: '非常确定',
-    });
-    if (result) {
-      this.$q.loading.show();
-      let postParams: any = {
-        title: this.dialogEditorParams.params.title,
-        content: this.dialogEditorParams.params.content,
-        poster: this.dialogEditorParams.params.poster,
-        authorId: this.dialogEditorParams.params.authorId,
-        categoryId: this.dialogEditorParams.params.categoryId,
-        channelId: this.dialogEditorParams.params.channelId,
-        tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
-        postType: 1,
-        pinned: '0',
-        recommended: '0',
-        featured: '0',
-        hot: '0',
-        original: '0',
-        paid: '0',
-        free: '0',
-        privated: '0',
-        publiced: '0',
-      };
-      for (let item of this.dialogEditorParams.params.checked) {
-        postParams[item] = '1';
-      }
-      if (BlogPostModule.postAddOrUpdate === 'add') {
-        try {
-          const { id } = await BlogPostModule.addPost(postParams);
-          this.hideDialog();
-          this.$globalMessage.show({
-            type: 'success',
-            content: this.$t('messages.success'),
-          });
-          BlogPostModule.SET_ADDED_POST_ID(id);
-          setTimeout(() => {
+      if (result) {
+        this.$q.loading.show();
+        let params: any = {
+          title: this.dialogEditorParams.params.title,
+          content: this.dialogEditorParams.params.content,
+          authorId: this.dialogEditorParams.params.authorId,
+          directoryId: this.dialogEditorParams.params.directoryId,
+          channelId: this.dialogEditorParams.params.channelId,
+          tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
+          postType: 1,
+          pinned: '0',
+          recommended: '0',
+          featured: '0',
+          hot: '0',
+          original: '0',
+          paid: '0',
+          free: '0',
+          privated: '0',
+          publiced: '0',
+          poster: this.dialogEditorParams.params.poster,
+        };
+        for (let item of this.dialogEditorParams.params.checked) {
+          params[item] = '1';
+        }
+        params[this.dialogEditorParams.params.paidOrFree] = '1';
+        params[this.dialogEditorParams.params.privateOrPublic] = '1';
+        if (BlogPostModule.postAddOrUpdate === 'add') {
+          try {
+            const { id } = await BlogPostModule.addPost(params);
+            this.hideDialog();
+            this.$globalMessage.show({
+              type: 'success',
+              content: this.$t('messages.success'),
+            });
+            BlogPostModule.SET_ADDED_POST_ID(id);
             BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(true);
-          }, 1000);
-        } catch (error) {
-          this.$q.loading.hide();
-        }
-      } else if (BlogPostModule.postAddOrUpdate === 'update') {
-        postParams['id'] = this.dialogEditorParams.params.id;
-        try {
-          await BlogPostModule.updatePost(postParams);
-          this.hideDialog();
-          this.$globalMessage.show({
-            type: 'success',
-            content: this.$t('messages.success'),
-          });
-          setTimeout(() => {
+          } catch (error) {
+            this.$q.loading.hide();
+          }
+        } else if (BlogPostModule.postAddOrUpdate === 'update') {
+          params['id'] = this.dialogEditorParams.params.id;
+          try {
+            await BlogPostModule.updatePost(params);
+            this.hideDialog();
+            this.$globalMessage.show({
+              type: 'success',
+              content: this.$t('messages.success'),
+            });
             BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(true);
-          }, 1000);
-        } catch (error) {
-          this.$q.loading.hide();
+          } catch (error) {
+            this.$q.loading.hide();
+          }
         }
+        this.$q.loading.hide();
       }
-      this.$q.loading.hide();
     }
   }
 }

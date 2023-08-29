@@ -85,7 +85,7 @@
                   <span class="link-type q-ml-sm" @click="handlerClickDetail(props.row)">{{ props.row.username }}</span>
                   <span class="text-grey q-ml-sm">（{{ props.row.nickname }}）</span>
                   <q-avatar size="32px" class="q-ml-sm">
-                    <q-img :src="calacAavatar(props.row.avatarUrl)"></q-img>
+                    <q-img :src="calacAavatar(props.row.avatarUrl)" spinner-color="primary" spinner-size="12px"></q-img>
                   </q-avatar>
                 </div>
                 <!-- score -->
@@ -240,7 +240,7 @@
                   <q-icon name="o_info" class="text-grey cursor-pointer" />
                 </template>
               </el-popover>
-              <span @click="generateUsername" v-if="item.model === 'username'" class="link-type q-ml-sm">生成用户名</span>
+              <span @click="generateUsername" v-if="item.model === 'username' && dialogDetailParams.dialogType === 'add'" class="link-type q-ml-sm">生成用户名</span>
             </template>
           </MyFormInput>
         </div>

@@ -62,6 +62,9 @@ class App extends VuexModule {
   public refreshCurPage() {
     this.SET_REFRESH_PAGE(false);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(false);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(false);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_GALLERY(false);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_QUESTION(false);
     setTimeout(() => {
       this.SET_REFRESH_PAGE(true);
     }, 100);

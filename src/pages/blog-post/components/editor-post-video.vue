@@ -29,8 +29,7 @@
             <p class="q-mb-sm">* 主题</p>
             <q-btn
               class="h-40 category-select full-width"
-              :label="postCategory(dialogEditorParams.params.directoryId) === '--' ? '选择主题' : '主题：' + postCategory(dialogEditorParams.params.directoryId)"
-              icon-right="o_keyboard_arrow_down"
+              :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ categoryId: dialogEditorParams.params.directoryId })"
               outline
               align="left"
               :disable="disableSelectCategory"
@@ -153,7 +152,31 @@
           </div>
           <div class="q-mb-md">
             <p class="q-mb-sm">* 其他</p>
-            <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked" />
+            <q-option-group :options="dialogEditorParams.checkedOptions" type="checkbox" v-model="dialogEditorParams.params.checked">
+              <template #label="opt">
+                <div class="row items-center">
+                  <span>{{ opt.label }}</span>
+                  <div class="row items-center q-ml-md">
+                    <q-icon name="info" color="grey"></q-icon>
+                    <span class="text-grey q-ml-sm fs-12">{{ opt.description }} </span>
+                  </div>
+                </div>
+              </template>
+            </q-option-group>
+            <div class="split-line h-1"></div>
+            <div v-for="(item, index) in dialogEditorParams.radioOptions" :key="index">
+              <q-option-group v-model="dialogEditorParams.params[item.model]" :options="item.option" color="primary">
+                <template #label="opt">
+                  <div class="row items-center">
+                    <span>{{ opt.label }}</span>
+                    <div class="row items-center q-ml-md">
+                      <q-icon name="info" color="grey"></q-icon>
+                      <span class="text-grey q-ml-sm fs-12">{{ opt.description }} </span>
+                    </div>
+                  </div>
+                </template>
+              </q-option-group>
+            </div>
           </div>
           <div class="q-mb-md">
             <p class="q-mb-sm">* 内容</p>
@@ -205,23 +228,14 @@ import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostVideoComponent from './video.vue';
 import PostAlbumComponent from './album.vue';
-import { POST_RADIO_OPTIONS } from '../utils';
+import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS } from '../utils';
 
 const CONST_PARAMS = {
   add_or_edit: {
-    id: '',
-    authorId: '',
-    directoryId: '',
-    channelId: '',
-    title: '',
-    content: '',
-    tag: '',
-    tags: [],
-    checked: [],
+    ...COMMON_POST_PARAMS,
     videoUrl: '',
     videoPoster: '',
     poster: '',
-    status: '',
   },
 };
 @Component({
@@ -270,6 +284,8 @@ export default class myEditorPostVideoComponent extends commonPost {
         this.getContent(row.id).then((data: any) => {
           this.dialogEditorParams.params.content = data;
         });
+        this.dialogEditorParams.params.paidOrFree = row.paid === '1' ? 'paid' : 'free';
+        this.dialogEditorParams.params.privateOrPublic = row.privated === '1' ? 'privated' : 'publiced';
         if (row.tags && row.tags.length) {
           this.dialogEditorParams.params.tags = row.tags.map((item: any) => {
             return {
@@ -288,7 +304,8 @@ export default class myEditorPostVideoComponent extends commonPost {
     model: false,
     title: '新增视频',
     params: cloneDeep(CONST_PARAMS.add_or_edit),
-    checkedOptions: cloneDeep(POST_RADIO_OPTIONS),
+    checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
+    radioOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
   /* event */
   public hide() {
@@ -315,102 +332,64 @@ export default class myEditorPostVideoComponent extends commonPost {
     return Promise.resolve(data);
   }
   public async handleConfirmAddOrUpdate() {
-    if (!this.dialogEditorParams.params.title) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请输入标题',
+    const validations = cloneDeep(this.commonValidations);
+    validations.push(
+      ...[
+        { key: 'poster', message: '请选择海报', check: (value: any) => !!value },
+        { key: 'videoUrl', message: '请选择视频', check: (value: any) => !!value },
+      ],
+    );
+    if (this.validateParams(this.dialogEditorParams.params, validations)) {
+      const result = await this.$globalConfirm.show({
+        title: '友情提示',
+        color: 'primary',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
       });
-      return;
-    }
-    if (!this.dialogEditorParams.params.directoryId) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择主题',
-      });
-      return;
-    }
-    if (!this.dialogEditorParams.params.authorId) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择作者',
-      });
-      return;
-    }
-    if (!this.dialogEditorParams.params.channelId) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择频道',
-      });
-      return;
-    }
-    if (!this.dialogEditorParams.params.tags.length) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择标签',
-      });
-      return;
-    }
-    if (!this.dialogEditorParams.params.poster) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择海报',
-      });
-      return;
-    }
-    if (!this.dialogEditorParams.params.videoUrl) {
-      this.$globalMessage.show({
-        type: 'warning',
-        content: '请选择视频',
-      });
-      return;
-    }
-    const result = await this.$globalConfirm.show({
-      title: '友情提示',
-      color: 'primary',
-      content: '确定吗？老铁！？',
-      confirmButtonText: '非常确定',
-    });
-    if (result) {
-      try {
-        const params: any = {
-          authorId: this.dialogEditorParams.params.authorId,
-          channelId: this.dialogEditorParams.params.channelId,
-          content: this.dialogEditorParams.params.content,
-          directoryId: this.dialogEditorParams.params.directoryId,
-          title: this.dialogEditorParams.params.title,
-          videoUrl: this.dialogEditorParams.params.videoUrl,
-          videoPoster: this.dialogEditorParams.params.videoPoster,
-          poster: this.dialogEditorParams.params.poster,
-          tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
-          pinned: '0',
-          recommended: '0',
-          featured: '0',
-          hot: '0',
-          original: '0',
-          paid: '0',
-          free: '0',
-          privated: '0',
-          publiced: '0',
-        };
-        for (let item of this.dialogEditorParams.params.checked) {
-          params[item] = '1';
-        }
-        this.$q.loading.show();
-        if (BlogPostModule.postAddOrUpdateVideo === 'add') {
-          await BlogPostModule.addVideoPost(params);
-          BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO(true);
-        } else {
-          params.id = this.dialogEditorParams.params.id;
-          await BlogPostModule.updateVideoPost(params);
-          BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(true);
-        }
-        this.hide();
-        this.$q.loading.hide();
-        this.$globalMessage.show({
-          type: 'success',
-          content: '操作成功',
-        });
-      } catch (error) {}
+      if (result) {
+        try {
+          const params: any = {
+            authorId: this.dialogEditorParams.params.authorId,
+            channelId: this.dialogEditorParams.params.channelId,
+            content: this.dialogEditorParams.params.content,
+            directoryId: this.dialogEditorParams.params.directoryId,
+            title: this.dialogEditorParams.params.title,
+            tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
+            pinned: '0',
+            recommended: '0',
+            featured: '0',
+            hot: '0',
+            original: '0',
+            paid: '0',
+            free: '0',
+            privated: '0',
+            publiced: '0',
+            videoUrl: this.dialogEditorParams.params.videoUrl,
+            videoPoster: this.dialogEditorParams.params.videoPoster,
+            poster: this.dialogEditorParams.params.poster,
+          };
+          for (let item of this.dialogEditorParams.params.checked) {
+            params[item] = '1';
+          }
+          params[this.dialogEditorParams.params.paidOrFree] = '1';
+          params[this.dialogEditorParams.params.privateOrPublic] = '1';
+          this.$q.loading.show();
+          if (BlogPostModule.postAddOrUpdateVideo === 'add') {
+            await BlogPostModule.addVideoPost(params);
+            BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO(true);
+          } else {
+            params.id = this.dialogEditorParams.params.id;
+            await BlogPostModule.updateVideoPost(params);
+            BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO(true);
+          }
+          this.hide();
+          this.$q.loading.hide();
+          this.$globalMessage.show({
+            type: 'success',
+            content: '操作成功',
+          });
+        } catch (error) {}
+      }
     }
   }
 }

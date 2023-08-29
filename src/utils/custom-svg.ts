@@ -28,7 +28,7 @@ export const myIcons: { [key: string]: string } = {
   'app:speaker': 'svg/speaker.svg',
   'app:post-normal': 'svg/list-circle-outline.svg',
   'app:post-video': 'svg/play-circle-outline.svg',
-  'app:post-image': 'svg/image-outline.svg',
+  'app:post-gallery': 'svg/image-outline.svg',
   'app:post-survey': 'svg/help-outline.svg',
   'app:post-embed': 'svg/book-outline.svg',
   'app:post-politics': 'svg/layers-outline.svg',

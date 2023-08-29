@@ -286,7 +286,7 @@ export default class MyAudioCommentPage extends Vue {
     });
     if (!ids.length) {
       this.$globalMessage.show({
-        type: 'warning',
+        type: 'error',
         content: '请选择正常状态的评论',
       });
       return;
@@ -318,7 +318,7 @@ export default class MyAudioCommentPage extends Vue {
     });
     if (!ids.length) {
       this.$globalMessage.show({
-        type: 'warning',
+        type: 'error',
         content: '请选择正常状态的评论',
       });
       return;
@@ -350,7 +350,7 @@ export default class MyAudioCommentPage extends Vue {
     });
     if (!ids.length) {
       this.$globalMessage.show({
-        type: 'warning',
+        type: 'error',
         content: '请选择拉黑或删除状态的评论',
       });
       return;

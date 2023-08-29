@@ -147,18 +147,18 @@ export const asyncRoutes: RouteRecordRaw[] = [
     component: shallowRef(Layout),
     name: 'Audit0',
     meta: {
-      pagePermissionId: ['Audit', 'AuditCompanyCertification', 'AuditComment'],
+      pagePermissionId: ['Audit', 'AuditAuthor', 'AuditComment'],
       icon: 'o_how_to_reg',
       title: 'audit',
     },
     children: [
       {
-        path: 'company-certification',
-        component: () => import(/* webpackChunkName: "audit-company-certification" */ 'src/pages/audit/company-certification.vue'),
-        name: 'AuditCompanyCertification',
+        path: 'author-approval',
+        component: () => import(/* webpackChunkName: "audit-author" */ 'src/pages/audit/author-approval.vue'),
+        name: 'AuditAuthor',
         meta: {
-          title: 'audit-company-certification',
-          pagePermissionId: ['AuditCompanyCertification'],
+          title: 'audit-author-approval',
+          pagePermissionId: ['AuditAuthor'],
         },
       },
       {
@@ -166,7 +166,7 @@ export const asyncRoutes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "audit-comment" */ 'src/pages/audit/comment.vue'),
         name: 'AuditComment',
         meta: {
-          title: 'audit-comment',
+          title: 'audit-comment-approval',
           pagePermissionId: ['AuditComment'],
         },
       },

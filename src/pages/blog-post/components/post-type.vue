@@ -27,7 +27,7 @@ import { Component, Vue } from 'vue-facing-decorator';
 export default class myPostTypePage extends Vue {
   public postTypeParams = {
     model: false,
-    // 1普通文章，2纯视频，3纯图片，4调查问卷，5内嵌视频，6时政
+    // 1普通文章，2视频，3图集，4调查问卷，5内嵌视频，6时政
     data: [
       {
         id: 1,
@@ -36,19 +36,19 @@ export default class myPostTypePage extends Vue {
       },
       {
         id: 2,
-        name: '纯视频',
+        name: '视频',
         svg: 'app:post-video',
       },
       {
         id: 3,
-        name: '纯图片',
-        svg: 'app:post-image',
+        name: '图集',
+        svg: 'app:post-gallery',
       },
-      {
-        id: 4,
-        name: '调查问卷',
-        svg: 'app:post-survey',
-      },
+      // {
+      //   id: 4,
+      //   name: '调查问卷',
+      //   svg: 'app:post-survey',
+      // },
       {
         id: 5,
         name: '内嵌视频',

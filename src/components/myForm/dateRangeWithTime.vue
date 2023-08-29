@@ -73,19 +73,19 @@ export default class myDateRangeWithTImeComponent extends Vue {
       return;
     }
     if (newVal) {
-      this.dateParams.list[0] = `start: ${newVal} `;
+      this.dateParams.list[0] = `起始: ${newVal} `;
     }
   }
   @Watch('dateParams.endModel', { deep: true })
   onchange2(newVal: any) {
     if (this.dateParams.startModel && +new Date(newVal) <= +new Date(this.dateParams.startModel)) {
-      this.$globalMessage.show({ type: 'error', content: 'start time < end time' });
+      this.$globalMessage.show({ type: 'error', content: '起始时间小于结束时间' });
       this.$refs.proxy1 && this.$refs.proxy1.hide();
       this.$refs.proxy2 && this.$refs.proxy2.hide();
       return;
     }
     if (newVal) {
-      this.dateParams.list[1] = `end: ${newVal}`;
+      this.dateParams.list[1] = `结束: ${newVal}`;
     }
   }
   @Watch('dateParams.list', { deep: true })
@@ -130,7 +130,7 @@ export default class myDateRangeWithTImeComponent extends Vue {
     rules: [],
     classes: '',
     label: '',
-    placeholder: 'Click 1 and 2 to select start and end times',
+    placeholder: '单击 1 和 2 选择开始和结束时间',
   };
 }
 </script>

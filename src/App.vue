@@ -35,4 +35,8 @@ export default class myComponentApp extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.PhotoSlider__Wrapper {
+  z-index: 6000 !important;
+}
+</style>

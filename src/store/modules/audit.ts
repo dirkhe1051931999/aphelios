@@ -1,23 +1,28 @@
 import { VuexModule, Module, Mutation, Action, getModule } from 'vuex-module-decorators';
 import store from '../index';
-import { getCompanyCertificationList, getPostAllCommnet, passCompanyCertification, rejectCompanyCertification, setPostCommentStatus } from 'src/api/audit';
+import { getAuthorCompanyDetail, getAuthorCompanyList, getAuthorNormalList, getPostAllCommnet, passAuthorCompany, passAuthorNormal, rejectAuthorCompany, rejectAuthorNormal, setPostCommentStatus } from 'src/api/audit';
 
 interface IAudit {}
 @Module({ dynamic: true, namespaced: true, store, name: 'Audit' })
 class Audit extends VuexModule implements IAudit {
   @Action({ rawError: true })
-  public async getCompanyCertificationList(data: any) {
-    const result = await getCompanyCertificationList(data);
+  public async getAuthorCompanyList(data: any) {
+    const result = await getAuthorCompanyList(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
-  public async passCompanyCertification(data: any) {
-    const result = await passCompanyCertification(data);
+  public async getAuthorCompanyDetail(data: any) {
+    const result = await getAuthorCompanyDetail(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
-  public async rejectCompanyCertification(data: any) {
-    const result = await rejectCompanyCertification(data);
+  public async passAuthorCompany(data: any) {
+    const result = await passAuthorCompany(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async rejectAuthorCompany(data: any) {
+    const result = await rejectAuthorCompany(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
@@ -28,6 +33,21 @@ class Audit extends VuexModule implements IAudit {
   @Action({ rawError: true })
   public async setPostCommentStatus(data: any) {
     const result = await setPostCommentStatus(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async getAuthorNormalList(data: any) {
+    const result = await getAuthorNormalList(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async passAuthorNormal(data: any) {
+    const result = await passAuthorNormal(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async rejectAuthorNormal(data: any) {
+    const result = await rejectAuthorNormal(data);
     return Promise.resolve(result);
   }
 }

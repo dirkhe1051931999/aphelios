@@ -1,7 +1,11 @@
-import { POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_SVG_NAME } from 'src/pages/blog-post/utils';
+import { POST_STATUS, POST_TYPE_NAME, POST_TYPE_SVG_NAME } from 'src/pages/blog-post/utils';
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { Vue, Watch } from 'vue-facing-decorator';
-
+interface Validation {
+  key: string;
+  message: string;
+  check: (value: any) => boolean;
+}
 export class commonPost extends Vue {
   /* 获取值 */
   get channelOptions() {
@@ -62,7 +66,6 @@ export class commonPost extends Vue {
       if (!row.authorId) return '--';
       const selectOption = this.authorOptions;
       const item = selectOption.find((item: any) => item.value === row.authorId);
-      console.log(item);
       if (item) {
         return item.avatarUrl;
       } else {
@@ -87,6 +90,11 @@ export class commonPost extends Vue {
       return POST_TYPE_SVG_NAME[item.postType] || '普通文章';
     };
   }
+  get postTypeName() {
+    return (item: any) => {
+      return POST_TYPE_NAME[item.postType] || '普通文章';
+    };
+  }
   /* 是否可以做某件事 */
   get canOnline() {
     return (row: any) => {
@@ -97,5 +105,28 @@ export class commonPost extends Vue {
     return (row: any) => {
       return row.status === 'PUBLISHED' || row.status === 'DRAFT';
     };
+  }
+  /* 多条件验证 */
+  public commonValidations: Validation[] = [
+    { key: 'title', message: '请输入标题', check: (value) => !!value },
+    { key: 'content', message: '请输入文章内容', check: (value) => !!value },
+    { key: 'directoryId', message: '请选择主题', check: (value) => !!value },
+    { key: 'authorId', message: '请选择作者', check: (value) => !!value },
+    { key: 'channelId', message: '请选择频道', check: (value) => !!value },
+    { key: 'tags', message: '请输入标签', check: (value) => Array.isArray(value) && value.length > 0 },
+  ];
+  public validateParams(params: Record<string, any>, validations: Validation[]): boolean {
+    for (const validation of validations) {
+      const { key, message, check } = validation;
+      const value = params[key];
+      if (!check(value)) {
+        this.$globalMessage.show({
+          type: 'error',
+          content: message,
+        });
+        return false;
+      }
+    }
+    return true;
   }
 }
