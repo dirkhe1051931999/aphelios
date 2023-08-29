@@ -1,4 +1,3 @@
-import formidable from 'formidable';
 import { isFieldFile, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 import { fileToBase64 } from 'src/util/helper';
@@ -20,30 +19,34 @@ export const getAllPostAuthor = async (ctx): Promise<void> => {
 };
 // 添加作者
 export const addPostAuthor = async (ctx): Promise<void> => {
-  const form: any = new formidable.IncomingForm();
-  form.parse(ctx.req, (err, fields, files) => {
-    console.log(fields, files);
-  });
-  // const avatarData = await uploadBase64FileToMinio(avatar, 'assets/post-author');
-  // const coverData = await uploadBase64FileToMinio(cover, 'assets/post-author');
-  // ctx.success(ctx, null);
-  // try {
-  //   const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
-  //   if (exist[0].count > 0) {
-  //     ctx.error(ctx, 607);
-  //   } else {
-  //     const id = uuidv4().replace(/\-/g, '');
-  //     let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime)
-  //               VALUES ('${id}', '${name}', '${nick}', '${avatarData.url}' ,'${coverData.url}' ,'${description}' ,${type},'${managementPassword}','${appPassword}',${
-  //       type === 1 ? 0 : 2
-  //     },0,0,0,0,${new Date().getTime()})`;
-  //     await ctx.execSql(sql);
-  //     ctx.success(ctx, null);
-  //   }
-  // } catch (error) {
-  //   console.log(error);
-  //   ctx.error(ctx, 405);
-  // }
+  let avatarUrl, coverUrl;
+  const { avatar, cover } = await isFieldFile(ctx, ['avatar', 'cover']);
+  const { name, nick, description, type, managementPassword, appPassword } = ctx.request.query;
+  const avatarResult = await fileToBase64(avatar.value);
+  const coverResult = await fileToBase64(cover.value);
+  const { url: avatarUrlResult } = await uploadBase64FileToMinio(avatarResult, 'assets/post-author');
+  const { url: coverUrlResult } = await uploadBase64FileToMinio(coverResult, 'assets/post-author');
+  avatarUrl = avatarUrlResult;
+  coverUrl = coverUrlResult;
+  fs.unlinkSync(avatar.value);
+  fs.unlinkSync(cover.value);
+  try {
+    const exist = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_author WHERE name = '${name}'`);
+    if (exist[0].count > 0) {
+      ctx.error(ctx, 607);
+    } else {
+      const id = uuidv4().replace(/\-/g, '');
+      let sql = `INSERT INTO sm_board_author (id, name, nick, avatarUrl, coverUrl, description, type, managementPassword, appPassword,status,followCount,articleCount,fansCount,score,createTime)
+                VALUES ('${id}', '${name}', '${nick}', '${avatarUrl}' ,'${coverUrl}' ,'${description}' ,${type}, '${managementPassword}', '${appPassword}', ${
+        type === 1 ? 0 : 2
+      },0,0,0,0,${new Date().getTime()})`;
+      await ctx.execSql(sql);
+      ctx.success(ctx, { id });
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
 };
 // 更新作者
 export const updatePostAuthor = async (ctx): Promise<void> => {
@@ -62,6 +65,7 @@ export const updatePostAuthor = async (ctx): Promise<void> => {
     const result = await fileToBase64(cover.value);
     const { url } = await uploadBase64FileToMinio(result, 'assets/post-author');
     coverUrl = url;
+    fs.unlinkSync(cover.value);
   } else {
     coverUrl = cover.value;
   }
@@ -91,7 +95,6 @@ export const removePostAuthor = async (ctx): Promise<void> => {
   }
   try {
     let sql = `
-    
     CREATE PROCEDURE delete_author(IN author_id CHAR(36))
     BEGIN
         DECLARE author_type INT;
@@ -99,7 +102,7 @@ export const removePostAuthor = async (ctx): Promise<void> => {
         IF author_type = 1 THEN
             DELETE FROM sm_board_author WHERE id = author_id;
         ELSE
-            DELETE FROM sm_board_company_verify_info WHERE authorId = author_id;
+            DELETE FROM sm_board_audit_author_approval WHERE authorId = author_id;
             DELETE FROM sm_board_author WHERE id = author_id;
         END IF;
     END
@@ -118,14 +121,14 @@ export const verifyCompanyAuthor = async (ctx): Promise<void> => {
   try {
     const { url, data } = await uploadFileToMinio(ctx, true, null);
     const { companyName, companyCode, companyType, authorId } = data;
-    const haveAuthor = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+    const haveAuthor = await ctx.execSql(`SELECT COUNT(*) as count FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
     if (haveAuthor[0].count > 0) {
       ctx.error(ctx, 608);
       return;
     }
     const id = uuidv4().replace(/\-/g, '');
     await ctx.execSql(`
-      INSERT INTO sm_board_company_verify_info (id, authorId, companyName, companyCode, companyType, companyLicense, status, createTime)
+      INSERT INTO sm_board_audit_author_approval (id, authorId, companyName, companyCode, companyType, companyLicense, status, createTime)
       VALUES ('${id}', '${authorId}', '${companyName}', '${companyCode}', '${companyType}', '${url}', 0, ${new Date().getTime()});
       `);
     await ctx.execSql(`UPDATE sm_board_author SET companyVerifyInfoId = '${id}', status = 3 WHERE id = '${authorId}';`);
@@ -143,7 +146,7 @@ export const getCompanyAuthorVerifyInfo = async (ctx): Promise<void> => {
       ctx.error(ctx, '404#authorId');
       return;
     }
-    const result = await ctx.execSql(`SELECT * FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+    const result = await ctx.execSql(`SELECT * FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
     ctx.success(ctx, result[0]);
   } catch (error) {
     console.log(error);
@@ -158,9 +161,9 @@ export const removeCompanyAuthorVerify = async (ctx): Promise<void> => {
       ctx.error(ctx, '404#authorId');
       return;
     }
-    const result = await ctx.execSql(`SELECT * FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+    const result = await ctx.execSql(`SELECT * FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
     if (result[0]) {
-      await ctx.execSql(`DELETE FROM sm_board_company_verify_info WHERE authorId = '${authorId}'`);
+      await ctx.execSql(`DELETE FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
       await ctx.execSql(`UPDATE sm_board_author SET companyVerifyInfoId = NULL, status = 2 WHERE id = '${authorId}';`);
     }
     ctx.success(ctx, null);

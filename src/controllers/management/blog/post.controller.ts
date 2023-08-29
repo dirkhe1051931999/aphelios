@@ -51,7 +51,7 @@ export const getPostList = async (ctx) => {
     SELECT 
         p.id, p.title, p.createTime, p.updateTime, p.status, 
         p.poster, p.view, p.authorId, p.categoryId, 
-        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,p.videoPoster,p.videoUrl,p.postTags,
+        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,p.videoPoster,p.videoUrl,p.postTags,p.galleries,
         COUNT(c.postId) AS comment
     FROM 
         sm_board_post_list AS p
@@ -97,7 +97,7 @@ export const getPostListByCategoryId = async (ctx) => {
     let results = await ctx.execSql([
       `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
       `
-          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
+          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags,galleries,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
           FROM sm_board_post_list 
           WHERE (categoryId = '${categoryId}') 
           ORDER BY createTime DESC
@@ -119,7 +119,7 @@ export const getPostRowById = async (ctx) => {
   }
   try {
     let result = await ctx.execSql(
-      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags, postType  FROM sm_board_post_list WHERE id = '${id}'`
+      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags, galleries, postType  FROM sm_board_post_list WHERE id = '${id}'`
     );
     ctx.success(ctx, result[0]);
   } catch (error) {
@@ -152,21 +152,21 @@ export const uploadPostImgs = async (ctx) => {
 };
 // 添加文章
 export const addPost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
+  let { title, content, poster, authorId, directoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
   let status = 'OFFLINE';
   let createTime = new Date().getTime();
   let updateTime = createTime;
   let view = 0;
   let comment = 0;
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId,channelId,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
+  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, directoryId,channelId,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
     return;
   }
   try {
     let id = uuidv4().replace(/-/g, '');
     let results = await ctx.execSql([
       `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, status, createTime, updateTime, view, comment, srcTopicId, postTags,pinned,recommended,featured,hot,original,paid,free,private,public) 
-      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${categoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}', '${JSON.stringify(
+      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${directoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}', '${JSON.stringify(
         tags
       )}', '${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}');`,
     ]);
@@ -212,7 +212,37 @@ export const addVideoPost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
-
+// 添加图集文章
+export const addGalleryPost = async (ctx) => {
+  let { authorId, channelId, content, directoryId, title, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries } = ctx.request.body;
+  if (ctx.isFalsy([authorId,channelId, content, directoryId, title, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries])) {
+    ctx.error(ctx, '404#authorId, channelId,content,directoryId,title,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced,galleries');
+    return;
+  }
+  try {
+    let id = uuidv4().replace(/-/g, '');
+    let createTime = new Date().getTime();
+    let updateTime = createTime;
+    let status = 'OFFLINE';
+    let view = 0;
+    let comment = 0;
+    let sql = `
+    INSERT INTO sm_board_post_list (id,srcTopicId,postType,createTime,updateTime,status,view,comment,authorId,channelId,content,categoryId,title,postTags,pinned,recommended,featured,hot,original,paid,free,private,public,galleries)
+    VALUES ('${id}','${id}','3', ${createTime},${updateTime},'${status}',${view},${comment},'${authorId}','${channelId}','${content}','${directoryId}','${title}','${JSON.stringify(
+      tags
+    )}','${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}','${JSON.stringify(galleries)}');
+    `;
+    let results = await ctx.execSql([sql]);
+    if (results[0].affectedRows > 0) {
+      ctx.success(ctx, { id: id });
+    } else {
+      ctx.error(ctx, 405);
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+};
 // 删除文章
 export const deletePost = async (ctx) => {
   let { id } = ctx.request.body;
@@ -230,10 +260,10 @@ export const deletePost = async (ctx) => {
 };
 // 更新文章
 export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, categoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
+  let { title, content, poster, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
   let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, categoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, categoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
+  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
+    ctx.error(ctx, '404#title, content,poster, authorId, directoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
     return;
   }
   try {
@@ -243,7 +273,7 @@ export const updatePost = async (ctx) => {
       content = '${content}',
       poster = '${poster}',
       authorId = '${authorId}',
-      categoryId = '${categoryId}',
+      categoryId = '${directoryId}',
       channelId = '${channelId}',
       postTags = '${JSON.stringify(tags)}',
       updateTime = ${updateTime},
@@ -264,6 +294,7 @@ export const updatePost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
+// 更新视频文章
 export const updateVideoPost = async (ctx) => {
   let { title, content, poster, authorId, directoryId, channelId, id, videoUrl, videoPoster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
   let updateTime = new Date().getTime();
@@ -302,6 +333,42 @@ export const updateVideoPost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
+// 更新图集文章
+export const updateGalleryPost = async (ctx) => {
+  let { title, content, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries } = ctx.request.body;
+  let updateTime = new Date().getTime();
+  if (ctx.isFalsy([title, content, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries])) {
+    ctx.error(ctx, '404#title, content, authorId, directoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced,galleries');
+    return;
+  }
+  try {
+    ctx.execSql([
+      `UPDATE sm_board_post_list SET
+      title = '${title}',
+      content = '${content}',
+      authorId = '${authorId}',
+      categoryId = '${directoryId}',
+      channelId = '${channelId}',
+      updateTime = ${updateTime},
+      postTags = '${JSON.stringify(tags)}',
+      pinned = '${pinned}',
+      recommended = '${recommended}',
+      featured = '${featured}',
+      hot = '${hot}',
+      original = '${original}',
+      paid = '${paid}',
+      free = '${free}',
+      private = '${privated}',
+      public = '${publiced}',
+      galleries = '${JSON.stringify(galleries)}'
+      WHERE id = '${id}';`,
+    ]);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+}
 
 // 下架文章
 export const offlinePost = async (ctx) => {
