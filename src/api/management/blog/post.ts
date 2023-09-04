@@ -3,7 +3,9 @@ import Koa from 'koa';
 import {
   addComment,
   addGalleryPost,
+  addNormalPost,
   addPost,
+  addVideoEmbedPost,
   addVideoPost,
   deletePost,
   getLevel1CommentsByPostId,
@@ -18,7 +20,9 @@ import {
   setCommentStatus,
   setMood,
   updateGalleryPost,
+  updateNormalPost,
   updatePost,
+  updateVideoEmbedPost,
   updateVideoPost,
   uploadPostImgs,
 } from 'src/controllers/management/blog/post.controller';
@@ -52,6 +56,14 @@ export class ManagementBlogPostAPIController {
   async addGalleryPost(ctx: Koa.Context, next: Koa.Next) {
     return addGalleryPost(ctx);
   }
+  @Route('/addVideoEmbedPost', HTTP_METHODS.POST)
+  async addVideoEmbedPost(ctx: Koa.Context, next: Koa.Next) {
+    return addVideoEmbedPost(ctx);
+  }
+  @Route('/addNormalPost', HTTP_METHODS.POST)
+  async addNormalPost(ctx: Koa.Context, next: Koa.Next) {
+    return addNormalPost(ctx);
+  }
   @Route('/deletePost', HTTP_METHODS.POST)
   async deletePost(ctx: Koa.Context, next: Koa.Next) {
     return deletePost(ctx);
@@ -67,6 +79,14 @@ export class ManagementBlogPostAPIController {
   @Route('/updateGalleryPost', HTTP_METHODS.POST)
   async updateGalleryPost(ctx: Koa.Context, next: Koa.Next) {
     return updateGalleryPost(ctx);
+  }
+  @Route('/updateVideoEmbedPost', HTTP_METHODS.POST)
+  async updateVideoEmbedPost(ctx: Koa.Context, next: Koa.Next) {
+    return updateVideoEmbedPost(ctx);
+  }
+  @Route('/updateNormalPost', HTTP_METHODS.POST)
+  async updateNormalPost(ctx: Koa.Context, next: Koa.Next) {
+    return updateNormalPost(ctx);
   }
   @Route('/getPostList', HTTP_METHODS.POST)
   async getPostList(ctx: Koa.Context, next: Koa.Next) {

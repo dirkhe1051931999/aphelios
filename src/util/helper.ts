@@ -230,3 +230,23 @@ export function fileToBase64(filePath: string): Promise<string> {
     });
   });
 }
+export function transformResultsWithPrefix(prefix, resultsArray) {
+  return resultsArray.map(row => {
+    const transformedRow = { ...row }; // Clone the original row to avoid mutating it
+    const nestedObject = {}; // This will hold the values corresponding to the prefix
+    let prefixExists = false; // Flag to check if any key starts with the prefix
+    for (const [key, value] of Object.entries(transformedRow)) {
+      if (key.startsWith(prefix)) {
+        const newKey = key.slice(prefix.length); // Remove the prefix
+        nestedObject[newKey] = value; // Add the value to the nested object
+        delete transformedRow[key]; // Remove the prefixed key-value pair from the original row
+        prefixExists = true; // Set the flag
+      }
+    }
+    // Add the nested object back to the original row only if the prefix exists
+    if (prefixExists) {
+      transformedRow[prefix.slice(0, -1)] = nestedObject;
+    }
+    return transformedRow;
+  });
+}

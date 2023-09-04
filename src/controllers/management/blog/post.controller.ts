@@ -1,6 +1,7 @@
-import { uploadFileToMinio } from 'src/util/helper';
+import { transformResultsWithPrefix, uploadFileToMinio } from 'src/util/helper';
 import CONFIG from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
+import { COMMON_QUERY_OTHER_COLUMN, commonAddPost, commonUpdatePost } from '../utils';
 // 获取文章列表
 export const getPostList = async (ctx) => {
   let { channelId, authorId, status, page, rowsPerPage, haveComment, orderProperty, orderDir, post_radio_option, postType } = ctx.request.body;
@@ -12,75 +13,87 @@ export const getPostList = async (ctx) => {
   rowsPerPage = rowsPerPage || 20;
   post_radio_option = post_radio_option || [];
   postType = postType || [];
-  post_radio_option = post_radio_option.length ? post_radio_option.join(',').replace('publiced', 'public').replace('privated', 'private').split(',') : [];
+  let columnSqlString = COMMON_QUERY_OTHER_COLUMN.map((field) => `p.${field}`).join(',');
+  // 文章选项，私密还是公开，精选还是置顶
   let postRadioOptionConditions = post_radio_option.map((field) => `(p.${field} = '1')`).join(' AND ');
-  let postTypeConditions = postType.map((field) => `(p.postType = '${field}')`).join(' OR ');
   if (postRadioOptionConditions) {
     postRadioOptionConditions = 'AND ' + postRadioOptionConditions;
   }
+  postRadioOptionConditions = post_radio_option.length > 0 ? postRadioOptionConditions : '';
+  // 文章类型
+  let postTypeConditions = postType.map((field) => `(p.postType = '${field}')`).join(' OR ');
   if (postTypeConditions) {
     postTypeConditions = 'AND (' + postTypeConditions + ')';
   }
-  postRadioOptionConditions = post_radio_option.length > 0 ? postRadioOptionConditions : '';
   postTypeConditions = postType.length > 0 ? postTypeConditions : '';
   try {
-    let sql1 = `
-    SELECT COUNT(*) as total 
-    FROM (
-        SELECT p.id
+    let totalSql = `
+        SELECT COUNT(*) as total 
+        FROM (
+            SELECT p.id
+            FROM sm_board_post_list AS p
+            LEFT JOIN (
+                SELECT postId, COUNT(*) as commentCount
+                FROM sm_board_comment
+                GROUP BY postId
+            ) AS c ON p.srcTopicId = c.postId
+            WHERE 
+            (p.channelId = '${channelId}' OR '${channelId}' = '') 
+            AND (p.status = '${status}' OR '${status}'  = '') 
+            AND (p.authorId = '${authorId}' OR '${authorId}'  = '')
+            AND (
+                ('${haveComment}' = '1' AND c.commentCount > 0)
+                OR ('${haveComment}' = '0' AND (c.commentCount = 0 OR c.commentCount IS NULL))
+                OR '${haveComment}' = ''
+            )
+            ${postRadioOptionConditions}
+            ${postTypeConditions}
+        ) as totals;    
+    `;
+    let pageDataSql = `
+        SELECT COUNT(c.postId) AS comment, ${columnSqlString}
         FROM sm_board_post_list AS p
-        LEFT JOIN (
-            SELECT postId, COUNT(*) as commentCount
-            FROM sm_board_comment
-            GROUP BY postId
-        ) AS c ON p.srcTopicId = c.postId
+        LEFT JOIN sm_board_comment AS c ON p.srcTopicId = c.postId
         WHERE 
-        (p.channelId = '${channelId}' OR '${channelId}' = '') 
-        AND (p.status = '${status}' OR '${status}'  = '') 
-        AND (p.authorId = '${authorId}' OR '${authorId}'  = '')
-        AND (
-            ('${haveComment}' = '1' AND c.commentCount > 0)
-            OR ('${haveComment}' = '0' AND (c.commentCount = 0 OR c.commentCount IS NULL))
-            OR '${haveComment}' = ''
-        )
-        ${postRadioOptionConditions}
-        ${postTypeConditions}
-    ) as totals;    
+            (p.channelId = '${channelId}' OR '${channelId}' = '') 
+            AND (p.status = '${status}' OR '${status}' = '') 
+            AND (p.authorId = '${authorId}' OR '${authorId}' = '')
+            ${postRadioOptionConditions}
+            ${postTypeConditions}
+        GROUP BY p.id
+        HAVING 
+            (
+                ('${haveComment}' = '1' AND COUNT(c.postId) > 0) 
+                OR ('${haveComment}' = '0' AND COUNT(c.postId) = 0) 
+                OR '${haveComment}' = ''
+            )
+        ${
+          orderProperty
+            ? `ORDER BY ${orderProperty} ${orderDir} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
+            : `ORDER BY p.createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
+        };
     `;
-    let sql2 = `
-    SELECT 
-        p.id, p.title, p.createTime, p.updateTime, p.status, 
-        p.poster, p.view, p.authorId, p.categoryId, 
-        p.channelId, p.postType, p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,p.videoPoster,p.videoUrl,p.postTags,p.galleries,
-        COUNT(c.postId) AS comment
-    FROM 
-        sm_board_post_list AS p
-    LEFT JOIN 
-        sm_board_comment AS c ON p.srcTopicId = c.postId
-    WHERE 
-        (p.channelId = '${channelId}' OR '${channelId}' = '') 
-        AND (p.status = '${status}' OR '${status}' = '') 
-        AND (p.authorId = '${authorId}' OR '${authorId}' = '')
-        ${postRadioOptionConditions}
-        ${postTypeConditions}
-    GROUP BY 
-        p.id
-    HAVING 
-        (
-            ('${haveComment}' = '1' AND COUNT(c.postId) > 0) 
-            OR ('${haveComment}' = '0' AND COUNT(c.postId) = 0) 
-            OR '${haveComment}' = ''
-        )
-    ${
-      orderProperty
-        ? `ORDER BY ${orderProperty} ${orderDir} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
-        : `ORDER BY p.createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage}`
-    };
+    let pageDataResult = await ctx.execSql([totalSql, pageDataSql]);
+    const postIdList = pageDataResult[1].map((item) => item.id);
+    const surveySql = `
+        SELECT * FROM sm_board_survey WHERE postId IN ('${postIdList.join("','")}')
     `;
-    let results = await ctx.execSql([sql1, sql2]);
+    const surveyList = await ctx.execSql(surveySql);
+    // 使用 Map 对象对 survey 数据进行分组
+    const surveyMap = surveyList.reduce((acc, item) => {
+      acc[item.postId] = acc[item.postId] || [];
+      acc[item.postId].push(item);
+      return acc;
+    }, {});
+    // 将 survey 数据合并到主查询结果中
+    const pageData = pageDataResult[1].map((item) => ({
+      ...item,
+      survey: surveyMap[item.id] || [],
+    }));
+    // 返回合并后的数据
     ctx.success(ctx, {
-      pageData: results[1],
-      total: results[0][0].total,
+      pageData,
+      total: pageDataResult[0][0].total,
     });
   } catch (error) {
     console.log(error);
@@ -88,21 +101,23 @@ export const getPostList = async (ctx) => {
   }
 };
 export const getPostListByCategoryId = async (ctx) => {
-  let { categoryId, page, rowsPerPage } = ctx.request.body;
-  if (ctx.isFalsy([categoryId, page, rowsPerPage])) {
-    ctx.error(ctx, '404#categoryId, page, rowsPerPage');
+  let { directoryId, page, rowsPerPage } = ctx.request.body;
+  if (ctx.isFalsy([directoryId, page, rowsPerPage])) {
+    ctx.error(ctx, '404#directoryId, page, rowsPerPage');
     return;
   }
+  let columnSqlString = COMMON_QUERY_OTHER_COLUMN.join(',');
   try {
-    let results = await ctx.execSql([
-      `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (categoryId = '${categoryId}');`,
-      `
-          SELECT id, title, createTime, updateTime, status, poster, view, authorId, categoryId,channelId, postType, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags,galleries,(SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
-          FROM sm_board_post_list 
-          WHERE (categoryId = '${categoryId}') 
-          ORDER BY createTime DESC
-          LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
-    ]);
+    let totalSql = `SELECT COUNT(*) as total FROM sm_board_post_list WHERE (directoryId = '${directoryId}');`;
+    let pageDataSql = `
+        SELECT ${columnSqlString},
+        (SELECT COUNT(*) FROM sm_board_comment WHERE postId = srcTopicId) AS comment
+        FROM sm_board_post_list 
+        WHERE (directoryId = '${directoryId}') 
+        ORDER BY createTime DESC
+        LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
+    `;
+    let results = await ctx.execSql([totalSql, pageDataSql]);
     ctx.success(ctx, {
       pageData: results[1],
       total: results[0][0].total,
@@ -117,10 +132,10 @@ export const getPostRowById = async (ctx) => {
   if (!id) {
     ctx.error(ctx, '404#id');
   }
+  let columnSqlString = COMMON_QUERY_OTHER_COLUMN.join(',');
   try {
-    let result = await ctx.execSql(
-      `SELECT id, title, createTime, updateTime, status, poster, view, comment, authorId, categoryId,channelId, srcTopicId, pinned, recommended, featured, hot, original, paid, free, private, public,videoUrl,videoPoster,postTags, galleries, postType  FROM sm_board_post_list WHERE id = '${id}'`
-    );
+    let rowSql = `SELECT ${columnSqlString} FROM sm_board_post_list WHERE id = '${id}'`;
+    let result = await ctx.execSql(rowSql);
     ctx.success(ctx, result[0]);
   } catch (error) {
     console.log(error);
@@ -152,96 +167,43 @@ export const uploadPostImgs = async (ctx) => {
 };
 // 添加文章
 export const addPost = async (ctx) => {
-  let { title, content, poster, authorId, directoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
-  let status = 'OFFLINE';
-  let createTime = new Date().getTime();
-  let updateTime = createTime;
-  let view = 0;
-  let comment = 0;
-  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, directoryId,channelId,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
-    return;
-  }
-  try {
-    let id = uuidv4().replace(/-/g, '');
-    let results = await ctx.execSql([
-      `INSERT INTO sm_board_post_list (id, title, content,poster, authorId, categoryId,channelId, status, createTime, updateTime, view, comment, srcTopicId, postTags,pinned,recommended,featured,hot,original,paid,free,private,public) 
-      VALUES ('${id}', '${title}', '${content}','${poster}', '${authorId}', '${directoryId}','${channelId}', '${status}', ${createTime}, ${updateTime}, ${view}, ${comment}, '${id}', '${JSON.stringify(
-        tags
-      )}', '${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}');`,
-    ]);
-    if (results[0].affectedRows > 0) {
-      ctx.success(ctx, { id: id });
-    } else {
-      ctx.error(ctx, 405);
-    }
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
+  return commonAddPost(ctx, '1');
 };
 // 添加视频文章
 export const addVideoPost = async (ctx) => {
-  let { authorId, channelId, content, directoryId, title, videoUrl, videoPoster, poster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
-  if (ctx.isFalsy([channelId, content, directoryId, title, videoUrl, poster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#channelId,content,directoryId,title,videoUrl,poster,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
-    return;
-  }
-  try {
-    let id = uuidv4().replace(/-/g, '');
-    let createTime = new Date().getTime();
-    let updateTime = createTime;
-    let status = 'OFFLINE';
-    let view = 0;
-    let comment = 0;
-    videoPoster = videoPoster || '';
-    let sql = `
-    INSERT INTO sm_board_post_list (id,srcTopicId,postType,createTime,updateTime,status,view,comment,authorId,channelId,content,categoryId,title,videoUrl,videoPoster,poster, postTags,pinned,recommended,featured,hot,original,paid,free,private,public)
-    VALUES ('${id}','${id}','2', ${createTime},${updateTime},'${status}',${view},${comment},'${authorId}','${channelId}','${content}','${directoryId}','${title}','${videoUrl}','${videoPoster}','${poster}','${JSON.stringify(
-      tags
-    )}','${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}');
-    `;
-    let results = await ctx.execSql([sql]);
-    if (results[0].affectedRows > 0) {
-      ctx.success(ctx, { id: id });
-    } else {
-      ctx.error(ctx, 405);
-    }
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
+  return commonAddPost(ctx, '2');
 };
 // 添加图集文章
 export const addGalleryPost = async (ctx) => {
-  let { authorId, channelId, content, directoryId, title, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries } = ctx.request.body;
-  if (ctx.isFalsy([authorId,channelId, content, directoryId, title, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries])) {
-    ctx.error(ctx, '404#authorId, channelId,content,directoryId,title,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced,galleries');
-    return;
-  }
-  try {
-    let id = uuidv4().replace(/-/g, '');
-    let createTime = new Date().getTime();
-    let updateTime = createTime;
-    let status = 'OFFLINE';
-    let view = 0;
-    let comment = 0;
-    let sql = `
-    INSERT INTO sm_board_post_list (id,srcTopicId,postType,createTime,updateTime,status,view,comment,authorId,channelId,content,categoryId,title,postTags,pinned,recommended,featured,hot,original,paid,free,private,public,galleries)
-    VALUES ('${id}','${id}','3', ${createTime},${updateTime},'${status}',${view},${comment},'${authorId}','${channelId}','${content}','${directoryId}','${title}','${JSON.stringify(
-      tags
-    )}','${pinned}','${recommended}','${featured}','${hot}','${original}','${paid}','${free}','${privated}','${publiced}','${JSON.stringify(galleries)}');
-    `;
-    let results = await ctx.execSql([sql]);
-    if (results[0].affectedRows > 0) {
-      ctx.success(ctx, { id: id });
-    } else {
-      ctx.error(ctx, 405);
-    }
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
+  return commonAddPost(ctx, '3');
+};
+// 添加内嵌视频文章
+export const addVideoEmbedPost = async (ctx) => {
+  return commonAddPost(ctx, '5');
+};
+// 添加普通文章
+export const addNormalPost = async (ctx) => {
+  return commonAddPost(ctx, '1');
+};
+// 更新文章
+export const updatePost = async (ctx) => {
+  return commonUpdatePost(ctx, '1');
+};
+// 更新视频文章
+export const updateVideoPost = async (ctx) => {
+  return commonUpdatePost(ctx, '2');
+};
+// 更新图集文章
+export const updateGalleryPost = async (ctx) => {
+  return commonUpdatePost(ctx, '3');
+};
+// 更新内嵌视频文章
+export const updateVideoEmbedPost = async (ctx) => {
+  return commonUpdatePost(ctx, '5');
+};
+// 更新普通文章
+export const updateNormalPost = async (ctx) => {
+  return commonUpdatePost(ctx, '1');
 };
 // 删除文章
 export const deletePost = async (ctx) => {
@@ -258,118 +220,6 @@ export const deletePost = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
-// 更新文章
-export const updatePost = async (ctx) => {
-  let { title, content, poster, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
-  let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, directoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
-    return;
-  }
-  try {
-    ctx.execSql([
-      `UPDATE sm_board_post_list SET
-      title = '${title}',
-      content = '${content}',
-      poster = '${poster}',
-      authorId = '${authorId}',
-      categoryId = '${directoryId}',
-      channelId = '${channelId}',
-      postTags = '${JSON.stringify(tags)}',
-      updateTime = ${updateTime},
-      pinned = '${pinned}',
-      recommended = '${recommended}',
-      featured = '${featured}',
-      hot = '${hot}',
-      original = '${original}',
-      paid = '${paid}',
-      free = '${free}',
-      private = '${privated}',
-      public = '${publiced}'
-      WHERE id = '${id}';`,
-    ]);
-    ctx.success(ctx, null);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
-};
-// 更新视频文章
-export const updateVideoPost = async (ctx) => {
-  let { title, content, poster, authorId, directoryId, channelId, id, videoUrl, videoPoster, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced } = ctx.request.body;
-  let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, poster, authorId, directoryId, channelId, id, videoUrl, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced])) {
-    ctx.error(ctx, '404#title, content,poster, authorId, directoryId, channelId,id,videoUrl,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced');
-    return;
-  }
-  videoPoster = videoPoster || '';
-  try {
-    ctx.execSql([
-      `UPDATE sm_board_post_list SET
-      title = '${title}',
-      content = '${content}',
-      poster = '${poster}',
-      authorId = '${authorId}',
-      categoryId = '${directoryId}',
-      channelId = '${channelId}',
-      updateTime = ${updateTime},
-      videoUrl = '${videoUrl}',
-      videoPoster = '${videoPoster}',
-      postTags = '${JSON.stringify(tags)}',
-      pinned = '${pinned}',
-      recommended = '${recommended}',
-      featured = '${featured}',
-      hot = '${hot}',
-      original = '${original}',
-      paid = '${paid}',
-      free = '${free}',
-      private = '${privated}',
-      public = '${publiced}'
-      WHERE id = '${id}';`,
-    ]);
-    ctx.success(ctx, null);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
-};
-// 更新图集文章
-export const updateGalleryPost = async (ctx) => {
-  let { title, content, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries } = ctx.request.body;
-  let updateTime = new Date().getTime();
-  if (ctx.isFalsy([title, content, authorId, directoryId, channelId, id, tags, pinned, recommended, featured, hot, original, paid, free, privated, publiced, galleries])) {
-    ctx.error(ctx, '404#title, content, authorId, directoryId, channelId,id,tags,pinned, recommended, featured, hot, original, paid, free, privated, publiced,galleries');
-    return;
-  }
-  try {
-    ctx.execSql([
-      `UPDATE sm_board_post_list SET
-      title = '${title}',
-      content = '${content}',
-      authorId = '${authorId}',
-      categoryId = '${directoryId}',
-      channelId = '${channelId}',
-      updateTime = ${updateTime},
-      postTags = '${JSON.stringify(tags)}',
-      pinned = '${pinned}',
-      recommended = '${recommended}',
-      featured = '${featured}',
-      hot = '${hot}',
-      original = '${original}',
-      paid = '${paid}',
-      free = '${free}',
-      private = '${privated}',
-      public = '${publiced}',
-      galleries = '${JSON.stringify(galleries)}'
-      WHERE id = '${id}';`,
-    ]);
-    ctx.success(ctx, null);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 405);
-  }
-}
-
 // 下架文章
 export const offlinePost = async (ctx) => {
   let { id } = ctx.request.body;

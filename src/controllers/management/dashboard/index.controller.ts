@@ -1,4 +1,5 @@
 import { Context } from 'koa';
+import { COMMON_QUERY_OTHER_COLUMN } from '../utils';
 export const getOverview = async (ctx: Context): Promise<void> => {
   try {
     const results = await ctx.execSql([
@@ -54,20 +55,18 @@ export const getPostTrends = async (ctx): Promise<void> => {
     */
     await ctx.execSql(`CALL CreateNumbersTable(364);`);
     const postsQuery = `
-    SELECT
-    FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) - n * 86400, '%Y-%m-%d') AS timestamp,
-    IFNULL(COUNT(sm_board_post_list.createTime), 0) AS count
-    FROM numbers
-    LEFT JOIN sm_board_post_list
-    ON DATE(FROM_UNIXTIME(sm_board_post_list.createTime/1000)) = DATE(NOW()) - INTERVAL numbers.n DAY
-    AND sm_board_post_list.createTime >= (UNIX_TIMESTAMP(NOW()) - ${days} * 86400) * 1000
-    WHERE numbers.n < ${days}
-    GROUP BY numbers.n
-    ORDER BY timestamp;
+          SELECT
+          FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) - n * 86400, '%Y-%m-%d') AS timestamp,
+          IFNULL(COUNT(sm_board_post_list.createTime), 0) AS count
+          FROM numbers
+          LEFT JOIN sm_board_post_list
+          ON DATE(FROM_UNIXTIME(sm_board_post_list.createTime/1000)) = DATE(NOW()) - INTERVAL numbers.n DAY
+          AND sm_board_post_list.createTime >= (UNIX_TIMESTAMP(NOW()) - ${days} * 86400) * 1000
+          WHERE numbers.n < ${days}
+          GROUP BY numbers.n
+          ORDER BY timestamp;
     `;
-
     const results = await ctx.execSql([postsQuery]);
-
     const postTrends = results[0].map((row) => ({
       date: new Date(row.timestamp).toLocaleDateString(),
       count: row.count,
@@ -85,66 +84,15 @@ export const getPostTrends = async (ctx): Promise<void> => {
 
 export const getChannelSheetUserAuthorLimit5 = async (ctx): Promise<void> => {
   try {
-    const results = await ctx.execSql([
-      `SELECT * FROM sm_board_channel ORDER BY pos DESC LIMIT 5;`,
-      `SELECT * FROM sm_board_sheet  LIMIT 5;`,
-      `SELECT 
-        id,
-        friendCount,
-        gender,
-        avatarUrl,
-        articleCount,
-        fansCount,
-        type,
-        nickname,
-        score,
-        loginTime,
-        createTime,
-        username,
-        region,
-        address,
-        description,
-        email FROM sm_board_user ORDER BY createTime DESC LIMIT 5;`,
-      `SELECT  
-        id,
-        name,
-        followCount,
-        type,
-        status,
-        avatarUrl,
-        articleCount,
-        fansCount,
-        nick,
-        score,
-        createTime,
-        updateTime,
-        loginTime,
-        description,
-        coverUrl,
-        companyVerifyInfoId,
-        defaultUser FROM sm_board_author ORDER BY createTime DESC LIMIT 5;`,
-      `
-        SELECT authorId,status,categoryId,channelId,id,view,title,poster FROM sm_board_post_list
-        ORDER BY view DESC
-        LIMIT 5;
-        `,
-      `
-        SELECT 
-            p.id, p.title, p.createTime, p.updateTime, p.status, 
-            p.poster, p.view, p.authorId, p.categoryId, 
-            p.channelId, p.postType, p.srcTopicId, p.poster,p.srcTopicId, p.pinned, p.recommended, p.featured, p.hot, p.original, p.paid, p.free, p.private, p.public,
-            COUNT(c.postId) AS comment
-        FROM 
-            sm_board_post_list AS p
-        LEFT JOIN 
-            sm_board_comment AS c ON p.srcTopicId = c.postId
-        GROUP BY 
-            p.id
-        ORDER BY 
-          comment DESC 
-        LIMIT 5;
-        `,
-    ]);
+    let channelLimit5Sql = `SELECT * FROM sm_board_channel ORDER BY pos DESC LIMIT 5;`;
+    let sheetLimit5Sql = `SELECT * FROM sm_board_sheet  LIMIT 5;`;
+    let userLimit5Sql = `SELECT id,friendCount,gender,avatarUrl,articleCount,fansCount,type,nickname,score,loginTime,createTime,username,region,address,description,email FROM sm_board_user ORDER BY createTime DESC LIMIT 5;`;
+    let authorLimit5Sql = `SELECT id,name,followCount,type,status,avatarUrl,articleCount,fansCount,nick,score,createTime,updateTime,loginTime,description,coverUrl,companyVerifyInfoId,defaultUser FROM sm_board_author ORDER BY createTime DESC LIMIT 5;`;
+    let columnSqlString1 = COMMON_QUERY_OTHER_COLUMN.join(',');
+    let columnSqlString2 = COMMON_QUERY_OTHER_COLUMN.map((column) => `p.${column}`).join(',');
+    let postViewTop5Sql = `SELECT ${columnSqlString1} FROM sm_board_post_list ORDER BY view DESC LIMIT 5;`;
+    let postCommentTop5Sql = `SELECT ${columnSqlString2},COUNT(c.postId) AS comment FROM sm_board_post_list AS p LEFT JOIN sm_board_comment AS c ON p.srcTopicId = c.postId GROUP BY p.id ORDER BY comment DESC LIMIT 5;`;
+    const results = await ctx.execSql([channelLimit5Sql, sheetLimit5Sql, userLimit5Sql, authorLimit5Sql, postViewTop5Sql, postCommentTop5Sql]);
     if (results.length) {
       return ctx.success(ctx, {
         channelLimit5: results[0],
@@ -155,9 +103,7 @@ export const getChannelSheetUserAuthorLimit5 = async (ctx): Promise<void> => {
         postCommentTop5: results[5],
       });
     } else {
-      return ctx.success(ctx, {
-        channelLimit5: [],
-      });
+      ctx.error(ctx, 402);
     }
   } catch (error) {
     console.log(error);

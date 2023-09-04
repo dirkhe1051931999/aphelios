@@ -3,11 +3,10 @@ import {
   getAllDirectory,
   getAuthorDetailById,
   getPostLevel1CommentsById,
-  getPostDetailById,
   getPostList,
   getPostListByAuthorId,
   getTopFivePost,
-  getPostLevel2CommentsById,
+  getPostLevel2CommentsById, getCarouselPost,
 } from 'src/controllers/web/blog/post.controller';
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
@@ -19,38 +18,47 @@ export class WebBlogAPIController {
   async getPostList(ctx: Koa.Context, next: Koa.Next) {
     return getPostList(ctx);
   }
-  @Route('/getPostDetailById', HTTP_METHODS.GET)
-  async getPostDetailById(ctx: Koa.Context, next: Koa.Next) {
-    return getPostDetailById(ctx);
-  }
+
   @Route('/getTopFivePost', HTTP_METHODS.GET)
   async getTopFivePost(ctx: Koa.Context, next: Koa.Next) {
     return getTopFivePost(ctx);
   }
+
+  @Route('/getCarouselPost', HTTP_METHODS.GET)
+  async getCarouselPost(ctx: Koa.Context, next: Koa.Next) {
+    return getCarouselPost(ctx);
+  }
+
   @Route('/getAllChannel', HTTP_METHODS.GET)
   async getAllChannel(ctx: Koa.Context, next: Koa.Next) {
     return getAllChannel(ctx);
   }
+
   @Route('/getAllDirectory', HTTP_METHODS.GET)
   async getAllDirectory(ctx: Koa.Context, next: Koa.Next) {
     return getAllDirectory(ctx);
   }
+
   @Route('/getPostLevel1CommentsById', HTTP_METHODS.GET)
   async getPostLevel1CommentsById(ctx: Koa.Context, next: Koa.Next) {
     return getPostLevel1CommentsById(ctx);
   }
+
   @Route('/getPostLevel2CommentsById', HTTP_METHODS.GET)
   async getPostLevel2CommentsById(ctx: Koa.Context, next: Koa.Next) {
     return getPostLevel2CommentsById(ctx);
   }
+
   @Route('/getPostListByAuthorId', HTTP_METHODS.GET)
   async getPostListByAuthorId(ctx: Koa.Context, next: Koa.Next) {
     return getPostListByAuthorId(ctx);
   }
+
   @Route('/getAuthorDetailById', HTTP_METHODS.GET)
   async getAuthorDetailById(ctx: Koa.Context, next: Koa.Next) {
     return getAuthorDetailById(ctx);
   }
+
   @Route('/getUserDetailById', HTTP_METHODS.GET)
   async getUserDetailById(ctx: Koa.Context, next: Koa.Next) {
     return getUserDetailById(ctx);

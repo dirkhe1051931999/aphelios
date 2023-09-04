@@ -1,3 +1,84 @@
+let chips = ['pinned', 'recommended', 'hot', 'original', 'paid', 'free', 'carousel', 'political', 'privated', 'publiced'];
+let commonColumn = ['id', 'title', 'poster', 'content', 'createTime', 'updateTime', 'view', 'postType', 'postTags', 'videoPoster', 'videoUrl', 'galleries', 'srcTopicId', 'shelveTimeStart', 'shelveTimeEnd', 'authorId', 'directoryId', 'channelId'].concat(chips);
+
+function findDirectory(directory, id) {
+  let result = null;
+  if (!directory) return null;
+  for (let i = 0; i < directory.length; i++) {
+    if (directory[i].id === id) {
+      result = directory[i];
+      break;
+    } else {
+      result = findDirectory(directory[i].children, id);
+      if (result) {
+        break;
+      }
+    }
+  }
+  return result ? {
+    id: result.id,
+    name: result.name,
+    subName: result.subName,
+    type: result.type,
+    parent_id: result.parent_id,
+  } : null;
+}
+
+async function getDirectory(ctx: any) {
+  function buildTree(results) {
+    let [sheets, directorys, childDirectorys] = results;
+    // 将数据存入Map，以便快速查找
+    let dirMap = new Map([...directorys, ...childDirectorys].map((dir) => [dir.id, { ...dir, children: [] }]));
+    // 将子目录插入到其父目录的children数组中
+    childDirectorys.forEach((dir) => dirMap.get(dir.parent_id)?.children.push(dir));
+    // 将一级目录插入到其父级表格的children数组中，并将表格转化为具有children属性的新对象
+    sheets = sheets.map((sheet) => ({ ...sheet, children: directorys.filter((dir) => dir.parent_id === sheet.id) }));
+    // 确保表格的children属性中的目录也有children属性
+    sheets.forEach((sheet) => sheet.children.forEach((dir) => (dir.children = dirMap.get(dir.id)?.children || [])));
+    return sheets;
+  }
+
+  let sql1 = `
+  SELECT id, name, cover,description FROM sm_board_sheet
+  `;
+  let sql2 = `
+  SELECT id, name, subName, type, parent_id 
+  FROM sm_board_directory 
+  `;
+  let sql3 = `
+  SELECT id, name, subName, type, parent_id
+  FROM sm_board_child_directory
+  `;
+  return new Promise(async (resolve, reject) => {
+    try {
+      let results = await ctx.execSql([sql1, sql2, sql3]);
+      let sheets = results[0];
+      let directorys = results[1];
+      let childDirectorys = results[2];
+      sheets = buildTree([sheets, directorys, childDirectorys]);
+      resolve(sheets);
+    } catch (error) {
+      console.log(error);
+      ctx.error(ctx, 402);
+    }
+  });
+}
+
+async function getColletList(ctx: any, list: any[]) {
+  // 在directory 的children中查找，有多级children，递归查找
+  let channelSql = `SELECT id,name FROM sm_board_channel;`;
+  let authorSql = `SELECT id,name,followCount,type,avatarUrl,fansCount,nick,score,description,coverUrl FROM sm_board_author;`;
+  let channelResult = await ctx.execSql(channelSql);
+  let authorResult = await ctx.execSql(authorSql);
+  let directory = await getDirectory(ctx);
+  list.forEach((item) => {
+    item.channel = channelResult.find((channel) => channel.id === item.channelId);
+    item.author = authorResult.find((author) => author.id === item.authorId);
+    item.directory = findDirectory(directory, item.directoryId);
+  });
+  return Promise.resolve(list);
+}
+
 // 获取文章列表
 export const getPostList = async (ctx) => {
   let { page, rowsPerPage, sortBy, sortDirection } = ctx.query;
@@ -10,253 +91,25 @@ export const getPostList = async (ctx) => {
     return;
   }
   try {
-    const sql1 = `SELECT COUNT(*) as total FROM sm_board_post_list;`;
-    const sql2 = `
-    WITH RECURSIVE comment_tree AS (
-      SELECT
-        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType,
-        COUNT(c.postId) AS comment,
-        JSON_OBJECT(
-          'id', a.id,
-          'name', a.name,
-          'followCount', a.followCount,
-          'type', a.type,
-          'status', a.status,
-          'avatarUrl', a.avatarUrl,
-          'fansCount', a.fansCount,
-          'nick', a.nick,
-          'score', a.score,
-          'createTime', a.createTime,
-          'description', a.description,
-          'coverUrl', a.coverUrl
-        ) AS author,
-        JSON_OBJECT(
-          'id', ch.id,
-          'name', ch.name
-        ) AS channel,
-        CASE
-          WHEN p.categoryId = cd.id THEN JSON_OBJECT(
-            'id', cd.id,
-            'name', cd.name,
-            'subName', cd.subName,
-            'type', cd.type,
-            'parent_id', cd.parent_id,
-            'parent', (
-              SELECT JSON_OBJECT(
-                'id', pd.id,
-                'name', pd.name,
-                'subName', pd.subName,
-                'type', pd.type,
-                'parent_id', pd.parent_id,
-                'parent', (
-                  SELECT JSON_OBJECT(
-                    'id', pdd.id,
-                    'name', pdd.name
-                  )
-                  FROM sm_board_sheet pdd
-                  WHERE pdd.id = pd.parent_id
-                )
-              )
-              FROM sm_board_directory pd
-              WHERE pd.id = cd.parent_id
-            )
-          )
-          WHEN p.categoryId = d.id THEN JSON_OBJECT(
-            'id', d.id,
-            'name', d.name,
-            'subName', d.subName,
-            'type', d.type,
-            'parent_id', d.parent_id,
-            'parent', (
-              SELECT JSON_OBJECT(
-                'id', ps.id,
-                'name', ps.name
-              )
-              FROM sm_board_sheet ps
-              WHERE ps.id = d.parent_id
-            )
-          )
-          ELSE NULL
-        END AS category
-      FROM
-        sm_board_post_list p
-      LEFT JOIN
-        sm_board_comment c ON p.srcTopicId = c.postId
-      LEFT JOIN
-        sm_board_author a ON p.authorId = a.id
-      LEFT JOIN
-        sm_board_channel ch ON p.channelId = ch.id
-      LEFT JOIN
-        sm_board_child_directory cd ON p.categoryId = cd.id
-      LEFT JOIN
-        sm_board_directory d ON p.categoryId = d.id
-      WHERE
-        p.status = 'PUBLISHED'
-      GROUP BY
-        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
-    ), comment_hierarchy AS (
-      SELECT
-        id, title, poster, createTime, view, srcTopicId, postType, comment, author, channel, category
-      FROM
-        comment_tree
-      WHERE
-        category IS NOT NULL
-      UNION ALL
-      SELECT
-        c.id, c.title, c.poster, c.createTime, c.view, c.srcTopicId, c.postType, c.comment, c.author, c.channel, c.category
-      FROM
-        comment_tree c
-      JOIN
-        comment_hierarchy ch ON JSON_EXTRACT(ch.category, '$.id') = c.category->'$.parent_id'
-    )
-    SELECT
-      h.id, h.title, h.poster, h.createTime, h.view, h.srcTopicId, h.postType, h.comment, h.author, h.channel, h.category
-    FROM
-      comment_hierarchy h
-    ORDER BY
-      '${sortBy}' ${sortDirection}
-    LIMIT
-      ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};       
-    `;
-    let results = await ctx.execSql([sql1, sql2]);
+    let whereSql = 'WHERE status = "PUBLISHED"';
+    const sqlTotal = `SELECT COUNT(*) as total FROM sm_board_post_list ${whereSql};`;
+    let postSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    let postResult = await ctx.execSql([sqlTotal, postSql]);
+    const result = await getColletList(ctx, postResult[1]);
     ctx.success(ctx, {
-      total: results[0][0].total,
-      pageData: results[1],
+      total: postResult[0][0].total,
+      pageData: result,
     });
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 402);
   }
 };
-// 根据文章id获取文章详情
-export const getPostDetailById = async (ctx) => {
-  let { id } = ctx.query;
-  if (!id) {
-    ctx.error(ctx, 'W1002');
-    return;
-  }
-  try {
-    const sql = `
-  WITH RECURSIVE comment_tree AS (
-      SELECT 
-        p.id,
-        p.title,
-        p.poster,
-        p.createTime,
-        p.srcTopicId,
-        p.view,
-        (SELECT COUNT(*) FROM sm_board_comment WHERE postId = p.srcTopicId) AS totalComment,
-        p.categoryId,
-        p.postType,
-        p.content,
-        JSON_OBJECT(
-          "id", a.id,
-          "name", a.name,
-          "followCount", a.followCount,
-          "type", a.type,
-          "status", a.status,
-          "avatarUrl", a.avatarUrl,
-          "fansCount", a.fansCount,
-          "nick", a.nick,
-          "score", a.score,
-          "createTime", a.createTime,
-          "description", a.description,
-          "coverUrl", a.coverUrl
-        ) AS author,
-        JSON_OBJECT(
-          "id", ch.id,
-          "name", ch.name
-        ) AS channel,
-        CASE
-          WHEN p.categoryId = cd.id THEN JSON_OBJECT(
-            "id", cd.id,
-            "name", cd.name,
-            "subName", cd.subName,
-            "type", cd.type,
-            "parent_id", cd.parent_id,
-            "parent", (
-              SELECT JSON_OBJECT(
-                "id", pd.id,
-                "name", pd.name,
-                "subName", pd.subName,
-                "type", pd.type,
-                "parent_id", pd.parent_id,
-                "parent", (
-                  SELECT JSON_OBJECT(
-                    "id", pdd.id,
-                    "name", pdd.name
-                  )
-                  FROM sm_board_sheet pdd
-                  WHERE pdd.id = pd.parent_id
-                )
-              )
-              FROM sm_board_directory pd
-              WHERE pd.id = cd.parent_id
-            )
-          )
-          WHEN p.categoryId = d.id THEN JSON_OBJECT(
-            "id", d.id,
-            "name", d.name,
-            "subName", d.subName,
-            "type", d.type,
-            "parent_id", d.parent_id,
-            "parent", (
-              SELECT JSON_OBJECT(
-                "id", ps.id,
-                "name", ps.name
-              )
-              FROM sm_board_sheet ps
-              WHERE ps.id = d.parent_id
-            )
-          )
-          ELSE NULL
-        END AS category
-      FROM
-        sm_board_post_list p
-      LEFT JOIN 
-        sm_board_author a ON p.authorId = a.id
-      LEFT JOIN 
-        sm_board_channel ch ON p.channelId = ch.id
-      LEFT JOIN
-        sm_board_child_directory cd ON p.categoryId = cd.id
-      LEFT JOIN
-        sm_board_directory d ON p.categoryId = d.id
-      WHERE p.id = '${id}' AND p.status = 'PUBLISHED' 
-      GROUP BY
-        p.id, p.title, p.poster, p.createTime, p.view, p.srcTopicId, p.postType, a.id, ch.id, cd.id, d.id
-    ), comment_hierarchy AS (
-      SELECT
-        id, title, poster, createTime, view, srcTopicId, postType, content, totalComment, author, channel, category
-      FROM
-        comment_tree
-      WHERE
-        category IS NOT NULL
-      UNION ALL
-      SELECT
-        c.id, c.title, c.poster, c.createTime, c.view, c.srcTopicId, c.postType, c.content, c.totalComment, c.author, c.channel, c.category
-      FROM
-        comment_tree c
-      JOIN
-        comment_hierarchy ch ON JSON_EXTRACT(ch.category, "$.id") = c.category->"$.parent_id"
-    )
-    SELECT
-      h.id, h.title, h.poster, h.createTime, h.view, h.srcTopicId, h.postType, h.content, h.totalComment, h.author, h.channel, h.category
-    FROM
-      comment_hierarchy h;
-    `;
-    let result = await ctx.execSql(sql);
-    ctx.success(ctx, result[0] || null);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 402);
-  }
-};
-
 // 获取top5新闻
 export const getTopFivePost = async (ctx) => {
   try {
     const results = await ctx.execSql(`
-      SELECT id,title,poster,createTime,view,comment,authorId,categoryId,channelId,postType
+      SELECT id,title,poster,createTime,view,comment,authorId,directoryId,channelId,postType
       FROM sm_board_post_list
       WHERE (status = 'PUBLISHED') AND (poster != '')
       ORDER BY view DESC
@@ -286,40 +139,8 @@ export const getAllChannel = async (ctx) => {
 };
 // 获取所有分类，树形结构
 export const getAllDirectory = async (ctx) => {
-  function buildTree(results) {
-    let [sheets, directorys, childDirectorys] = results;
-    // 将数据存入Map，以便快速查找
-    let dirMap = new Map([...directorys, ...childDirectorys].map((dir) => [dir.id, { ...dir, children: [] }]));
-    // 将子目录插入到其父目录的children数组中
-    childDirectorys.forEach((dir) => dirMap.get(dir.parent_id)?.children.push(dir));
-    // 将一级目录插入到其父级表格的children数组中，并将表格转化为具有children属性的新对象
-    sheets = sheets.map((sheet) => ({ ...sheet, children: directorys.filter((dir) => dir.parent_id === sheet.id) }));
-    // 确保表格的children属性中的目录也有children属性
-    sheets.forEach((sheet) => sheet.children.forEach((dir) => (dir.children = dirMap.get(dir.id)?.children || [])));
-    return sheets;
-  }
-  let sql1 = `
-  SELECT id, name, cover,description FROM sm_board_sheet
-  `;
-  let sql2 = `
-  SELECT id, name, subName, type, parent_id 
-  FROM sm_board_directory 
-  `;
-  let sql3 = `
-  SELECT id, name, subName, type, parent_id
-  FROM sm_board_child_directory
-  `;
-  try {
-    let results = await ctx.execSql([sql1, sql2, sql3]);
-    let sheets = results[0];
-    let directorys = results[1];
-    let childDirectorys = results[2];
-    sheets = buildTree([sheets, directorys, childDirectorys]);
-    ctx.success(ctx, sheets);
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 402);
-  }
+  const sheets = await getDirectory(ctx);
+  ctx.success(ctx, sheets);
 };
 // 获取文章的评论
 export const getPostLevel1CommentsById = async (ctx) => {
@@ -496,7 +317,7 @@ export const getPostListByAuthorId = async (ctx) => {
     SELECT COUNT(*) as total FROM sm_board_post_list WHERE authorId = '${id}';
     `;
     let sql2 = `
-      SELECT id,title,poster,createTime,view,comment,authorId,categoryId,channelId,postType
+      SELECT id,title,poster,createTime,view,comment,authorId,directoryId,channelId,postType
       FROM sm_board_post_list
       WHERE authorId = '${id}'
       ORDER BY createTime DESC
@@ -525,6 +346,21 @@ export const getAuthorDetailById = async (ctx) => {
       `;
     let results = await ctx.execSql(sql);
     ctx.success(ctx, results[0] || null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+// 获取轮播图新闻
+export const getCarouselPost = async (ctx) => {
+  try {
+    let whereSql = 'WHERE status = "PUBLISHED" AND carousel = "1"';
+    let postSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list ${whereSql};`;
+    let postResult = await ctx.execSql(postSql);
+    const result = await getColletList(ctx, postResult);
+    ctx.success(ctx, {
+      pageData: result,
+    });
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 402);
