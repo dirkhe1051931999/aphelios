@@ -30,7 +30,7 @@
         <ul class="video-list">
           <li v-for="(item, index) in videoParams.data" :key="index" @click="pickVideo(item)" :class="{ active: this.videoParams.currentPick === item.id }">
             <video :src="item.source" class="video h-200" controls :poster="item.poster" muted :autoplay="false"></video>
-            <q-badge v-for="(categoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(categoryId)" class="q-ml-md" floating />
+            <q-badge v-for="(directoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(directoryId)" class="q-ml-md" floating />
             <div class="banner">
               {{ item.title }}
             </div>

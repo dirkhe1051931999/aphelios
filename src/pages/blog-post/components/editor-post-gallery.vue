@@ -29,7 +29,7 @@
             <p class="q-mb-sm">* 主题</p>
             <q-btn
               class="h-40 category-select full-width"
-              :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ categoryId: dialogEditorParams.params.directoryId })"
+              :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ directoryId: dialogEditorParams.params.directoryId })"
               outline
               align="left"
               :disable="disableSelectCategory"
@@ -146,9 +146,22 @@
             <vue-tags-input
               class="tags-autocomplete"
               v-model="dialogEditorParams.params.tag"
-              :tags="dialogEditorParams.params.tags"
-              @tags-changed="(newTags) => (dialogEditorParams.params.tags = newTags)"
+              :tags="dialogEditorParams.params.postTags"
+              @tags-changed="(newTags) => (dialogEditorParams.params.postTags = newTags)"
             />
+          </div>
+          <div class="q-mb-md">
+            <p class="q-mb-sm">* 上架时间</p>
+            <el-date-picker
+              v-model="dialogEditorParams.params.time"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY/MM/DD hh:mm:ss"
+              value-format="YYYY/MM/DD hh:mm:ss"
+            >
+            </el-date-picker>
           </div>
           <div class="q-mb-md">
             <p class="q-mb-sm">* 其他</p>
@@ -178,12 +191,6 @@
               </q-option-group>
             </div>
           </div>
-          <div class="q-mb-md">
-            <p class="q-mb-sm">* 内容</p>
-            <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
-              <q-editor ref="editorRef" v-model="dialogEditorParams.params.content" />
-            </form>
-          </div>
         </div>
         <div class="right-content">
           <div class="q-mb-md">
@@ -200,6 +207,12 @@
                 <li v-if="dialogEditorParams.params.galleries.length > 9" class="more">+{{ dialogEditorParams.params.galleries.length - 8 }}</li>
               </ul>
             </div>
+          </div>
+          <div class="q-mb-md">
+            <p class="q-mb-sm">* 内容</p>
+            <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
+              <q-editor ref="editorRef" v-model="dialogEditorParams.params.content" />
+            </form>
           </div>
           <div class="text-right q-mt-xl">
             <q-btn flat label="取消" color="primary" @click="hide" />
@@ -219,7 +232,7 @@ import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostAlbumComponent from './album.vue';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS } from '../utils';
+import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
 const CONST_PARAMS = {
   add_or_edit: {
     ...COMMON_POST_PARAMS,
@@ -249,43 +262,8 @@ export default class myEditorPostGalleryComponent extends commonPost {
   @Watch('blogEditorPostVisiableGallery')
   watchBlogEditorPostVisiableGallery(val: boolean) {
     if (val) {
-      if (BlogPostModule.postAddOrUpdateGallery === 'update') {
-        this.dialogEditorParams.title = '编辑';
-        const row: any = BlogPostModule.postDetailGallery.row;
-        this.dialogEditorParams.params.id = row.id;
-        this.dialogEditorParams.params.authorId = row.authorId;
-        this.dialogEditorParams.params.directoryId = row.directoryId;
-        this.dialogEditorParams.params.channelId = row.channelId;
-        this.dialogEditorParams.params.title = row.title;
-        this.dialogEditorParams.params.status = row.status;
-        this.dialogEditorParams.params.galleries = row.galleries.map((item: any) => {
-          return {
-            source: item,
-          };
-        });
-        const checkedOptions = this.dialogEditorParams.checkedOptions;
-        for (let item of checkedOptions) {
-          if (row[item.value] && row[item.value] === '1') {
-            this.dialogEditorParams.params.checked.push(item.value);
-          }
-        }
-        this.dialogEditorParams.params.paidOrFree = row.paid === '1' ? 'paid' : 'free';
-        this.dialogEditorParams.params.privateOrPublic = row.privated === '1' ? 'privated' : 'publiced';
-        this.getContent(row.id).then((data: any) => {
-          this.dialogEditorParams.params.content = data;
-        });
-        if (row.tags && row.tags.length) {
-          this.dialogEditorParams.params.tags = row.tags.map((item: any) => {
-            return {
-              text: item,
-            };
-          });
-        }
-      } else {
-        this.dialogEditorParams.title = '新增';
-      }
+      if (BlogPostModule.postAddOrUpdateGallery === 'update') onEditorVisiableShow(this, BlogPostModule.postDetailGallery.row, '3');
       this.dialogEditorParams.model = true;
-      return true;
     }
   }
   public dialogEditorParams: any = {
@@ -317,7 +295,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
   }
   public async handleConfirmAddOrUpdate() {
     const validations = cloneDeep(this.commonValidations);
-    validations.push(...[{ key: 'poster', message: '请选择海报', check: (value: any) => !!value }]);
+    validations.push(...[{ key: 'galleries', message: '请选择图集', check: (value: any) => value.length > 0 }]);
     if (this.validateParams(this.dialogEditorParams.params, validations)) {
       const result = await this.$globalConfirm.show({
         title: '友情提示',
@@ -327,31 +305,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
       });
       if (result) {
         try {
-          const params: any = {
-            authorId: this.dialogEditorParams.params.authorId,
-            channelId: this.dialogEditorParams.params.channelId,
-            content: this.dialogEditorParams.params.content,
-            directoryId: this.dialogEditorParams.params.directoryId,
-            title: this.dialogEditorParams.params.title,
-            tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
-            pinned: '0',
-            recommended: '0',
-            featured: '0',
-            hot: '0',
-            original: '0',
-            paid: '0',
-            free: '0',
-            privated: '0',
-            publiced: '0',
-            galleries: this.dialogEditorParams.params.galleries.map((item: any) => {
-              return item.source;
-            }),
-          };
-          for (let item of this.dialogEditorParams.params.checked) {
-            params[item] = '1';
-          }
-          params[this.dialogEditorParams.params.paidOrFree] = '1';
-          params[this.dialogEditorParams.params.privateOrPublic] = '1';
+          const params: any = onBeforeEditorDone(this, '3');
           this.$q.loading.show();
           if (BlogPostModule.postAddOrUpdateGallery === 'add') {
             await BlogPostModule.addGalleryPost(params);
@@ -375,6 +329,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
 </script>
 
 <style scoped lang="scss">
+@import '../utils/editor.scss';
 .body--dark {
   .editor-post-card {
     .right-content {
@@ -413,86 +368,53 @@ export default class myEditorPostGalleryComponent extends commonPost {
     }
   }
 }
-.tags-autocomplete {
+.galleries-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 三列，等宽 */
+  grid-template-rows: 1fr 1fr 1fr; /* 三列，等宽 */
+  grid-gap: 10px; /* 格子间距 */
   width: 100%;
-  max-width: 100%;
-  border-radius: 8px;
-  :deep(.ti-input) {
-    height: 40px;
-    border-radius: 8px;
+  height: 320px;
+  overflow: hidden;
+  position: relative;
+  .grid-item {
+    height: 100px;
+    overflow: hidden; /* 隐藏超出部分 */
+    width: 100%;
+    position: relative;
+    .image {
+      height: 100%;
+      width: 100%;
+      object-fit: cover; /* 填充但保持比例 */
+      border-radius: 4px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      cursor: pointer;
+    }
+    .remove {
+      position: absolute;
+      right: 0;
+      top: 0;
+      cursor: pointer;
+      font-size: 20px;
+      border-radius: 50%;
+      padding: 4px;
+    }
   }
-}
-.editor-post-card {
-  max-width: 80vw;
-  width: 60vw;
-  .editor-post-card-content {
+  .more {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    height: 100px;
+    width: calc(33.333333% - 5px);
     display: flex;
-    justify-content: space-between;
-    .left-content {
-      width: 60%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      border: solid 1px #eeeeee;
-      border-radius: 8px;
-      padding: 16px;
-      height: 100%;
-    }
-    .right-content {
-      width: 39%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      border: solid 1px #eeeeee;
-      border-radius: 8px;
-      padding: 16px;
-      height: 100%;
-      .galleries-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr; /* 三列，等宽 */
-        grid-template-rows: 1fr 1fr 1fr; /* 三列，等宽 */
-        grid-gap: 10px; /* 格子间距 */
-        width: 100%;
-        height: 320px;
-        overflow: hidden;
-        position: relative;
-        .grid-item {
-          height: 100px;
-          overflow: hidden; /* 隐藏超出部分 */
-          width: 100%;
-          position: relative;
-          .image {
-            height: 100%;
-            width: 100%;
-            object-fit: cover; /* 填充但保持比例 */
-            border-radius: 4px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            cursor: pointer;
-          }
-          .remove {
-            position: absolute;
-            right: 0;
-            top: 0;
-            cursor: pointer;
-            font-size: 20px;
-            border-radius: 50%;
-            padding: 4px;
-          }
-        }
-        .more {
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          height: 100px;
-          width: calc(33.333333% - 5px);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-weight: 600;
-          font-size: 40px;
-          border-radius: 4px;
-          z-index: 999;
-        }
-      }
-    }
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+    font-size: 40px;
+    border-radius: 4px;
+    z-index: 999;
   }
 }
 </style>

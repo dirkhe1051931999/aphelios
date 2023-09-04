@@ -70,6 +70,10 @@ import {
   updateVideoPost,
   updateGalleryPost,
   addGalleryPost,
+  addVideoEmbedPost,
+  updateVideoEmbedPost,
+  addNormalPost,
+  updateNormalPost,
 } from 'src/api/blog-post';
 
 interface IBlogPost {}
@@ -149,20 +153,20 @@ class BlogPost extends VuexModule implements IBlogPost {
   public currentCategoryIdVideoEmbed = '';
   public updatePostSuccessFlagVideoEmbed = false;
   public addPostSuccessFlagVideoEmbed = false;
-  /* 悬浮时政新增编辑*/
-  public allValidAuthorPolitical: any[] = [];
-  public allCategoryPolitical: any[] = [];
-  public allChannelPolitical: any[] = [];
-  public disableSelectCategoryPolitical = false;
-  public blogEditorPostVisiablePolitical = false;
-  public postDetailPolitical = {
+  /* 悬浮普通文章编辑器2新增编辑*/
+  public allValidAuthorNormal: any[] = [];
+  public allCategoryNormal: any[] = [];
+  public allChannelNormal: any[] = [];
+  public disableSelectCategoryNormal = false;
+  public blogEditorPostVisiableNormal = false;
+  public postDetailNormal = {
     row: {},
   };
-  public postAddOrUpdatePolitical = 'add';
-  public addedPostIdPolitical = '';
-  public currentCategoryIdPolitical = '';
-  public updatePostSuccessFlagPolitical = false;
-  public addPostSuccessFlagPolitical = false;
+  public postAddOrUpdateNormal = 'add';
+  public addedPostIdNormal = '';
+  public currentCategoryIdNormal = '';
+  public updatePostSuccessFlagNormal = false;
+  public addPostSuccessFlagNormal = false;
   @Mutation
   public SET_SCROLL_TOP(scrollTop: number) {
     this.scrollTop = scrollTop;
@@ -340,6 +344,96 @@ class BlogPost extends VuexModule implements IBlogPost {
   public SET_ADD_POST_SUCCESS_FLAG_QUESTION(addPostSuccessFlag: boolean) {
     this.addPostSuccessFlagQuestion = addPostSuccessFlag;
   }
+  /* 悬浮POST内嵌视频新增编辑 */
+  @Mutation
+  public SET_ALL_VALID_AUTHOR_VIDEO_EMBED(allAuthor: any[]) {
+    this.allValidAuthorVideoEmbed = allAuthor;
+  }
+  @Mutation
+  public SET_ALL_CATEGORY_VIDEO_EMBED(allCategory: any[]) {
+    this.allCategoryVideoEmbed = allCategory;
+  }
+  @Mutation
+  public SET_ALL_CHANNEL_VIDEO_EMBED(allChannel: any[]) {
+    this.allChannelVideoEmbed = allChannel;
+  }
+  @Mutation
+  public SET_EDITOR_BLOG_POST_VISIABLE_VIDEO_EMBED(blogEditorPostVisiable: boolean) {
+    this.blogEditorPostVisiableVideoEmbed = blogEditorPostVisiable;
+  }
+  @Mutation
+  public SET_DISABLE_SELECT_CATEGORY_VIDEO_EMBED(disableSelectCategory: boolean) {
+    this.disableSelectCategoryVideoEmbed = disableSelectCategory;
+  }
+  @Mutation
+  public SET_POST_DETAIL_VIDEO_EMBED(postDetail: any) {
+    this.postDetailVideoEmbed = postDetail;
+  }
+  @Mutation
+  public SET_POST_ADD_OR_UPDATE_VIDEO_EMBED(postAddOrUpdate: string) {
+    this.postAddOrUpdateVideoEmbed = postAddOrUpdate;
+  }
+  @Mutation
+  public SET_ADDED_POST_ID_VIDEO_EMBED(addedPostId: string) {
+    this.addedPostIdVideoEmbed = addedPostId;
+  }
+  @Mutation
+  public SET_UPDATE_POST_SUCCESS_FLAG_VIDEO_EMBED(updatePostSuccessFlag: boolean) {
+    this.updatePostSuccessFlagVideoEmbed = updatePostSuccessFlag;
+  }
+  @Mutation
+  public SET_ADD_POST_SUCCESS_FLAG_VIDEO_EMBED(addPostSuccessFlag: boolean) {
+    this.addPostSuccessFlagVideoEmbed = addPostSuccessFlag;
+  }
+  @Mutation
+  public SET_CURRENT_CATEGORY_ID_VIDEO_EMBED(currentCategoryId: string) {
+    this.currentCategoryIdVideoEmbed = currentCategoryId;
+  }
+  /* 悬浮普通文章编辑器2新增编辑 */
+  @Mutation
+  public SET_ALL_VALID_AUTHOR_NORMAL(allAuthor: any[]) {
+    this.allValidAuthorNormal = allAuthor;
+  }
+  @Mutation
+  public SET_ALL_CATEGORY_NORMAL(allCategory: any[]) {
+    this.allCategoryNormal = allCategory;
+  }
+  @Mutation
+  public SET_ALL_CHANNEL_NORMAL(allChannel: any[]) {
+    this.allChannelNormal = allChannel;
+  }
+  @Mutation
+  public SET_EDITOR_BLOG_POST_VISIABLE_NORMAL(blogEditorPostVisiable: boolean) {
+    this.blogEditorPostVisiableNormal = blogEditorPostVisiable;
+  }
+  @Mutation
+  public SET_DISABLE_SELECT_CATEGORY_NORMAL(disableSelectCategory: boolean) {
+    this.disableSelectCategoryNormal = disableSelectCategory;
+  }
+  @Mutation
+  public SET_POST_DETAIL_NORMAL(postDetail: any) {
+    this.postDetailNormal = postDetail;
+  }
+  @Mutation
+  public SET_POST_ADD_OR_UPDATE_NORMAL(postAddOrUpdate: string) {
+    this.postAddOrUpdateNormal = postAddOrUpdate;
+  }
+  @Mutation
+  public SET_ADDED_POST_ID_NORMAL(addedPostId: string) {
+    this.addedPostIdNormal = addedPostId;
+  }
+  @Mutation
+  public SET_UPDATE_POST_SUCCESS_FLAG_NORMAL(updatePostSuccessFlag: boolean) {
+    this.updatePostSuccessFlagNormal = updatePostSuccessFlag;
+  }
+  @Mutation
+  public SET_ADD_POST_SUCCESS_FLAG_NORMAL(addPostSuccessFlag: boolean) {
+    this.addPostSuccessFlagNormal = addPostSuccessFlag;
+  }
+  @Mutation
+  public SET_CURRENT_CATEGORY_ID_NORMAL(currentCategoryId: string) {
+    this.currentCategoryIdNormal = currentCategoryId;
+  }
   @Action({ rawError: true })
   public async getPostList(data: any) {
     const result = await getPostList(data);
@@ -381,6 +475,16 @@ class BlogPost extends VuexModule implements IBlogPost {
     return Promise.resolve(result);
   }
   @Action({ rawError: true })
+  public async addVideoEmbedPost(data: any) {
+    const result = await addVideoEmbedPost(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async addNormalPost(data: any) {
+    const result = await addNormalPost(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
   public async deletePost(data: any) {
     const result = await deletePost(data);
     return Promise.resolve(result);
@@ -398,6 +502,16 @@ class BlogPost extends VuexModule implements IBlogPost {
   @Action({ rawError: true })
   public async updateGalleryPost(data: any) {
     const result = await updateGalleryPost(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updateVideoEmbedPost(data: any) {
+    const result = await updateVideoEmbedPost(data);
+    return Promise.resolve(result);
+  }
+  @Action({ rawError: true })
+  public async updateNormalPost(data: any) {
+    const result = await updateNormalPost(data);
     return Promise.resolve(result);
   }
   @Action({ rawError: true })

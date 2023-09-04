@@ -14,6 +14,8 @@
     <BlogEditorPostVideoDialog></BlogEditorPostVideoDialog>
     <BlogEditorPostGalleryDialog></BlogEditorPostGalleryDialog>
     <BlogEditorPostQuestionDialog></BlogEditorPostQuestionDialog>
+    <BlogEditorPostVideoEmbedDialog></BlogEditorPostVideoEmbedDialog>
+    <BlogEditorPostNormalDialog></BlogEditorPostNormalDialog>
     <BlogCommentDialog></BlogCommentDialog>
   </div>
 </template>
@@ -31,6 +33,8 @@ import BlogEditorPostDialog from 'src/pages/blog-post/components/editor-post.vue
 import BlogEditorPostVideoDialog from 'src/pages/blog-post/components/editor-post-video.vue';
 import BlogEditorPostGalleryDialog from 'src/pages/blog-post/components/editor-post-gallery.vue';
 import BlogEditorPostQuestionDialog from 'src/pages/blog-post/components/editor-post-question.vue';
+import BlogEditorPostVideoEmbedDialog from 'src/pages/blog-post/components/editor-post-embed-video.vue';
+import BlogEditorPostNormalDialog from 'src/pages/blog-post/components/editor-post-normal.vue';
 import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
 @Component({
   name: 'LayoutIndexComponents',
@@ -43,6 +47,8 @@ import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
     BlogEditorPostVideoDialog,
     BlogEditorPostGalleryDialog,
     BlogEditorPostQuestionDialog,
+    BlogEditorPostVideoEmbedDialog,
+    BlogEditorPostNormalDialog,
     BlogCommentDialog,
   },
   mixins: [UseResize],

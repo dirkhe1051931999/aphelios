@@ -67,10 +67,20 @@
         @request="sortTableData"
         binary-state-sort
       >
-        <template #top>
-          <div class="full-width justify-end row">
-            <q-btn color="primary" icon="o_add" label="Add" no-caps @click="handleClickAdd" />
-          </div>
+        <template #top-right>
+          <q-btn
+            color="dark"
+            outline
+            icon="add"
+            :icon-right="item.svg"
+            :label="item.label"
+            no-caps
+            v-for="item in tableParams.postTypeOptions"
+            :key="item.value"
+            class="q-ml-md"
+            :class="{ hide: item.value === '4' }"
+            @click="handleClickAdd(item)"
+          />
         </template>
 
         <template v-slot:header="props">
@@ -113,24 +123,17 @@
                         </q-banner>
                       </q-popup-proxy>
                     </q-btn>
-                    <q-btn size="8px" color="grey" label="添加问卷" class="q-ml-sm" outline @click="handlerClickAddQuestion(props.row)" />
+                    <q-btn size="8px" color="grey" label="添加问卷" class="q-ml-sm" outline @click="handlerClickAddQuestion(props.row)" v-if="props.row.survey && !props.row.survey.length" />
+                    <q-btn size="8px" color="primary" label="编辑问卷" class="q-ml-sm" outline @click="handlerClickUpdateQuestion(props.row)" v-if="props.row.survey && props.row.survey.length" />
                   </div>
                 </div>
                 <div v-if="col.name === 'chip'">
-                  <q-chip dense color="red" label="置顶" v-if="props.row.pinned === '1'" outline />
-                  <q-chip dense color="yellow" label="推荐" v-if="props.row.recommended === '1'" outline />
-                  <q-chip dense color="pink" label="精选" v-if="props.row.featured === '1'" outline />
-                  <q-chip dense color="teal" label="热门" v-if="props.row.hot === '1'" outline />
-                  <q-chip dense color="brown" label="原创" v-if="props.row.original === '1'" outline />
-                  <q-chip dense color="yellow" label="付费" v-if="props.row.paid === '1'" outline />
-                  <q-chip dense color="green" label="免费" v-if="props.row.free === '1'" outline />
-                  <q-chip dense color="orange" label="私密" v-if="props.row.private === '1'" outline />
-                  <q-chip dense color="purple" label="公开" v-if="props.row.public === '1'" outline />
+                  <q-chip dense :color="item.color" :label="item.label" outline v-for="(item, index) in tableParams.chips" :key="index" :class="{ hide: props.row[item.value] !== '1' }" />
                 </div>
-                <div v-if="col.name === 'tag'">
+                <div v-if="col.name === 'postTags' && props.row.postTags">
                   <q-chip :label="item" v-for="(item, index) in props.row.postTags" :key="index" dense />
-                  <span v-if="!props.row.postTags">--</span>
                 </div>
+                <div v-if="col.name === 'postTags' && !props.row.postTags">--</div>
                 <!-- status -->
                 <div v-if="col.name === 'status'">
                   <span class="my-status" :class="{ red: props.row.status === 'OFFLINE', grey: props.row.status === 'DRAFT', green: props.row.status === 'PUBLISHED' }">{{
@@ -146,9 +149,9 @@
                   </div>
                   {{ postAuthor(props.row) || '--' }}
                 </div>
-                <!-- categoryId -->
-                <div v-if="col.name === 'categoryId'">
-                  <span v-if="props.row.categoryId">{{ postCategory(props.row) }}</span>
+                <!-- directoryId -->
+                <div v-if="col.name === 'directoryId'">
+                  <span v-if="props.row.directoryId">{{ postCategory(props.row) }}</span>
                   <span v-else>--</span>
                 </div>
                 <!-- channelId -->
@@ -185,7 +188,6 @@
       </q-table>
       <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     </div>
-    <PostType ref="PostTypeRef" @pick="onPostTypePick"></PostType>
   </div>
 </template>
 
@@ -194,44 +196,82 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
-import { addWhatPost, POST_CHECKBOX_OPTIONS, POST_STATUS, POST_TYPE_OPTION, TEST_ACCOUNT, updatePost } from './utils';
-import PostType from './components/post-type.vue';
+import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_OPTION, POST_TYPE_SVG_NAME, TEST_ACCOUNT, updatePost, addWhatPost } from './utils';
 import { commonPost } from 'src/mixins/post';
 
 const CONST_PARAMS: any = {
-  query: { channelId: '', status: '', authorId: '', haveComment: '', post_radio_option: [], postType: [], orderProperty: '', orderDir: 'ASC' /* DESC:降序 ,ASC:升序 */ },
+  query: {
+    channelId: '',
+    status: '',
+    authorId: '',
+    haveComment: '',
+    post_radio_option: [],
+    postType: [],
+    orderProperty: '',
+    orderDir: 'ASC' /* DESC:降序 ,ASC:升序 */,
+  },
 };
 
 @Component({
   name: 'BlogPostComponent',
-  components: {
-    PostType,
-  },
+  components: {},
 })
 export default class BlogPostComponent extends commonPost {
   /**instance */
   declare $refs: any;
+
   get addedPostId() {
     return BlogPostModule.addedPostId;
   }
+
   get updatePostSuccessFlag() {
     return BlogPostModule.updatePostSuccessFlag;
   }
+
   get addPostSuccessFlag() {
     return BlogPostModule.addPostSuccessFlag;
   }
+
   get updatePostSuccessFlagVideo() {
     return BlogPostModule.updatePostSuccessFlagVideo;
   }
+
   get addPostSuccessFlagVideo() {
     return BlogPostModule.addPostSuccessFlagVideo;
   }
+
   get updatePostSuccessFlagGallery() {
     return BlogPostModule.updatePostSuccessFlagGallery;
   }
+
   get addPostSuccessFlagGallery() {
     return BlogPostModule.addPostSuccessFlagGallery;
   }
+
+  get updatePostSuccessFlagQuestion() {
+    return BlogPostModule.updatePostSuccessFlagQuestion;
+  }
+
+  get addPostSuccessFlagQuestion() {
+    return BlogPostModule.addPostSuccessFlagQuestion;
+  }
+
+  get updatePostSuccessFlagVideoEmbed() {
+    return BlogPostModule.updatePostSuccessFlagVideoEmbed;
+  }
+
+  get addPostSuccessFlagVideoEmbed() {
+    return BlogPostModule.addPostSuccessFlagVideoEmbed;
+  }
+
+  get updatePostSuccessFlagNormal() {
+    return BlogPostModule.updatePostSuccessFlagNormal;
+  }
+
+  get addPostSuccessFlagNormal() {
+    return BlogPostModule.addPostSuccessFlagNormal;
+  }
+
   created() {
     this.$watch('addPostSuccessFlag', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG, this).bind(this));
     this.$watch('updatePostSuccessFlag', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG, this).bind(this));
@@ -239,16 +279,27 @@ export default class BlogPostComponent extends commonPost {
     this.$watch('updatePostSuccessFlagVideo', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO, this).bind(this));
     this.$watch('addPostSuccessFlagGallery', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_GALLERY, this).bind(this));
     this.$watch('updatePostSuccessFlagGallery', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_GALLERY, this).bind(this));
+    this.$watch('addPostSuccessFlagQuestion', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_QUESTION, this).bind(this));
+    this.$watch('updatePostSuccessFlagQuestion', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_QUESTION, this).bind(this));
+    this.$watch('addPostSuccessFlagVideoEmbed', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_VIDEO_EMBED, this).bind(this));
+    this.$watch('updatePostSuccessFlagVideoEmbed', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_VIDEO_EMBED, this).bind(this));
+    this.$watch('addPostSuccessFlagNormal', this.createWatcher(BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_NORMAL, this).bind(this));
+    this.$watch('updatePostSuccessFlagNormal', this.createWatcher(BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_NORMAL, this).bind(this));
   }
+
   mounted() {
     if (this.$route.query.channelId) {
       this.queryParams.params.channelId = this.$route.query.channelId;
+    }
+    if (this.$route.query.id) {
+      this.getDataById(this.$route.query.id as any);
     }
     this.getData();
     this.getAuthor();
     this.getCategories();
     this.getChannel();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public queryParams: any = {
@@ -315,7 +366,10 @@ export default class BlogPostComponent extends commonPost {
   public tableParams = {
     loading: false,
     data: [],
-    categoryOptions: [],
+    postTypeOptions: POST_TYPE_OPTION.map((item: any) => {
+      return { ...item, svg: POST_TYPE_SVG_NAME[item.value] };
+    }),
+    chips: POST_CHECKBOX_OPTIONS.concat(POST_RADIO_OPTIONS.map((item: any) => item.option).flat()),
     pagination: {
       page: 1,
       rowsPerPage: 10,
@@ -335,7 +389,7 @@ export default class BlogPostComponent extends commonPost {
         inSlot: true,
       },
       {
-        name: 'tag',
+        name: 'postTags',
         label: '标签',
         align: 'left',
         inSlot: true,
@@ -353,7 +407,7 @@ export default class BlogPostComponent extends commonPost {
         inSlot: true,
       },
       {
-        name: 'categoryId',
+        name: 'directoryId',
         label: '分类',
         align: 'left',
         inSlot: true,
@@ -401,17 +455,20 @@ export default class BlogPostComponent extends commonPost {
       },
     ],
   };
+
   /**event */
   public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
+
   public async handleQuery() {
     this.queryParams.queryLoading = true;
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.queryLoading = false;
   }
+
   public async handleResetQuery() {
     this.queryParams.resetLoading = true;
     this.queryParams.params = cloneDeep(CONST_PARAMS.query);
@@ -419,12 +476,15 @@ export default class BlogPostComponent extends commonPost {
     await this.getData();
     this.queryParams.resetLoading = false;
   }
-  public handleClickAdd() {
-    this.$refs.PostTypeRef.show();
+
+  public handleClickAdd(item: any) {
+    addWhatPost(item.value);
   }
+
   public handlerClickUpdate(row: any) {
     updatePost(row);
   }
+
   public handlerClickAddQuestion(row: any) {
     BlogPostModule.SET_POST_ADD_OR_UPDATE_QUESTION('add');
     BlogPostModule.SET_POST_DETAIL_QUESTION({
@@ -432,6 +492,15 @@ export default class BlogPostComponent extends commonPost {
     });
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_QUESTION(true);
   }
+
+  public handlerClickUpdateQuestion(row: any) {
+    BlogPostModule.SET_POST_ADD_OR_UPDATE_QUESTION('update');
+    BlogPostModule.SET_POST_DETAIL_QUESTION({
+      row: row,
+    });
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_QUESTION(true);
+  }
+
   public openCommentDialog(row: any) {
     const detail = {
       id: row.id,
@@ -440,6 +509,7 @@ export default class BlogPostComponent extends commonPost {
     BlogPostModule.SET_COMMENT_DETAIL(detail);
     BlogPostModule.SET_COMMENT_VISIABLE(true);
   }
+
   public sortTableData(props: any) {
     try {
       const { sortBy } = props.pagination;
@@ -451,9 +521,7 @@ export default class BlogPostComponent extends commonPost {
       console.log(error);
     }
   }
-  public onPostTypePick(data: any) {
-    addWhatPost(data.id);
-  }
+
   public createWatcher(setFlagFunction: (flag: boolean) => void, context: any) {
     return async function (newVal: string) {
       if (newVal) {
@@ -464,6 +532,7 @@ export default class BlogPostComponent extends commonPost {
       }
     };
   }
+
   /**http */
   public async getData() {
     try {
@@ -494,6 +563,18 @@ export default class BlogPostComponent extends commonPost {
       return Promise.resolve();
     }
   }
+
+  public async getDataById(id: string) {
+    try {
+      const result = await BlogPostModule.getPostRowById({
+        id,
+      });
+      updatePost(result);
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+
   public async getAuthor() {
     try {
       let { pageData } = await BlogPostModule.getAllPostAuthor({});
@@ -509,6 +590,7 @@ export default class BlogPostComponent extends commonPost {
       return Promise.resolve();
     }
   }
+
   public async getCategories() {
     try {
       const allSheet = await BlogPostModule.getAllSheet({});
@@ -536,6 +618,7 @@ export default class BlogPostComponent extends commonPost {
       return Promise.resolve();
     }
   }
+
   public async getChannel() {
     try {
       let { pageData } = await BlogPostModule.getAllChannel({});
@@ -548,6 +631,7 @@ export default class BlogPostComponent extends commonPost {
       return Promise.resolve();
     }
   }
+
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -568,6 +652,7 @@ export default class BlogPostComponent extends commonPost {
       }
     } catch (error) {}
   }
+
   public async handlerClickOnline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -588,6 +673,7 @@ export default class BlogPostComponent extends commonPost {
       }
     } catch (error) {}
   }
+
   public async handlerClickOffline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -608,6 +694,7 @@ export default class BlogPostComponent extends commonPost {
       }
     } catch (error) {}
   }
+
   public async submitReplyComment(content: any, item: any) {
     try {
       let obj = {
@@ -636,30 +723,36 @@ export default class BlogPostComponent extends commonPost {
 th.sortable i.q-table__sort-icon {
   display: none;
 }
+
 .body--dark {
   .blog-post-list th:last-child,
   .blog-post-list td:last-child {
     box-shadow: rgba($color: #ffffff, $alpha: 0.05) 0px 20px 27px 0px;
   }
 }
+
 .body--light {
   .blog-post-list th:last-child,
   .blog-post-list td:last-child {
     box-shadow: rgba($color: #000000, $alpha: 0.05) 0px 20px 27px 0px;
   }
 }
+
 .blog-post-list {
   /* specifying max-width so the example can
     highlight the sticky column on any browser window */
   max-width: 100%;
 }
+
 .blog-post-list thead tr:last-child th:last-child {
   /* bg color is important for th; just specify one */
   background-color: var(--my-white);
 }
+
 .blog-post-list td:last-child {
   background-color: var(--my-white);
 }
+
 .blog-post-list th:last-child,
 .blog-post-list td:last-child {
   position: sticky;
@@ -673,11 +766,13 @@ th.sortable i.q-table__sort-icon {
     box-shadow: 0px 6px 16px -1px rgba($color: #ffffff, $alpha: 0.15) !important;
   }
 }
+
 .body--light {
   .reply-input-proxy {
     box-shadow: 0px 6px 16px -1px rgba($color: #000000, $alpha: 0.15) !important;
   }
 }
+
 .reply-input-proxy {
   border-radius: 8px !important;
 }

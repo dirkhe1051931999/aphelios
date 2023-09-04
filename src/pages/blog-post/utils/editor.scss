@@ -1,0 +1,40 @@
+:deep(.el-date-editor) {
+  height: 40px !important;
+  width: 100% !important;
+}
+:deep(.el-picker-panel__footer .el-button) {
+  height: 40px !important;
+}
+.tags-autocomplete {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  :deep(.ti-input) {
+    height: 40px;
+    border-radius: 8px;
+  }
+}
+.editor-post-card {
+  max-width: 80vw;
+  width: 60vw;
+  .editor-post-card-content {
+    display: flex;
+    justify-content: space-between;
+    .left-content {
+      width: 40%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border: solid 1px #eeeeee;
+      border-radius: 8px;
+      padding: 16px;
+      height: 100%;
+    }
+    .right-content {
+      width: 59%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border: solid 1px #eeeeee;
+      border-radius: 8px;
+      padding: 16px;
+      height: 100%;
+    }
+  }
+}

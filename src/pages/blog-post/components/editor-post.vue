@@ -60,7 +60,7 @@
           <p class="q-mb-sm">* 主题</p>
           <q-btn
             class="h-40 category-select full-width"
-            :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ categoryId: dialogEditorParams.params.directoryId })"
+            :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ directoryId: dialogEditorParams.params.directoryId })"
             outline
             align="left"
             :disable="disableSelectCategory"
@@ -139,8 +139,8 @@
           <vue-tags-input
             class="tags-autocomplete"
             v-model="dialogEditorParams.params.tag"
-            :tags="dialogEditorParams.params.tags"
-            @tags-changed="(newTags) => (dialogEditorParams.params.tags = newTags)"
+            :tags="dialogEditorParams.params.postTags"
+            @tags-changed="(newTags) => (dialogEditorParams.params.postTags = newTags)"
           />
         </div>
         <div id="editor-toolbar"></div>
@@ -290,14 +290,14 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
           this.dialogEditorParams.params.title = row.title;
           this.dialogEditorParams.params.poster = row.poster;
           this.dialogEditorParams.params.id = row.id;
-          this.dialogEditorParams.params.tags = row.tags
-            ? row.tags.map((item: any) => {
+          this.dialogEditorParams.params.postTags = row.postTags
+            ? row.postTags.map((item: any) => {
                 return {
                   text: item,
                 };
               })
             : [];
-          const checkedOptions = this.dialogEditorParams.checkedOptions;
+          const checkedOptions: any = this.dialogEditorParams.checkedOptions;
           for (let item of checkedOptions) {
             if (row[item.value] && row[item.value] === '1') {
               (this.dialogEditorParams.params.checked as any).push(item.value);
@@ -447,19 +447,19 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
           authorId: this.dialogEditorParams.params.authorId,
           directoryId: this.dialogEditorParams.params.directoryId,
           channelId: this.dialogEditorParams.params.channelId,
-          tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
+          postTags: this.dialogEditorParams.params.postTags.map((item: any) => item.text),
           postType: 1,
-          pinned: '0',
-          recommended: '0',
-          featured: '0',
-          hot: '0',
-          original: '0',
-          paid: '0',
-          free: '0',
-          privated: '0',
-          publiced: '0',
           poster: this.dialogEditorParams.params.poster,
         };
+        let checkedOptions: any = this.dialogEditorParams.checkedOptions;
+        for (let item of checkedOptions) {
+          params[item.value] = '0';
+        }
+        for (let item of this.dialogEditorParams.radioOptions) {
+          for (let option of item.option) {
+            params[option.value] = '0';
+          }
+        }
         for (let item of this.dialogEditorParams.params.checked) {
           params[item] = '1';
         }

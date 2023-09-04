@@ -57,7 +57,7 @@
 import { getCurrentInstance } from 'vue';
 import { Component, Prop, Vue, Watch } from 'vue-facing-decorator';
 
-@Component({ name: 'myDateRangeWithTImeComponent' })
+@Component({ name: 'myDateRangeWithTImeComponent', emits: ['startInput', 'endInput'] })
 export default class myDateRangeWithTImeComponent extends Vue {
   $refs: any;
   @Prop({
@@ -74,6 +74,7 @@ export default class myDateRangeWithTImeComponent extends Vue {
     }
     if (newVal) {
       this.dateParams.list[0] = `起始: ${newVal} `;
+      this.$emit('startInput', newVal);
     }
   }
   @Watch('dateParams.endModel', { deep: true })
@@ -86,6 +87,7 @@ export default class myDateRangeWithTImeComponent extends Vue {
     }
     if (newVal) {
       this.dateParams.list[1] = `结束: ${newVal}`;
+      this.$emit('endInput', newVal);
     }
   }
   @Watch('dateParams.list', { deep: true })

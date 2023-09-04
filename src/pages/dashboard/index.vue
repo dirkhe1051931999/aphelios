@@ -192,16 +192,6 @@ export default class DashboardComponent extends Vue {
       return `${setting.ip}${path}`;
     };
   }
-  get updatePostSuccessFlag() {
-    return BlogPostModule.updatePostSuccessFlag;
-  }
-  @Watch('updatePostSuccessFlag')
-  public async watchUpdatePostSuccessFlag(newVal: string) {
-    if (newVal) {
-      this.getChannelSheetUserAuthorLimit5();
-      BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
-    }
-  }
   async created() {}
   async mounted() {
     this.getOverview();
@@ -327,23 +317,7 @@ export default class DashboardComponent extends Vue {
     BlogPostModule.SET_COMMENT_VISIABLE(true);
   }
   public handlerClickUpdate(row: any) {
-    this.getAuthor();
-    this.getCategories();
-    this.getChannel();
-    BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
-    BlogPostModule.SET_POST_DETAIL({
-      row: {
-        authorId: row.authorId,
-        status: row.status,
-        categoryId: row.categoryId,
-        channelId: row.channelId,
-        title: row.title,
-        poster: row.poster,
-        id: row.id,
-      },
-    });
-    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(false);
-    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+    this.$router.push(`/blog-post/list?id=${row.id}`);
   }
   /* http */
   public async getOverview() {

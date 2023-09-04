@@ -30,41 +30,6 @@
               }"
               @input="(data) => (dialogEditorParams.params[item.model] = data)"
             />
-            <MyFormDateRange
-              v-if="item.type === 'date'"
-              :option="{
-                rules: item.rules,
-                classes: item.classes,
-                model: dialogEditorParams.params[item.model],
-                dateRange: dialogEditorParams.params[item.dateRange],
-                label: item.label,
-              }"
-              @input="(data) => (dialogEditorParams.params[item.model] = data)"
-            />
-            <MyFormDateRangeWithTime
-              v-if="item.type === 'date-time'"
-              :ref="dialogEditorParams.id + '-date-time-' + item.model"
-              :option="{
-                rules: item.rules,
-                classes: item.classes,
-                startModel: dialogEditorParams.params[item.startModel],
-                endModel: dialogEditorParams.params[item.endModel],
-                model: dialogEditorParams.params[item.model],
-                label: item.label,
-              }"
-            />
-            <MyFormSlider
-              v-if="item.type === 'slider'"
-              :option="{
-                rules: item.rules,
-                classes: item.classes,
-                model: dialogEditorParams.params[item.model],
-                label: item.label,
-                min: item.min,
-                max: item.max,
-                step: item.step,
-              }"
-            />
             <MyFormRadio
               v-if="item.type === 'radio'"
               :option="{
@@ -78,29 +43,22 @@
               }"
               @input="(data) => (dialogEditorParams.params[item.model] = data)"
             />
-            <MyFormMultipleSelect
-              v-if="item.type === 'multiple-select'"
-              :option="{
-                inputId: `${dialogEditorParams.id}-multiple-select-${item.model}`,
-                rules: item.rules,
-                classes: item.classes,
-                model: dialogEditorParams.params[item.model],
-                label: item.label,
-                inputSelectOption: item.inputSelectOption,
-                multiple: item.multiple,
-                userInput: true,
-              }"
-              @input="(data) => (dialogEditorParams.params[item.model] = data)"
-            >
-              <template #subTitle>
-                <el-popover placement="top" title="popover-title" :width="320" popper-style="z-index:9999" trigger="hover">
-                  <p v-for="(item, index) in ['test1', 'test2', 'test3']" :key="index">{{ index + 1 }}. {{ item }}</p>
-                  <template #reference>
-                    <q-icon name="o_info" class="text-grey-4 cursor-pointer" />
-                  </template>
-                </el-popover>
-              </template>
-            </MyFormMultipleSelect>
+            <div v-if="item.type === 'date'">
+              <p class="f-bold fs-12 p-b-8 row items-center">
+                <span class="m-r-6"> * {{ item.label }} </span>
+              </p>
+              <el-date-picker
+                v-model="dialogEditorParams.params.time"
+                type="datetimerange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                align="right"
+                format="YYYY/MM/DD hh:mm:ss"
+                value-format="YYYY/MM/DD hh:mm:ss"
+              >
+              </el-date-picker>
+            </div>
             <MyFormInput
               v-if="item.type === 'text'"
               :option="{
@@ -120,47 +78,45 @@
                 </el-popover>
               </template>
             </MyFormInput>
-            <MyMaskInput
-              v-if="item.type === 'mask-input'"
-              :option="{
-                model: dialogEditorParams.params[item.model],
-                rules: item.rules,
-                classes: item.classes,
-                label: item.label,
-                mask: '####/####/####/####',
-                hint: '####/####/####/####',
-              }"
-              @input="(data) => (dialogEditorParams.params[item.model] = data)"
-            >
-            </MyMaskInput>
           </div>
         </q-form>
       </q-card-section>
       <q-card-section class="q-pt-none">
         <div class="post-question">
           <div v-for="(item, index) in dialogEditorParams.params.solutionList" :key="item.id" class="input-item">
-            <div class="w-50">答案 {{ index + 1 }}</div>
-            <q-input
-              v-model.trim="item.model"
-              autocapitalize="off"
-              autocomplete="new-password"
-              autocorrect="off"
-              clearable
-              dense
-              outlined
-              dropdown-icon="app:topbar-arrow-bottom"
-              clear-icon="app:clear"
-              :spellcheck="false"
-            />
-            <q-icon name="add_circle" size="32px" color="primary" class="cursor-pointer" @click="addSolution" v-if="index === dialogEditorParams.params.solutionList.length - 1"></q-icon>
-            <q-icon name="remove_circle" size="32px" color="grey" class="cursor-pointer" @click="removeSolution" v-if="index > 1"></q-icon>
+            <div class="w-50 m-t-10">答案 {{ index + 1 }}</div>
+            <div class="row w-p-50">
+              <q-input
+                class="w-full"
+                v-model.trim="item.model"
+                autocapitalize="off"
+                autocomplete="new-password"
+                autocorrect="off"
+                clearable
+                dense
+                outlined
+                dropdown-icon="app:topbar-arrow-bottom"
+                clear-icon="app:clear"
+                :spellcheck="false"
+              />
+              <q-linear-progress size="12px" :value="calacProgress(item.vote)" color="primary" class="q-mt-sm" rounded>
+                <div class="absolute-full flex flex-center">
+                  <q-badge color="white" text-color="primary" :label="calacProgressLabel(item.vote)" />
+                </div>
+              </q-linear-progress>
+            </div>
+            <div class="m-t-6 q-ml-md">
+              <q-icon name="add_circle" size="32px" color="primary" class="cursor-pointer" @click="addSolution" v-if="index === dialogEditorParams.params.solutionList.length - 1"></q-icon>
+              <q-icon name="remove_circle" size="32px" color="grey" class="cursor-pointer" @click="removeSolution" v-if="index > 1"></q-icon>
+            </div>
           </div>
         </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
         <div class="text-center">
           <q-btn label="取消" color="grey-8" flat @click="hide" />
-          <q-btn label="确定" color="primary" @click="handleClickConfirm" />
+          <q-btn label="确定" color="primary" @click="handleClickConfirm" class="q-ml-md" />
+          <q-btn label="删除问卷" color="negative" @click="handleClickDelete" class="q-ml-md" v-if="!isAddPost" />
         </div>
       </q-card-section>
     </q-card>
@@ -171,14 +127,15 @@
 import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import { BlogPostModule } from 'src/store/modules/blog-post';
+import { SurveyModule } from 'src/store/modules/survey';
 import { commonPost } from 'src/mixins/post';
 import { getCurrentInstance } from 'vue';
+import { date } from 'quasar';
+
 const CONST_PARAMS = {
   add_or_edit: {
     content: '',
-    timeStart: '',
-    timeEnd: '',
-    time: '',
+    time: [],
     status: '1',
     multipleOrSingle: '1',
     title: '',
@@ -186,10 +143,14 @@ const CONST_PARAMS = {
       {
         id: Math.random().toString(36),
         model: '',
+        vote: 0,
+        voteUserList: [],
       },
       {
         id: Math.random().toString(36),
         model: '',
+        vote: 0,
+        voteUserList: [],
       },
     ],
   },
@@ -198,6 +159,24 @@ const CONST_PARAMS = {
 @Component({ name: 'myEditorPostQuestionComponent' })
 export default class myEditorPostQuestionComponent extends commonPost {
   declare $refs: any;
+  get calacProgress() {
+    return (vote: number) => {
+      const sum = this.dialogEditorParams.params.solutionList.reduce((prev: number, curr: any) => {
+        return prev + curr.vote;
+      }, 0);
+      if (sum === 0) return 0;
+      return vote / sum;
+    };
+  }
+  get calacProgressLabel() {
+    return (vote: number) => {
+      const sum = this.dialogEditorParams.params.solutionList.reduce((prev: number, curr: any) => {
+        return prev + curr.vote;
+      }, 0);
+      if (sum === 0) return '0%';
+      return `${((vote / sum) * 100).toFixed(2)}%`;
+    };
+  }
   get isAddPost() {
     return BlogPostModule.postAddOrUpdateQuestion === 'add';
   }
@@ -205,7 +184,6 @@ export default class myEditorPostQuestionComponent extends commonPost {
     return BlogPostModule.blogEditorPostVisiableQuestion;
   }
   get postDetailQuestion() {
-    console.log('postDetailQuestion', BlogPostModule.postDetailQuestion);
     return BlogPostModule.postDetailQuestion;
   }
   @Watch('blogEditorPostVisiableQuestion')
@@ -217,6 +195,19 @@ export default class myEditorPostQuestionComponent extends commonPost {
       });
       if (BlogPostModule.postAddOrUpdateQuestion === 'update') {
         this.dialogEditorParams.title = '编辑';
+        const survey = row.survey[0];
+        this.dialogEditorParams.params.time = [date.formatDate(survey.startTime, 'YYYY/MM/DD hh:mm:ss'), date.formatDate(survey.endTime, 'YYYY/MM/DD hh:mm:ss')];
+        this.dialogEditorParams.params.status = survey.status;
+        this.dialogEditorParams.params.multipleOrSingle = survey.type;
+        this.dialogEditorParams.params.title = survey.title;
+        this.dialogEditorParams.params.solutionList = survey.selectOption.map((item: any) => {
+          return {
+            id: item.id,
+            model: item.content,
+            vote: item.vote,
+            voteUserList: item.voteUserList,
+          };
+        });
       } else {
         this.dialogEditorParams.title = '新增';
       }
@@ -232,14 +223,7 @@ export default class myEditorPostQuestionComponent extends commonPost {
     input: [
       {
         model: 'time',
-        startModel: 'timeStart',
-        endModel: 'timeEnd',
-        type: 'date-time',
-        rules: [
-          (val: string | number | undefined | null) => {
-            return (val && String(val).length > 0) || this.globals.$t('messages.required');
-          },
-        ],
+        type: 'date',
         label: '问卷时间',
       },
       {
@@ -311,6 +295,8 @@ export default class myEditorPostQuestionComponent extends commonPost {
     this.dialogEditorParams.params.solutionList.push({
       id: Math.random().toString(36),
       model: '',
+      vote: 0,
+      voteUserList: [],
     });
   }
   public removeSolution() {
@@ -324,6 +310,13 @@ export default class myEditorPostQuestionComponent extends commonPost {
   public handleClickConfirm() {
     this.$refs[this.dialogEditorParams.id].validate().then(async (valid: boolean) => {
       if (valid) {
+        if (this.dialogEditorParams.params.time.length === 0) {
+          this.$globalMessage.show({
+            type: 'error',
+            content: '请选择时间',
+          });
+          return;
+        }
         const result = await this.$globalConfirm.show({
           title: '友情提示',
           color: 'primary',
@@ -331,15 +324,94 @@ export default class myEditorPostQuestionComponent extends commonPost {
           confirmButtonText: '非常确定',
         });
         if (result) {
-          console.log('handleClickConfirm', this.dialogEditorParams.params);
+          const row: any = this.postDetailQuestion.row;
+
+          if (this.isAddPost) {
+            const params = {
+              postId: row.id,
+              title: this.dialogEditorParams.params.title,
+              startTime: this.dialogEditorParams.params.time[0],
+              endTime: this.dialogEditorParams.params.time[1],
+              status: this.dialogEditorParams.params.status,
+              type: this.dialogEditorParams.params.multipleOrSingle,
+              selectOption: this.dialogEditorParams.params.solutionList.map((item: any) => {
+                return {
+                  id: item.id,
+                  content: item.model,
+                  vote: item.vote,
+                  voteUserList: item.voteUserList,
+                };
+              }),
+            };
+            await SurveyModule.addPostSurvey(params);
+            this.$globalMessage.show({
+              type: 'success',
+              content: '添加成功',
+            });
+            this.hide();
+            BlogPostModule.SET_ADD_POST_SUCCESS_FLAG_QUESTION(true);
+          } else {
+            const params = {
+              id: row.survey[0].id,
+              postId: row.id,
+              title: this.dialogEditorParams.params.title,
+              startTime: this.dialogEditorParams.params.time[0],
+              endTime: this.dialogEditorParams.params.time[1],
+              status: this.dialogEditorParams.params.status,
+              type: this.dialogEditorParams.params.multipleOrSingle,
+              selectOption: this.dialogEditorParams.params.solutionList.map((item: any) => {
+                return {
+                  id: item.id,
+                  content: item.model,
+                  vote: item.vote,
+                  voteUserList: item.voteUserList,
+                };
+              }),
+            };
+            await SurveyModule.updatePostSurvey(params);
+            this.$globalMessage.show({
+              type: 'success',
+              content: '编辑成功',
+            });
+            this.hide();
+            BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_QUESTION(true);
+          }
         }
       }
     });
+  }
+  public async handleClickDelete() {
+    const row: any = this.postDetailQuestion.row;
+    const id = row.survey[0].id;
+    try {
+      const result = await this.$globalConfirm.show({
+        title: '友情提示',
+        color: 'primary',
+        content: '确定吗？老铁！？',
+        confirmButtonText: '非常确定',
+      });
+      if (result) {
+        await SurveyModule.deletePostSurvey({ id: id });
+        this.$globalMessage.show({
+          type: 'success',
+          content: '删除成功',
+        });
+        this.hide();
+        BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG_QUESTION(true);
+      }
+    } catch (error) {}
   }
 }
 </script>
 
 <style scoped lang="scss">
+:deep(.el-date-editor) {
+  height: 40px !important;
+  width: 100% !important;
+}
+:deep(.el-picker-panel__footer .el-button) {
+  height: 40px !important;
+}
 .editor-question-card {
   max-width: 80vw;
   width: 60vw;
@@ -363,12 +435,7 @@ export default class myEditorPostQuestionComponent extends commonPost {
     padding: 16px;
     .input-item {
       display: flex;
-      align-items: center;
       margin-bottom: 16px;
-      .q-input {
-        width: 45%;
-        margin: 0 16px;
-      }
     }
   }
 }

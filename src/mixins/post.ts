@@ -26,7 +26,7 @@ export class commonPost extends Vue {
   }
   get postCategory() {
     return (row: any) => {
-      if (!row.categoryId) return '--';
+      if (!row.directoryId) return '--';
       function findItemById(arr: any, id: any): any {
         for (let item of arr) {
           if (item.id === id) {
@@ -41,7 +41,7 @@ export class commonPost extends Vue {
         }
         return null;
       }
-      const item = findItemById(this.categoryOptions, row.categoryId);
+      const item = findItemById(this.categoryOptions, row.directoryId);
       if (item) {
         return item.name;
       } else {
@@ -109,11 +109,12 @@ export class commonPost extends Vue {
   /* 多条件验证 */
   public commonValidations: Validation[] = [
     { key: 'title', message: '请输入标题', check: (value) => !!value },
+    { key: 'time', message: '请选择上架时间', check: (value) => value && value.length === 2 },
     { key: 'content', message: '请输入文章内容', check: (value) => !!value },
     { key: 'directoryId', message: '请选择主题', check: (value) => !!value },
     { key: 'authorId', message: '请选择作者', check: (value) => !!value },
     { key: 'channelId', message: '请选择频道', check: (value) => !!value },
-    { key: 'tags', message: '请输入标签', check: (value) => Array.isArray(value) && value.length > 0 },
+    { key: 'postTags', message: '请输入标签', check: (value) => Array.isArray(value) && value.length > 0 },
   ];
   public validateParams(params: Record<string, any>, validations: Validation[]): boolean {
     for (const validation of validations) {

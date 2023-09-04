@@ -30,7 +30,7 @@
         <ul class="album-list">
           <li v-for="(item, index) in albumParams.data" :key="index" @click="pickAlbum(item)" :class="{ active: isPicked(item.id) }">
             <q-img :src="item.source" :alt="item.title" fit="contain" class="img">
-              <q-badge v-for="(categoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(categoryId)" class="q-ml-md" floating />
+              <q-badge v-for="(directoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(directoryId)" class="q-ml-md" floating />
             </q-img>
             <div class="banner">
               {{ item.title }}
@@ -125,6 +125,10 @@ export default class myPostAlbumComponent extends Vue {
   }
   public pickAlbum(item: any) {
     if (!this.multiple) {
+      if (this.albumParams.currentPick === item.id) {
+        this.albumParams.currentPick = null;
+        return;
+      }
       this.albumParams.currentPick = item.id;
     } else {
       if (this.albumParams.currentPick!.includes(item.id)) {

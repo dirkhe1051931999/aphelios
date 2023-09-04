@@ -62,10 +62,16 @@
             <q-tab :name="item.id" v-for="item in sheetParams.data" :key="item.id" style="justify-content: flex-start; padding: 0" class="q-my-xs" content-class="full-width">
               <q-slide-item class="full-width" right-color="negative" left-color="primary" @right="removeItem($event, 'sheet', item)" @left="updateItem($event, 'sheet', item)">
                 <template v-slot:right>
-                  <div>左滑删除 <q-icon right name="o_done"></q-icon></div>
+                  <div>
+                    左滑删除
+                    <q-icon right name="o_done"></q-icon>
+                  </div>
                 </template>
                 <template v-slot:left>
-                  <div>右滑编辑 <q-icon right name="o_edit_note"></q-icon></div>
+                  <div>
+                    右滑编辑
+                    <q-icon right name="o_edit_note"></q-icon>
+                  </div>
                 </template>
                 <div class="row justify-between full-width items-center q-px-sm">
                   <div class="row column items-start justify-start">
@@ -108,10 +114,16 @@
                         @left="updateItem($event, 'directory', directory)"
                       >
                         <template v-slot:right>
-                          <div>左滑删除 <q-icon right name="o_done"></q-icon></div>
+                          <div>
+                            左滑删除
+                            <q-icon right name="o_done"></q-icon>
+                          </div>
                         </template>
                         <template v-slot:left>
-                          <div>右滑编辑 <q-icon right name="o_edit_note"></q-icon></div>
+                          <div>
+                            右滑编辑
+                            <q-icon right name="o_edit_note"></q-icon>
+                          </div>
                         </template>
                         <div class="row column items-start justify-start q-px-sm">
                           <div class="q-mb-sm row items-center">
@@ -150,10 +162,16 @@
                                 @left="updateItem($event, 'child-directory', childDirectory)"
                               >
                                 <template v-slot:right>
-                                  <div>左滑删除 <q-icon right name="o_done"></q-icon></div>
+                                  <div>
+                                    左滑删除
+                                    <q-icon right name="o_done"></q-icon>
+                                  </div>
                                 </template>
                                 <template v-slot:left>
-                                  <div>右滑编辑 <q-icon right name="o_edit_note"></q-icon></div>
+                                  <div>
+                                    右滑编辑
+                                    <q-icon right name="o_edit_note"></q-icon>
+                                  </div>
                                 </template>
                                 <div class="row column items-start justify-center q-px-sm full-width">
                                   <div class="row items-center q-mb-sm">
@@ -180,26 +198,11 @@
                                   <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                                 </div>
                                 <ul class="q-pa-md" v-if="childDirectory.childrenPost.length">
-                                  <li v-for="(post, index) in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
+                                  <li v-for="post in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                                     <div class="row items-center">
                                       <p class="link-type fs-16 lh-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
-                                      <q-icon v-if="post.haveImg" color="grey" size="18px" name="o_image" class="q-ml-sm"></q-icon>
-                                      <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
-                                      <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
-                                      <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
-                                      <span class="q-ml-md my-status grey" v-if="post.status === 'DRAFT'">草稿中</span>
-                                      <span class="q-ml-auto fs-18"># {{ index + 1 }}</span>
                                     </div>
                                     <div class="row items-center q-mt-sm">
-                                      <p class="q-mr-sm row items-center">
-                                        <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm text-grey">{{ post.view }}</span>
-                                      </p>
-                                      <p class="q-mr-sm row items-center">
-                                        <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
-                                        <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
-                                        <span v-else class="q-ml-sm text-grey">--</span>
-                                      </p>
                                       <p class="q-mr-sm row items-center">
                                         <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
                                         <span class="q-ml-sm text-grey">{{ parseTime(post.createTime) }}</span>
@@ -212,11 +215,6 @@
                                         <q-icon name="o_person" class="text-grey" size="18px"></q-icon>
                                         <span class="q-ml-sm text-grey">{{ postAuthor(post.authorId) }}</span>
                                       </p>
-                                    </div>
-                                    <div class="row items-cener q-mt-sm">
-                                      <span class="link-type q-mr-sm" v-if="post.status === 'OFFLINE'" @click="handlerClickOnline(post)">上线</span>
-                                      <span class="delete-type q-mr-sm" v-if="post.status === 'PUBLISHED'" @click="handlerClickOffline(post)">下线</span>
-                                      <span class="delete-type q-mr-sm" @click="handlerClickDelete(post)">删除</span>
                                     </div>
                                   </li>
                                   <q-card flat style="width: 100%" v-if="childDirectory.loading">
@@ -246,26 +244,11 @@
                           <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                         </div>
                         <ul class="q-pa-md" v-if="directory.childrenPost.length">
-                          <li v-for="(post, index) in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
+                          <li v-for="post in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
                             <div class="row items-center">
                               <p class="link-type fs-16 1h-30" @click="handlerClickUpdatePost(post)">{{ post.title }}</p>
-                              <q-icon v-if="post.haveImg" color="grey" size="18px" name="o_image" class="q-ml-sm"></q-icon>
-                              <span class="q-ml-md my-label grey">{{ postChannel(post.channelId) }}</span>
-                              <span class="q-ml-md my-status red" v-if="post.status === 'OFFLINE'">已下线</span>
-                              <span class="q-ml-md my-status green" v-if="post.status === 'PUBLISHED'">已上线</span>
-                              <span class="q-ml-md my-status grey" v-if="post.status === 'DRAFT'">草稿中</span>
-                              <span class="q-ml-auto fs-18"># {{ index + 1 }}</span>
                             </div>
                             <div class="row items-center q-mt-sm">
-                              <p class="q-mr-sm row items-center">
-                                <q-icon name="o_visibility" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm text-grey">{{ post.view }}</span>
-                              </p>
-                              <p class="q-mr-sm row items-center">
-                                <q-icon name="o_textsms" class="text-grey" size="18px"></q-icon>
-                                <span class="q-ml-sm link-type" @click="openCommentDialog(post)" v-if="post.comment">{{ post.comment }}</span>
-                                <span v-else class="q-ml-sm text-grey">--</span>
-                              </p>
                               <p class="q-mr-sm row items-center">
                                 <q-icon name="o_query_builder" class="text-grey" size="18px"></q-icon>
                                 <span class="q-ml-sm text-grey">{{ parseTime(post.createTime) }}</span>
@@ -380,6 +363,7 @@ import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import { getCurrentInstance } from 'vue';
 import { AppModule } from 'src/store/modules/app';
+
 const CONST_PARAMS: any = {
   dialog_add_update: { name: '', subName: '', parent_id: '', id: '', type: '0', description: '' },
 };
@@ -402,6 +386,7 @@ const findItemById = (id: any, items: any): any => {
 })
 export default class BlogPostDirectoryComponent extends Vue {
   $refs: any;
+
   get postChannel() {
     return (channelId: string) => {
       const selectOption = BlogPostModule.allChannel;
@@ -413,6 +398,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     };
   }
+
   get postAuthor() {
     return (channelId: string) => {
       const selectOption = BlogPostModule.allValidAuthor;
@@ -424,6 +410,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     };
   }
+
   get fixedDirectoryRightChannel() {
     if (BlogPostModule.directoryLeftSideBarNotScroll) {
       if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
@@ -464,18 +451,23 @@ export default class BlogPostDirectoryComponent extends Vue {
 
     return BlogPostModule.fixedDirectoryRightChannel;
   }
+
   get isCollapse() {
     return !AppModule.sidebar.opened;
   }
+
   get addedPostId() {
     return BlogPostModule.addedPostId;
   }
+
   get updatePostSuccessFlag() {
     return BlogPostModule.updatePostSuccessFlag;
   }
+
   get addPostSuccessFlag() {
     return BlogPostModule.addPostSuccessFlag;
   }
+
   @Watch('sheetParams.tab')
   public async watchSheetTab(newVal: string) {
     if (!this.sheetParams.isClickSelect) {
@@ -491,6 +483,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       BlogPostModule.SET_SCROLL_TOP(Math.random());
     });
   }
+
   @Watch('sheetParams.directoryTab')
   public async watchDirectoryTab(newVal: string) {
     if (!this.sheetParams.isClickSelect) {
@@ -508,6 +501,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     });
     this.getPostListContainerBox();
   }
+
   @Watch('sheetParams.childDirectoryTab')
   public async watchChildDirectoryTab(newVal: string) {
     this.$nextTick(() => {
@@ -517,10 +511,12 @@ export default class BlogPostDirectoryComponent extends Vue {
       BlogPostModule.SET_SCROLL_TOP(Math.random());
     });
   }
+
   @Watch('isCollapse')
   public async watchIsCollapse(newVal: boolean) {
     this.getPostListContainerBox();
   }
+
   @Watch('addPostSuccessFlag')
   public async watchAddPostSuccessFlag(newVal: string) {
     if (newVal) {
@@ -528,36 +524,39 @@ export default class BlogPostDirectoryComponent extends Vue {
         id: this.addedPostId,
       });
       BlogPostModule.SET_ADDED_POST_ID('');
-      const item = findItemById(result.categoryId, this.sheetParams.data);
+      const item = findItemById(result.directoryId, this.sheetParams.data);
       item.childrenPost.unshift(result);
       BlogPostModule.SET_ADD_POST_SUCCESS_FLAG(false);
     }
   }
+
   @Watch('updatePostSuccessFlag')
   public async watchUpdatePostSuccessFlag(newVal: string) {
     if (newVal) {
       const result = await BlogPostModule.getPostRowById({
         id: this.postParams.params.postId,
       });
-      const item = findItemById(result.categoryId, this.sheetParams.data);
+      const item = findItemById(result.directoryId, this.sheetParams.data);
       let index = item.childrenPost.findIndex((post: any) => post.id === result.id);
       console.log(result);
       item.childrenPost[index] = result;
       BlogPostModule.SET_UPDATE_POST_SUCCESS_FLAG(false);
     }
   }
+
   async mounted() {
     this.getAllSheetDirectory();
     this.getChannel();
     this.getAuthor();
   }
+
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public postParams = {
     pagination: {
       rowsPerPage: 20,
     },
     params: {
-      categoryId: '',
+      directoryId: '',
       postId: null,
     },
   };
@@ -695,6 +694,7 @@ export default class BlogPostDirectoryComponent extends Vue {
   public splitterModel1 = 10;
   public splitterModel2 = 12;
   public splitterModel3 = 15;
+
   /* event */
   public toAddSheet() {
     this.dialogAddUpdateParams.dialogType = 'sheet';
@@ -713,6 +713,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }, 100);
     });
   }
+
   public toAddDirectory(parentId: string) {
     this.dialogAddUpdateParams.dialogType = 'directory';
     this.dialogAddUpdateParams.isAdd = true;
@@ -722,6 +723,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.dialogAddUpdateParams.title = `添加【${(this.sheetParams.data[parentIndex] as any).name}】的二级栏目`;
     this.dialogAddUpdateParams.visiable = true;
   }
+
   public toAddChildDirectory(parentId: string) {
     this.dialogAddUpdateParams.dialogType = 'child-directory';
     this.dialogAddUpdateParams.isAdd = true;
@@ -730,6 +732,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.dialogAddUpdateParams.input = this.dialogAddUpdateParams.childDirectoryInput as any;
     this.dialogAddUpdateParams.visiable = true;
   }
+
   public handleClickUploadFile() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.fileID][0].type = 'text';
@@ -742,21 +745,19 @@ export default class BlogPostDirectoryComponent extends Vue {
       }, 100);
     });
   }
+
   public handlerClickUpdatePost(row: any) {
-    this.postParams.params.postId = row.id;
-    BlogPostModule.SET_POST_ADD_OR_UPDATE('update');
-    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
-    BlogPostModule.SET_CURRENT_CATEGORY_ID(row.categoryId);
-    BlogPostModule.SET_POST_DETAIL({ row });
-    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
+    this.$router.push(`/blog-post/list?id=${row.id}`);
   }
+
   public handleClickAdd() {
     BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
     BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
-    const categoryId = this.sheetParams.childDirectoryTab ? this.sheetParams.childDirectoryTab : this.sheetParams.directoryTab;
-    BlogPostModule.SET_CURRENT_CATEGORY_ID(categoryId);
+    const directoryId = this.sheetParams.childDirectoryTab ? this.sheetParams.childDirectoryTab : this.sheetParams.directoryTab;
+    BlogPostModule.SET_CURRENT_CATEGORY_ID(directoryId);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
   }
+
   public uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.fileID][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -788,6 +789,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     });
   }
+
   public selectDirectory(parent_id: string, id: string) {
     this.sheetParams.isClickSelect = true;
     this.sheetParams.directoryTab = id;
@@ -797,6 +799,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       BlogPostModule.SET_SCROLL_TOP(Math.random());
     });
   }
+
   public selectChildDirectory(parent_id: string, paretn_parent_id: string, id: string) {
     this.sheetParams.isClickSelect = true;
     this.sheetParams.childDirectoryTab = id;
@@ -806,14 +809,17 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.sheetParams.isClickSelect = false;
     });
   }
+
   public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
+
   public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
+
   public getPostListContainerBox() {
     this.$nextTick(() => {
       if (this.$refs['directoryRightPanel'] && this.$refs['directoryRightPanel'][0]) {
@@ -836,9 +842,11 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     });
   }
+
   public watchSplitterChange() {
     this.getPostListContainerBox();
   }
+
   public watchDirectoryRightPanelScrollBottom() {
     const id = this.sheetParams.directoryTab;
     const div = this.$refs['directoryRightPanel'][0];
@@ -850,6 +858,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
+
   public watchChildDirectoryRightPanelScrollBottom() {
     const id = this.sheetParams.childDirectoryTab;
     const div = this.$refs['childDirectoryRightPanel'][0];
@@ -861,6 +870,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
+
   public openCommentDialog(row: any) {
     const detail = {
       id: row.id,
@@ -869,6 +879,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     BlogPostModule.SET_COMMENT_DETAIL(detail);
     BlogPostModule.SET_COMMENT_VISIABLE(true);
   }
+
   /* http */
   public async getAllSheetDirectory(dialogType?: string, id?: string) {
     try {
@@ -932,6 +943,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     });
   }
+
   public async getChannel() {
     try {
       await BlogPostModule.getAllChannel({});
@@ -939,6 +951,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getAuthor() {
     try {
       await BlogPostModule.getAllPostAuthor({});
@@ -946,14 +959,15 @@ export default class BlogPostDirectoryComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getPostListByCategoryId(id: string) {
     try {
-      this.postParams.params.categoryId = id;
-      const item = findItemById(this.postParams.params.categoryId, this.sheetParams.data);
+      this.postParams.params.directoryId = id;
+      const item = findItemById(this.postParams.params.directoryId, this.sheetParams.data);
       if (!item.noData) {
         this.$q.loading.show();
         const { pageData } = await BlogPostModule.getPostListByCategoryId({
-          categoryId: this.postParams.params.categoryId,
+          directoryId: this.postParams.params.directoryId,
           page: item.postPage,
           rowsPerPage: this.postParams.pagination.rowsPerPage,
         });
@@ -980,6 +994,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     }
   }
+
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -992,7 +1007,7 @@ export default class BlogPostDirectoryComponent extends Vue {
         await BlogPostModule.deletePost({
           id: row.id,
         });
-        const item = findItemById(row.categoryId, this.sheetParams.data);
+        const item = findItemById(row.directoryId, this.sheetParams.data);
         const index = item.childrenPost.findIndex((post: any) => post.id === row.id);
         item.childrenPost.splice(index, 1);
         this.$globalMessage.show({
@@ -1002,6 +1017,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async handlerClickOnline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -1026,6 +1042,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async handlerClickOffline(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -1049,6 +1066,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async dialogAddUpdateConfirmEvent() {
     if (this.dialogAddUpdateParams.dialogType === 'sheet') {
       if (!this.dialogAddUpdateParams.upload.params.file) {
@@ -1106,6 +1124,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.$q.loading.hide();
     }
   }
+
   public async addSheet() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
@@ -1115,6 +1134,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addSheet(params);
     return Promise.resolve(id);
   }
+
   public async updateSheet() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
@@ -1125,6 +1145,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateSheet(params);
     return Promise.resolve();
   }
+
   public async addDirectory() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
@@ -1135,6 +1156,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addDirectory(params);
     return Promise.resolve(id);
   }
+
   public async updateDirectory() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
@@ -1144,6 +1166,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateDirectory(params);
     return Promise.resolve();
   }
+
   public async addChildDirectory() {
     const params = {
       name: this.dialogAddUpdateParams.params.name,
@@ -1154,6 +1177,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     const { id } = await BlogPostModule.addChildDirectory(params);
     return Promise.resolve(id);
   }
+
   public async updateChildDirectory() {
     const params = {
       id: this.dialogAddUpdateParams.params.id,
@@ -1163,6 +1187,7 @@ export default class BlogPostDirectoryComponent extends Vue {
     await BlogPostModule.updateChildDirectory(params);
     return Promise.resolve();
   }
+
   public async removeItem(event: any, type: string, item: any) {
     this.dialogAddUpdateParams.isAdd = false;
     const result = await this.$globalConfirm.show({
@@ -1213,6 +1238,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       }
     }
   }
+
   public async updateItem(event: any, type: string, item: any) {
     this.dialogAddUpdateParams.isAdd = false;
     if (type === 'sheet') {
@@ -1247,28 +1273,34 @@ export default class BlogPostDirectoryComponent extends Vue {
   .splitter {
     background: $dark;
   }
+
   .upload-button,
   .upload-img {
     background: $dark;
     border: solid 1px #ffffff;
   }
+
   .post-list-topbar {
     background: $dark;
   }
 }
+
 .body--light {
   .splitter {
     background: #ffffff;
   }
+
   .upload-button,
   .upload-img {
     background: #ffffff;
     border: solid 1px $dark;
   }
+
   .post-list-topbar {
     background: #ffffff;
   }
 }
+
 .splitter {
   height: 100%;
 }

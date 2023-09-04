@@ -7,44 +7,55 @@
 2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
 */
 @import '../../quasar.variables.scss';
+
 .body--dark {
   .footer-icon path {
     fill: #16202d;
   }
+
   .shepherd-text a,
   .shepherd-text a:visited,
   .shepherd-text a:active {
     color: rgba(0, 0, 0, 0.75);
   }
+
   .footer-icon:hover path {
     fill: #959fac;
   }
+
   pre {
     border: 1px solid rgba(0, 0, 0, 0.15);
   }
+
   .button:hover {
     background: #f3f5f5;
   }
 }
+
 .body--light {
   .footer-icon path {
     fill: #16202d;
   }
+
   .shepherd-text a,
   .shepherd-text a:visited,
   .shepherd-text a:active {
     color: rgba(0, 0, 0, 0.75);
   }
+
   .footer-icon:hover path {
     fill: #959fac;
   }
+
   pre {
     border: 1px solid rgba(0, 0, 0, 0.15);
   }
+
   .button:hover {
     background: #f3f5f5;
   }
 }
+
 ::before,
 ::after {
   --tw-content: '';

@@ -10,10 +10,14 @@ const api = {
   addPost: '/management/blog/post/addPost',
   addVideoPost: '/management/blog/post/addVideoPost',
   addGalleryPost: '/management/blog/post/addGalleryPost',
+  addVideoEmbedPost: '/management/blog/post/addVideoEmbedPost',
+  addNormalPost: 'management/blog/post/addNormalPost',
   deletePost: 'management/blog/post/deletePost',
   updatePost: 'management/blog/post/updatePost',
   updateVideoPost: 'management/blog/post/updateVideoPost',
   updateGalleryPost: 'management/blog/post/updateGalleryPost',
+  updateVideoEmbedPost: 'management/blog/post/updateVideoEmbedPost',
+  updateNormalPost: 'management/blog/post/updateNormalPost',
   offlinePost: 'management/blog/post/offlinePost',
   publishPost: 'management/blog/post/publishPost',
   getAllChannel: 'management/blog/post_channel/getAllChannel',
@@ -126,6 +130,18 @@ export const addGalleryPost = (data: any): any =>
     method: 'post',
     data,
   });
+export const addVideoEmbedPost = (data: any): any =>
+  request({
+    url: api.addVideoEmbedPost,
+    method: 'post',
+    data,
+  });
+export const addNormalPost = (data: any): any =>
+  request({
+    url: api.addNormalPost,
+    method: 'post',
+    data,
+  });
 export const deletePost = (data: any): any =>
   request({
     url: api.deletePost,
@@ -147,6 +163,18 @@ export const updateVideoPost = (data: any): any =>
 export const updateGalleryPost = (data: any): any =>
   request({
     url: api.updateGalleryPost,
+    method: 'post',
+    data,
+  });
+export const updateVideoEmbedPost = (data: any): any =>
+  request({
+    url: api.updateVideoEmbedPost,
+    method: 'post',
+    data,
+  });
+export const updateNormalPost = (data: any): any =>
+  request({
+    url: api.updateNormalPost,
     method: 'post',
     data,
   });

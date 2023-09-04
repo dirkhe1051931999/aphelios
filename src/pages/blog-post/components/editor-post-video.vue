@@ -29,7 +29,7 @@
             <p class="q-mb-sm">* 主题</p>
             <q-btn
               class="h-40 category-select full-width"
-              :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ categoryId: dialogEditorParams.params.directoryId })"
+              :label="!dialogEditorParams.params.directoryId ? '点击选择主题' : postCategory({ directoryId: dialogEditorParams.params.directoryId })"
               outline
               align="left"
               :disable="disableSelectCategory"
@@ -146,9 +146,22 @@
             <vue-tags-input
               class="tags-autocomplete"
               v-model="dialogEditorParams.params.tag"
-              :tags="dialogEditorParams.params.tags"
-              @tags-changed="(newTags) => (dialogEditorParams.params.tags = newTags)"
+              :tags="dialogEditorParams.params.postTags"
+              @tags-changed="(newTags) => (dialogEditorParams.params.postTags = newTags)"
             />
+          </div>
+          <div class="q-mb-md">
+            <p class="q-mb-sm">* 上架时间</p>
+            <el-date-picker
+              v-model="dialogEditorParams.params.time"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY/MM/DD hh:mm:ss"
+              value-format="YYYY/MM/DD hh:mm:ss"
+            >
+            </el-date-picker>
           </div>
           <div class="q-mb-md">
             <p class="q-mb-sm">* 其他</p>
@@ -178,21 +191,8 @@
               </q-option-group>
             </div>
           </div>
-          <div class="q-mb-md">
-            <p class="q-mb-sm">* 内容</p>
-            <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
-              <q-editor ref="editorRef" v-model="dialogEditorParams.params.content" />
-            </form>
-          </div>
         </div>
         <div class="right-content">
-          <div class="q-mb-md">
-            <p class="q-mb-sm">* 海报 <q-btn color="primary" icon="o_add" label="选择海报" @click="handleClickUploadPoster" class="q-ml-sm" dense /></p>
-            <div class="border-all h-300 row items-center justify-center b-r-6">
-              <div v-if="!dialogEditorParams.params.poster">上传海报</div>
-              <img :src="dialogEditorParams.params.poster" class="h-300" v-if="dialogEditorParams.params.poster" />
-            </div>
-          </div>
           <div class="q-mb-md">
             <p class="q-mb-sm">* 视频 <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense /></p>
             <div class="border-all h-300 row items-center justify-center b-r-6">
@@ -208,6 +208,12 @@
               ></video>
             </div>
           </div>
+          <div class="q-mb-md">
+            <p class="q-mb-sm">* 内容</p>
+            <form autocorrect="off" autocapitalize="off" autocomplete="off" spellcheck="false">
+              <q-editor ref="editorRef" v-model="dialogEditorParams.params.content" />
+            </form>
+          </div>
           <div class="text-right q-mt-xl">
             <q-btn flat label="取消" color="primary" @click="hide" />
             <q-btn label="确定" color="primary" class="q-ml-md" @click="handleConfirmAddOrUpdate" />
@@ -217,7 +223,6 @@
     </q-card>
   </q-dialog>
   <PostVideoComponent ref="PostVideoComponentRef" @pick="pickVideoSuccess"></PostVideoComponent>
-  <PostAlbumComponent ref="PostAlbumComponentRef" @pick="pickAlbumSuccess"></PostAlbumComponent>
 </template>
 
 <script lang="ts">
@@ -227,15 +232,13 @@ import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostVideoComponent from './video.vue';
-import PostAlbumComponent from './album.vue';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS } from '../utils';
+import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
 
 const CONST_PARAMS = {
   add_or_edit: {
     ...COMMON_POST_PARAMS,
     videoUrl: '',
     videoPoster: '',
-    poster: '',
   },
 };
 @Component({
@@ -243,13 +246,11 @@ const CONST_PARAMS = {
   components: {
     VueTagsInput,
     PostVideoComponent,
-    PostAlbumComponent,
   },
 })
 export default class myEditorPostVideoComponent extends commonPost {
   declare $refs: {
     PostVideoComponentRef: PostVideoComponent;
-    PostAlbumComponentRef: PostAlbumComponent;
   };
   get isAddPost() {
     return BlogPostModule.postAddOrUpdateVideo === 'add';
@@ -263,46 +264,13 @@ export default class myEditorPostVideoComponent extends commonPost {
   @Watch('blogEditorPostVisiableVideo')
   watchBlogEditorPostVisiableVideo(val: boolean) {
     if (val) {
-      if (BlogPostModule.postAddOrUpdateVideo === 'update') {
-        this.dialogEditorParams.title = '编辑视频';
-        const row: any = BlogPostModule.postDetailVideo.row;
-        this.dialogEditorParams.params.id = row.id;
-        this.dialogEditorParams.params.authorId = row.authorId;
-        this.dialogEditorParams.params.directoryId = row.directoryId;
-        this.dialogEditorParams.params.channelId = row.channelId;
-        this.dialogEditorParams.params.title = row.title;
-        this.dialogEditorParams.params.videoUrl = row.videoUrl;
-        this.dialogEditorParams.params.videoPoster = row.videoPoster;
-        this.dialogEditorParams.params.poster = row.poster;
-        this.dialogEditorParams.params.status = row.status;
-        const checkedOptions = this.dialogEditorParams.checkedOptions;
-        for (let item of checkedOptions) {
-          if (row[item.value] && row[item.value] === '1') {
-            this.dialogEditorParams.params.checked.push(item.value);
-          }
-        }
-        this.getContent(row.id).then((data: any) => {
-          this.dialogEditorParams.params.content = data;
-        });
-        this.dialogEditorParams.params.paidOrFree = row.paid === '1' ? 'paid' : 'free';
-        this.dialogEditorParams.params.privateOrPublic = row.privated === '1' ? 'privated' : 'publiced';
-        if (row.tags && row.tags.length) {
-          this.dialogEditorParams.params.tags = row.tags.map((item: any) => {
-            return {
-              text: item,
-            };
-          });
-        }
-      } else {
-        this.dialogEditorParams.title = '新增视频';
-      }
+      if (BlogPostModule.postAddOrUpdateVideo === 'update') onEditorVisiableShow(this, BlogPostModule.postDetailVideo.row, '2');
       this.dialogEditorParams.model = true;
-      return true;
     }
   }
   public dialogEditorParams: any = {
     model: false,
-    title: '新增视频',
+    title: '新增',
     params: cloneDeep(CONST_PARAMS.add_or_edit),
     checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
     radioOptions: cloneDeep(POST_RADIO_OPTIONS),
@@ -316,15 +284,9 @@ export default class myEditorPostVideoComponent extends commonPost {
   public handleClickUploadVideo() {
     this.$refs.PostVideoComponentRef.init();
   }
-  public handleClickUploadPoster() {
-    this.$refs.PostAlbumComponentRef.init();
-  }
   public pickVideoSuccess(data: any) {
     this.dialogEditorParams.params.videoUrl = data.source;
     this.dialogEditorParams.params.videoPoster = data.poster || '';
-  }
-  public pickAlbumSuccess(data: any) {
-    this.dialogEditorParams.params.poster = data.source;
   }
   /* http */
   public async getContent(id: string) {
@@ -333,12 +295,7 @@ export default class myEditorPostVideoComponent extends commonPost {
   }
   public async handleConfirmAddOrUpdate() {
     const validations = cloneDeep(this.commonValidations);
-    validations.push(
-      ...[
-        { key: 'poster', message: '请选择海报', check: (value: any) => !!value },
-        { key: 'videoUrl', message: '请选择视频', check: (value: any) => !!value },
-      ],
-    );
+    validations.push(...[{ key: 'videoUrl', message: '请选择视频', check: (value: any) => !!value }]);
     if (this.validateParams(this.dialogEditorParams.params, validations)) {
       const result = await this.$globalConfirm.show({
         title: '友情提示',
@@ -348,31 +305,7 @@ export default class myEditorPostVideoComponent extends commonPost {
       });
       if (result) {
         try {
-          const params: any = {
-            authorId: this.dialogEditorParams.params.authorId,
-            channelId: this.dialogEditorParams.params.channelId,
-            content: this.dialogEditorParams.params.content,
-            directoryId: this.dialogEditorParams.params.directoryId,
-            title: this.dialogEditorParams.params.title,
-            tags: this.dialogEditorParams.params.tags.map((item: any) => item.text),
-            pinned: '0',
-            recommended: '0',
-            featured: '0',
-            hot: '0',
-            original: '0',
-            paid: '0',
-            free: '0',
-            privated: '0',
-            publiced: '0',
-            videoUrl: this.dialogEditorParams.params.videoUrl,
-            videoPoster: this.dialogEditorParams.params.videoPoster,
-            poster: this.dialogEditorParams.params.poster,
-          };
-          for (let item of this.dialogEditorParams.params.checked) {
-            params[item] = '1';
-          }
-          params[this.dialogEditorParams.params.paidOrFree] = '1';
-          params[this.dialogEditorParams.params.privateOrPublic] = '1';
+          const params: any = onBeforeEditorDone(this, '2');
           this.$q.loading.show();
           if (BlogPostModule.postAddOrUpdateVideo === 'add') {
             await BlogPostModule.addVideoPost(params);
@@ -417,37 +350,5 @@ export default class myEditorPostVideoComponent extends commonPost {
 }
 </style>
 <style scoped lang="scss">
-.tags-autocomplete {
-  width: 100%;
-  max-width: 100%;
-  border-radius: 8px;
-  :deep(.ti-input) {
-    height: 40px;
-    border-radius: 8px;
-  }
-}
-.editor-post-card {
-  max-width: 80vw;
-  width: 60vw;
-  .editor-post-card-content {
-    display: flex;
-    justify-content: space-between;
-    .left-content {
-      width: 60%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      border: solid 1px #eeeeee;
-      border-radius: 8px;
-      padding: 16px;
-      height: 100%;
-    }
-    .right-content {
-      width: 39%;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      border: solid 1px #eeeeee;
-      border-radius: 8px;
-      padding: 16px;
-      height: 100%;
-    }
-  }
-}
+@import '../utils/editor.scss';
 </style>

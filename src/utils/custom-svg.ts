@@ -31,5 +31,5 @@ export const myIcons: { [key: string]: string } = {
   'app:post-gallery': 'svg/image-outline.svg',
   'app:post-survey': 'svg/help-outline.svg',
   'app:post-embed': 'svg/book-outline.svg',
-  'app:post-politics': 'svg/layers-outline.svg',
+  'app:post-normal2': 'svg/layers-outline.svg',
 };

@@ -65,6 +65,8 @@ class App extends VuexModule {
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(false);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_GALLERY(false);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_QUESTION(false);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO_EMBED(false);
+    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_NORMAL(false);
     setTimeout(() => {
       this.SET_REFRESH_PAGE(true);
     }, 100);
