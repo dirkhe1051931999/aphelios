@@ -98,12 +98,12 @@
     <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     <q-dialog v-model="categoryParams.model" position="top" transition-show="jump-up" transition-hide="jump-down">
       <q-card style="max-width: 50vw; width: 40vw">
-        <q-card-section> 分类 </q-card-section>
+        <q-card-section> 分类</q-card-section>
         <div class="split-line h-1"></div>
         <q-card-section class="scroll" style="max-height: 200px">
           <ul class="categoryList">
             <li v-for="(item, index) in categoryParams.data" :key="item.id" class="q-mb-md">
-              <span class="w-100 inline-block q-pa-sm border-all cursor-pointer">{{ index + 1 }}. {{ item.label }}</span>
+              <span class="w-150 inline-block q-pa-sm border-all cursor-pointer">{{ index + 1 }}. {{ item.label }} ID: {{ item.id }}</span>
               <q-icon name="close" v-if="!item.default" @click.prevent.stop="removeCategory(item)" class="q-ml-md cursor-pointer"></q-icon>
               <q-popup-edit v-model="item.label" :validate="(val) => val.length > 0" v-slot="scope">
                 <q-input autofocus dense v-model="scope.value" :model-value="scope.value" :rules="[(val) => scope.validate(val) || '必填']" outlined>
@@ -192,16 +192,19 @@ import { Component, Vue } from 'vue-facing-decorator';
 @Component({ name: 'myBlogPostCoverLib' })
 export default class myBlogPostCoverLib extends Vue {
   $refs: any;
+
   get getCategoryName() {
     return (category: number) => {
       const categoryObj: any = this.categoryParams.data.find((item: any) => item.id === category);
       return categoryObj ? categoryObj.label : '';
     };
   }
+
   mounted() {
     this.getData();
     this.queryCategory();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public coverLib = {
@@ -289,10 +292,12 @@ export default class myBlogPostCoverLib extends Vue {
   public handleClickQuery() {
     this.getData();
   }
+
   public paginationInput(pagination: any) {
     this.tableParams.pagination = pagination;
     this.getData();
   }
+
   public handleClickAdd() {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = 'Upload';
@@ -308,9 +313,11 @@ export default class myBlogPostCoverLib extends Vue {
       }, 100);
     });
   }
+
   public handleEditCategory() {
     this.categoryParams.model = true;
   }
+
   public newCategory() {
     (this.categoryParams.data as any).push({
       label: '',
@@ -318,6 +325,7 @@ export default class myBlogPostCoverLib extends Vue {
       default: 0,
     });
   }
+
   public onUpdate(row: any) {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = 'Update';
@@ -329,6 +337,7 @@ export default class myBlogPostCoverLib extends Vue {
     this.dialogUpload.params.file = row.source;
     this.dialogUpload.imgBase64 = row.source;
   }
+
   public handleClickBatchUpload() {
     this.$nextTick(() => {
       this.$refs.batchUpload.type = 'text';
@@ -339,6 +348,7 @@ export default class myBlogPostCoverLib extends Vue {
       }, 100);
     });
   }
+
   public handleClickUploadFile() {
     this.$refs[this.dialogUpload.fileID].type = 'text';
     this.dialogUpload.params.fileName = '';
@@ -350,6 +360,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.$refs[this.dialogUpload.fileID].click();
     }, 100);
   }
+
   public uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.fileID].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -364,6 +375,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.dialogUpload.params.file = rawFile;
     });
   }
+
   public monitorDialogUploadHide() {
     this.dialogUpload.params.id = '';
     this.dialogUpload.params.fileName = '';
@@ -373,14 +385,17 @@ export default class myBlogPostCoverLib extends Vue {
     this.dialogUpload.params.description = '';
     this.dialogUpload.params.category = [];
   }
+
   public dialogUploadCloseEvent(data: { type: string }) {
     this.dialogUpload.visiable = false;
   }
+
   public dialogUploadBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogUpload.params = data.params;
     }
   }
+
   /* http */
   public async getData() {
     const { pageData, total } = await BlogPostModule.getAllCover({
@@ -396,6 +411,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.tableParams.pagination.rowsNumber = 0;
     }
   }
+
   public async queryCategory() {
     const result = await BlogPostModule.queryCategory({});
     if (result && result.length) {
@@ -405,6 +421,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.dialogUpload.input[index].inputSelectOption = result.map((item: any) => ({ value: item.id, ...item }));
     }
   }
+
   public async hanleClickUploadConfirm() {
     try {
       if (!this.dialogUpload.params.file) {
@@ -442,6 +459,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.dialogUpload.clickLoading = false;
     }
   }
+
   public uploadZipFileSuccess() {
     const files = this.$refs.batchUpload.files;
     let postFiles = Array.prototype.slice.call(files);
@@ -459,6 +477,7 @@ export default class myBlogPostCoverLib extends Vue {
       }
     });
   }
+
   public async confirmAddCategory(scope: any, item: any) {
     try {
       scope.set();
@@ -473,6 +492,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.queryCategory();
     } catch (error) {}
   }
+
   public async handleClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -493,6 +513,7 @@ export default class myBlogPostCoverLib extends Vue {
       }
     } catch (error) {}
   }
+
   public async handleClickBatchDelete() {
     const result = await this.$globalConfirm.show({
       title: '友情提示',
@@ -512,6 +533,7 @@ export default class myBlogPostCoverLib extends Vue {
       this.tableParams.selected = [];
     }
   }
+
   public async removeCategory(item: any) {
     try {
       await BlogPostModule.deleteCategory({

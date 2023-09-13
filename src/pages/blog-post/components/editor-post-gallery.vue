@@ -108,11 +108,14 @@
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar>
                     <q-avatar color="primary" text-color="white">
-                      <q-img :src="scope.opt.avatarUrl"> </q-img>
+                      <q-img :src="scope.opt.avatarUrl"></q-img>
                     </q-avatar>
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                    <q-item-label
+                      >{{ scope.opt.name }}
+                      <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon>
+                    </q-item-label>
                     <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -194,7 +197,10 @@
         </div>
         <div class="right-content">
           <div class="q-mb-md">
-            <p class="q-mb-sm">* 图集 <q-btn color="primary" icon="o_add" label="选择图集" @click="handleClickUploadPoster" class="q-ml-sm" dense /></p>
+            <p class="q-mb-sm">
+              * 图集
+              <q-btn color="primary" icon="o_add" label="选择图集" @click="handleClickUploadPoster" class="q-ml-sm" dense />
+            </p>
             <div class="border-all min-h-320 row items-center justify-center b-r-6 q-pa-sm">
               <div v-if="!dialogEditorParams.params.galleries.length">上传图集</div>
               <ul v-else class="galleries-list">
@@ -233,6 +239,7 @@ import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostAlbumComponent from './album.vue';
 import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
+
 const CONST_PARAMS = {
   add_or_edit: {
     ...COMMON_POST_PARAMS,
@@ -250,15 +257,19 @@ export default class myEditorPostGalleryComponent extends commonPost {
   declare $refs: {
     PostAlbumComponentRef: PostAlbumComponent;
   };
+
   get isAddPost() {
     return BlogPostModule.postAddOrUpdateGallery === 'add';
   }
+
   get blogEditorPostVisiableGallery() {
     return BlogPostModule.blogEditorPostVisiableGallery;
   }
+
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategoryGallery;
   }
+
   @Watch('blogEditorPostVisiableGallery')
   watchBlogEditorPostVisiableGallery(val: boolean) {
     if (val) {
@@ -266,6 +277,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
       this.dialogEditorParams.model = true;
     }
   }
+
   public dialogEditorParams: any = {
     model: false,
     title: '新增',
@@ -273,26 +285,32 @@ export default class myEditorPostGalleryComponent extends commonPost {
     checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
     radioOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
+
   /* event */
   public hide() {
     this.dialogEditorParams.model = false;
     this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_GALLERY(false);
   }
+
   public handleClickUploadPoster() {
     this.$refs.PostAlbumComponentRef.init();
   }
+
   public pickAlbumSuccess(data: any) {
     this.dialogEditorParams.params.galleries = this.dialogEditorParams.params.galleries.concat(data);
   }
+
   public removeImage(row: any) {
     this.dialogEditorParams.params.galleries = this.dialogEditorParams.params.galleries.filter((item: any) => item.source !== row.source);
   }
+
   /* http */
   public async getContent(id: string) {
     const data = await BlogPostModule.getPostContentById({ id: id });
     return Promise.resolve(data);
   }
+
   public async handleConfirmAddOrUpdate() {
     const validations = cloneDeep(this.commonValidations);
     validations.push(...[{ key: 'galleries', message: '请选择图集', check: (value: any) => value.length > 0 }]);
@@ -330,6 +348,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
 
 <style scoped lang="scss">
 @import '../utils/editor.scss';
+
 .body--dark {
   .editor-post-card {
     .right-content {
@@ -340,6 +359,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
             background: rgba($color: #ffffff, $alpha: 0.2);
           }
         }
+
         .more {
           background: $dark;
           color: #ffffff;
@@ -349,6 +369,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
     }
   }
 }
+
 .body--light {
   .editor-post-card {
     .right-content {
@@ -359,6 +380,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
             background: rgba($color: #000000, $alpha: 0.2);
           }
         }
+
         .more {
           background: #fff;
           color: $dark;
@@ -368,6 +390,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
     }
   }
 }
+
 .galleries-list {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr; /* 三列，等宽 */
@@ -377,11 +400,13 @@ export default class myEditorPostGalleryComponent extends commonPost {
   height: 320px;
   overflow: hidden;
   position: relative;
+
   .grid-item {
     height: 100px;
     overflow: hidden; /* 隐藏超出部分 */
     width: 100%;
     position: relative;
+
     .image {
       height: 100%;
       width: 100%;
@@ -392,6 +417,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
       top: 0;
       cursor: pointer;
     }
+
     .remove {
       position: absolute;
       right: 0;
@@ -402,6 +428,7 @@ export default class myEditorPostGalleryComponent extends commonPost {
       padding: 4px;
     }
   }
+
   .more {
     position: absolute;
     right: 0;

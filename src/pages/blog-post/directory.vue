@@ -79,6 +79,7 @@
                       <span class="q-mr-sm"> {{ item.name }}</span>
                       <q-icon name="o_folder" size="16px" v-if="item.children.length"></q-icon>
                       <span class="fs-12" :class="{ bold: item.post_count }">（共计：{{ item.post_count }}）</span>
+                      <q-icon name="hide_source" v-if="item.visible === '0'" size="14px" color="negative"></q-icon>
                     </div>
                     <span class="text-grey fs-12">{{ item.description }}</span>
                   </div>
@@ -195,7 +196,6 @@
                                   <span class="text-grey">{{ directory.name }}</span>
                                   <span class="q-mx-sm">-</span>
                                   <span class="text-blue">{{ childDirectory.name }}</span>
-                                  <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                                 </div>
                                 <ul class="q-pa-md" v-if="childDirectory.childrenPost.length">
                                   <li v-for="post in childDirectory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
@@ -241,7 +241,6 @@
                           <span class="text-grey">{{ item.name }}</span>
                           <span class="q-mx-sm">-</span>
                           <span class="text-blue">{{ directory.name }}</span>
-                          <q-btn color="primary" label="新增" class="q-ml-md" @click="handleClickAdd" icon="o_add_circle_outline"></q-btn>
                         </div>
                         <ul class="q-pa-md" v-if="directory.childrenPost.length">
                           <li v-for="post in directory.childrenPost" :key="post.id" class="thin-shadow q-pa-md row q-mb-md row column">
@@ -339,7 +338,7 @@
               <input type="file" class="hide" :ref="dialogAddUpdateParams.upload.fileID" :accept="dialogAddUpdateParams.upload.accept" :draggable="false" @change="uploadFileSuccess" />
               <q-btn
                 color="primary"
-                :label="`点击上传图片（${dialogAddUpdateParams.upload.accept}，size: 10KB）`"
+                :label="`点击上传图片（${dialogAddUpdateParams.upload.accept}，size: 100KB）`"
                 outline
                 :style="this.dialogAddUpdateParams.upload.params.file ? 'width: 92%' : 'width:100%'"
                 no-caps
@@ -365,7 +364,7 @@ import { getCurrentInstance } from 'vue';
 import { AppModule } from 'src/store/modules/app';
 
 const CONST_PARAMS: any = {
-  dialog_add_update: { name: '', subName: '', parent_id: '', id: '', type: '0', description: '' },
+  dialog_add_update: { name: '', subName: '', parent_id: '', id: '', type: '0', description: '', visible: '1' },
 };
 const findItemById = (id: any, items: any): any => {
   for (let item of items) {
@@ -618,6 +617,26 @@ export default class BlogPostDirectoryComponent extends Vue {
         label: '描述',
       },
       {
+        model: 'visible',
+        type: 'select',
+        rules: [
+          (val: string | number | undefined | null) => {
+            return (val && String(val).length > 0) || this.globals.$t('messages.required');
+          },
+        ],
+        inputSelectOption: [
+          {
+            label: 'web接口不可见',
+            value: '0',
+          },
+          {
+            label: 'web接口可见',
+            value: '1',
+          },
+        ],
+        label: '是否可见',
+      },
+      {
         model: 'covers',
         type: 'file',
         accept: '.jpg,.png,.jpeg',
@@ -750,14 +769,6 @@ export default class BlogPostDirectoryComponent extends Vue {
     this.$router.push(`/blog-post/list?id=${row.id}`);
   }
 
-  public handleClickAdd() {
-    BlogPostModule.SET_POST_ADD_OR_UPDATE('add');
-    BlogPostModule.SET_DISABLE_SELECT_CATEGORY(true);
-    const directoryId = this.sheetParams.childDirectoryTab ? this.sheetParams.childDirectoryTab : this.sheetParams.directoryTab;
-    BlogPostModule.SET_CURRENT_CATEGORY_ID(directoryId);
-    BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(true);
-  }
-
   public uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.fileID][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -773,7 +784,7 @@ export default class BlogPostDirectoryComponent extends Vue {
         });
         return;
       }
-      if (rawFile.size <= 10240) {
+      if (rawFile.size <= 102400) {
         const reader = new FileReader();
         reader.onload = (event: any) => {
           const base64String = event.target.result;
@@ -784,7 +795,7 @@ export default class BlogPostDirectoryComponent extends Vue {
         // Handle file that exceeds size limit
         this.$globalMessage.show({
           type: 'error',
-          content: '图片大小超过10KB',
+          content: '图片大小超过100KB',
         });
       }
     });
@@ -1130,6 +1141,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       name: this.dialogAddUpdateParams.params.name,
       description: this.dialogAddUpdateParams.params.description,
       cover: this.dialogAddUpdateParams.upload.params.file,
+      visible: this.dialogAddUpdateParams.params.visible,
     };
     const { id } = await BlogPostModule.addSheet(params);
     return Promise.resolve(id);
@@ -1141,6 +1153,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       name: this.dialogAddUpdateParams.params.name,
       description: this.dialogAddUpdateParams.params.description,
       cover: this.dialogAddUpdateParams.upload.params.file,
+      visible: this.dialogAddUpdateParams.params.visible,
     };
     await BlogPostModule.updateSheet(params);
     return Promise.resolve();
@@ -1245,6 +1258,7 @@ export default class BlogPostDirectoryComponent extends Vue {
       this.dialogAddUpdateParams.upload.params.file = item.cover;
       this.dialogAddUpdateParams.params.name = item.name;
       this.dialogAddUpdateParams.params.description = item.description;
+      this.dialogAddUpdateParams.params.visible = item.visible;
       this.dialogAddUpdateParams.input = this.dialogAddUpdateParams.sheetInput as any;
     } else if (type === 'directory') {
       this.dialogAddUpdateParams.params.name = item.name;

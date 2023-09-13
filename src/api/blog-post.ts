@@ -25,6 +25,7 @@ const api = {
   updateChannelName: 'management/blog/post_channel/updateChannelName',
   addChannel: 'management/blog/post_channel/addChannel',
   removeChannel: 'management/blog/post_channel/removeChannel',
+  updateChannelVisible: 'management/blog/post_channel/updateChannelVisible',
   getAllSheet: 'management/blog/post_sheet_directory/getAllSheet',
   getAllDirectory: 'management/blog/post_sheet_directory/getAllDirectory',
   getAllChildDirectory: 'management/blog/post_sheet_directory/getAllChildDirectory',
@@ -217,6 +218,12 @@ export const addChannel = (data: any): any =>
 export const removeChannel = (data: any): any =>
   request({
     url: api.removeChannel,
+    method: 'post',
+    data,
+  });
+export const updateChannelVisible = (data: any): any =>
+  request({
+    url: api.updateChannelVisible,
     method: 'post',
     data,
   });

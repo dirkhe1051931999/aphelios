@@ -20,8 +20,9 @@
         >
         </TextToInput>
         <span class="link-type q-ml-sm" @click="toPostList(item)">({{ item.count }})</span>
-        <div class="q-ml-auto">
-          <span class="link-type" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
+        <div class="q-ml-xl">
+          <q-checkbox v-model="item.visible" @update:model-value="updateChannelVisible(item)" :true-value="'1'" :false-value="'0'" label="web接口是否可见" left-label dense></q-checkbox>
+          <span class="link-type q-ml-sm" v-if="!dialogAddParams.showEdit[item.id]" @click="(dialogAddParams.showEdit[item.id] = true), (dialogAddParams.param[item.id] = item.name || '')">修改 </span>
           <span class="delete-type q-ml-sm" @click="handlerClickDelete(item)">删除 </span>
         </div>
       </div>
@@ -81,6 +82,7 @@ import { defaultFill } from 'src/utils/tools';
 import { getCurrentInstance } from 'vue';
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import Sortable from 'sortablejs';
+
 const CONST_PARAMS: any = {
   dialog_add_update: { name: '', pos: 0 },
 };
@@ -92,23 +94,28 @@ const CONST_PARAMS: any = {
 export default class BlogPostChannelComponent extends Vue {
   /**instance */
   declare $refs: any;
+
   get channelNameList() {
     return (data: any) => {
       return data.map((item: any) => item.name);
     };
   }
+
   get channelIndexList() {
     return (data: any) => {
       return data.map((item: any) => item.pos);
     };
   }
+
   get isSorted() {
     return !isEqual(this.tableParams.data, this.tableParams.oldData);
   }
+
   mounted() {
     // List with handle
     this.getData();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public tableParams = {
@@ -140,23 +147,28 @@ export default class BlogPostChannelComponent extends Vue {
       },
     ],
   };
+
   /* event */
   public handleClickAdd() {
     this.dialogAddParams.visiable = true;
     this.dialogAddParams.dialogType = 'add';
     this.dialogAddParams.title = 'Add';
   }
+
   public dialogAddCloseEvent(data: { type: string }) {
     this.dialogAddParams.visiable = false;
   }
+
   public dialogAddBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddParams.params = data.params;
     }
   }
+
   public toPostList(item: any) {
     this.$router.push(`/blog-post/list?channelId=${item.id}`);
   }
+
   /* http */
   public async getData() {
     try {
@@ -200,6 +212,7 @@ export default class BlogPostChannelComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async handleClickSave() {
     const diff = differenceWith(this.tableParams.data, this.tableParams.oldData, isEqual);
     if (diff.length > 0) {
@@ -225,6 +238,7 @@ export default class BlogPostChannelComponent extends Vue {
       }
     }
   }
+
   public async textToInputConfirmForEmail({ value, that }: { value: string; that: any }) {
     let showEdit: any = this.dialogAddParams.showEdit;
     let param: any = this.dialogAddParams.param;
@@ -246,12 +260,14 @@ export default class BlogPostChannelComponent extends Vue {
     loading[that] = false;
     showEdit[that] = false;
   }
+
   public textToInputCloseForEmail({ value, that }: { value: string; that: any }) {
     let showEdit: any = this.dialogAddParams.showEdit;
     let param: any = this.dialogAddParams.param;
     let loading: any = this.dialogAddParams.loading;
     showEdit[that] = false;
   }
+
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -272,6 +288,7 @@ export default class BlogPostChannelComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async dialogAddConfirmEvent() {
     try {
       this.dialogAddParams.clickLoading = true;
@@ -287,6 +304,22 @@ export default class BlogPostChannelComponent extends Vue {
       this.getData();
     } catch (error) {
       this.dialogAddParams.clickLoading = false;
+    }
+  }
+
+  public async updateChannelVisible(row: any) {
+    try {
+      await BlogPostModule.updateChannelVisible({
+        id: row.id,
+        visible: row.visible,
+      });
+      this.$globalMessage.show({
+        type: 'success',
+        content: this.$t('messages.success'),
+      });
+      this.getData();
+    } catch (error) {
+      console.log(error);
     }
   }
 }

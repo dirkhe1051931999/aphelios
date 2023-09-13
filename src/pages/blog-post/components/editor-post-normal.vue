@@ -109,11 +109,14 @@
                   <q-item v-bind="scope.itemProps">
                     <q-item-section avatar>
                       <q-avatar color="primary" text-color="white">
-                        <q-img :src="scope.opt.avatarUrl"> </q-img>
+                        <q-img :src="scope.opt.avatarUrl"></q-img>
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
-                      <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                      <q-item-label
+                        >{{ scope.opt.name }}
+                        <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon>
+                      </q-item-label>
                       <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                     </q-item-section>
                   </q-item>
@@ -195,7 +198,10 @@
           </div>
           <div class="right-content">
             <div class="q-mb-md">
-              <p class="q-mb-sm">* 海报 <q-btn color="primary" icon="o_add" label="选择海报" @click="handleClickUploadPoster" class="q-ml-sm" dense /></p>
+              <p class="q-mb-sm">
+                * 海报
+                <q-btn color="primary" icon="o_add" label="选择海报" @click="handleClickUploadPoster" class="q-ml-sm" dense />
+              </p>
               <div class="border-all h-300 row items-center justify-center b-r-6">
                 <div v-if="!dialogEditorParams.params.poster">上传海报</div>
                 <img :src="dialogEditorParams.params.poster" class="h-300" v-if="dialogEditorParams.params.poster" />
@@ -208,7 +214,7 @@
                   v-model="dialogEditorParams.params.content"
                   ref="editorRef"
                   :fonts="dialogEditorParams.fonts"
-                  :definitions="dialogEditorParams.definitions()"
+                  :definitions="dialogEditorParams.definitions"
                   :toolbar="dialogEditorParams.toolbar()"
                 />
               </form>
@@ -237,6 +243,7 @@ import PostVideoComponent from './video.vue';
 import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
 import { QEditor } from 'quasar';
 import { getCurrentInstance } from 'vue';
+
 const CONST_PARAMS = {
   add_or_edit: {
     ...COMMON_POST_PARAMS,
@@ -258,15 +265,19 @@ export default class myEditorPostNormalComponent extends commonPost {
     editorRef: QEditor;
     PostVideoComponentRef: PostVideoComponent;
   };
+
   get isAddPost() {
     return BlogPostModule.postAddOrUpdateNormal === 'add';
   }
+
   get blogEditorPostVisiableNormal() {
     return BlogPostModule.blogEditorPostVisiableNormal;
   }
+
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategoryNormal;
   }
+
   @Watch('blogEditorPostVisiableNormal')
   watchBlogEditorPostVisiableNormal(val: boolean) {
     if (val) {
@@ -274,6 +285,12 @@ export default class myEditorPostNormalComponent extends commonPost {
       this.dialogEditorParams.model = true;
     }
   }
+
+  mounted() {
+    this.dialogEditorParams.definitions.uploadImage.handler = this.editorUpdateImage.bind(this);
+    this.dialogEditorParams.definitions.uploadVideo.handler = this.editorUpdateVideo.bind(this);
+  }
+
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public dialogEditorParams: any = {
     model: false,
@@ -289,21 +306,19 @@ export default class myEditorPostNormalComponent extends commonPost {
       times_new_roman: 'Times New Roman',
       verdana: 'Verdana',
     },
-    definitions: () => {
-      return {
-        uploadImage: {
-          tip: '上传图片',
-          icon: 'image',
-          label: '上传图片',
-          handler: this.editorUpdateImage,
-        },
-        uploadVideo: {
-          tip: '上传视频',
-          icon: 'cloud_upload',
-          label: '上传视频',
-          handler: this.editorUpdateVideo,
-        },
-      };
+    definitions: {
+      uploadImage: {
+        tip: '上传图片',
+        icon: 'image',
+        label: '上传图片',
+        handler: null,
+      },
+      uploadVideo: {
+        tip: '上传视频',
+        icon: 'cloud_upload',
+        label: '上传视频',
+        handler: null,
+      },
     },
     toolbar: () => {
       return [
@@ -332,16 +347,19 @@ export default class myEditorPostNormalComponent extends commonPost {
     checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
     radioOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
+
   /* event */
   public hide() {
     this.dialogEditorParams.model = false;
     this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_NORMAL(false);
   }
+
   public handleClickUploadPoster() {
     this.dialogEditorParams.addImageFrom = 'poster';
     this.$refs.PostAlbumComponentRef.init();
   }
+
   public pickAlbumSuccess(data: any) {
     if (this.dialogEditorParams.addImageFrom === 'poster') {
       this.dialogEditorParams.params.poster = data.source;
@@ -354,6 +372,7 @@ export default class myEditorPostNormalComponent extends commonPost {
       });
     }
   }
+
   public pickVideoSuccess(data: any) {
     const edit = this.$refs.editorRef;
     this.$nextTick(() => {
@@ -362,18 +381,23 @@ export default class myEditorPostNormalComponent extends commonPost {
       edit.runCmd('insertHTML', `&nbsp;<video src="${data.source}" controls="controls" style="max-width: 100%; max-height: 100%; display: block; margin: 0 auto;" />&nbsp`);
     });
   }
+
   public editorUpdateImage() {
+    console.log(this);
     this.dialogEditorParams.addImageFrom = 'content';
     this.$refs.PostAlbumComponentRef.init();
   }
+
   public editorUpdateVideo() {
     this.$refs.PostVideoComponentRef.init();
   }
+
   /* http */
   public async getContent(id: string) {
     const data = await BlogPostModule.getPostContentById({ id: id });
     return Promise.resolve(data);
   }
+
   public async handleConfirmAddOrUpdate() {
     const validations = cloneDeep(this.commonValidations);
     validations.push(...[{ key: 'poster', message: '请选择海报', check: (value: any) => !!value }]);
@@ -410,8 +434,10 @@ export default class myEditorPostNormalComponent extends commonPost {
 </script>
 <style scoped lang="scss">
 @import '../utils/editor.scss';
+
 :deep(.q-editor__content) {
   height: 500px;
+
   img {
     max-width: 100%;
     max-height: 100%;
