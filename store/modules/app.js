@@ -26,11 +26,20 @@ const state = () => ({
     },
   ],
   activeTab: 'home',
+  layoutHeadOptions: {
+    title: '标题',
+    showSearch: false,
+    showShare: false,
+    showMore: false,
+  },
 });
 
 const mutations = {
   SET_ACTIVE_TAB(state, activeTab) {
     state.activeTab = activeTab;
+  },
+  SET_LAYOUT_HEAD_OPTIONS(state, options) {
+    state.layoutHeadOptions = options;
   },
 };
 
@@ -42,6 +51,9 @@ const getters = {
   },
   activeTab: (state) => {
     return state.activeTab;
+  },
+  layoutHeadOptions: (state) => {
+    return state.layoutHeadOptions;
   },
 };
 

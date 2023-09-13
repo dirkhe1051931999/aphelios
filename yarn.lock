@@ -2205,6 +2205,11 @@
     "@typescript-eslint/types" "5.62.0"
     eslint-visitor-keys "^3.3.0"
 
+"@vant/area-data@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@vant/area-data/-/area-data-1.5.0.tgz#0627f8a6cc67ebc137b43a1867a28d455d21a21c"
+  integrity sha512-SWmDhYmWiOgtAgtJqcW7N4XyGgrg/7l6t1+XSgt8BkPp2oOKO1ZUn8+46brLpT/gzRe/v8BtyTLmdBwMamrmQw==
+
 "@vant/icons@^1.7.1":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@vant/icons/-/icons-1.8.0.tgz#36b13f2e628b533f6523a93a168cf02f07056674"

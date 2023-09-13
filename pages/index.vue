@@ -23,6 +23,7 @@ export default {
   async asyncData({ store }) {
     await store.dispatch('modules/home/fetchPostChannels');
     await store.dispatch('modules/home/fetchPostList');
+    await store.dispatch('modules/home/fetchHomeHeadPost');
   },
   computed: {
     activeTab() {
