@@ -2,7 +2,7 @@ import { uploadBase64FileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 // 获取所有文章类别
 export const getAllSheet = async (ctx) => {
-  let sql = `SELECT id, name, cover,description FROM sm_board_sheet`;
+  let sql = `SELECT id, name, cover,description,visible FROM sm_board_sheet`;
   try {
     let results = await ctx.execSql(sql);
     results = results.map((item) => {
@@ -64,9 +64,9 @@ export const getAllChildDirectory = async (ctx) => {
   }
 };
 export const addSheet = async (ctx) => {
-  let { name, cover, description } = ctx.request.body;
-  if (ctx.isFalsy([name, cover, description])) {
-    ctx.error(ctx, '404#name, cover, description');
+  let { name, cover, description, visible } = ctx.request.body;
+  if (ctx.isFalsy([name, cover, description, visible])) {
+    ctx.error(ctx, '404#name, cover, description,visible');
     return;
   }
   try {
@@ -77,7 +77,7 @@ export const addSheet = async (ctx) => {
       ctx.error(ctx, 607);
     } else {
       const id = uuidv4().replace(/\-/g, '');
-      let sql = `INSERT INTO sm_board_sheet (id, name, cover, description) VALUES ('${id}', '${name}', '${coverUrl}', '${description}')`;
+      let sql = `INSERT INTO sm_board_sheet (id, name, cover, description,visible) VALUES ('${id}', '${name}', '${coverUrl}', '${description}' , '${visible}')`;
       await ctx.execSql(sql);
       ctx.success(ctx, {
         id,
@@ -180,9 +180,9 @@ export const removeChildDirectory = async (ctx) => {
   }
 };
 export const updateSheet = async (ctx) => {
-  let { id, name, cover, description } = ctx.request.body;
-  if (ctx.isFalsy([id, name, cover, description])) {
-    ctx.error(ctx, '404#id, name, cover, description');
+  let { id, name, cover, description, visible } = ctx.request.body;
+  if (ctx.isFalsy([id, name, cover, description, visible])) {
+    ctx.error(ctx, '404#id, name, cover, description,visible');
     return;
   }
   try {
@@ -193,7 +193,7 @@ export const updateSheet = async (ctx) => {
     } else {
       coverUrl = cover;
     }
-    let sql = `UPDATE sm_board_sheet SET name = '${name}', cover = '${coverUrl}', description = '${description}' WHERE id = '${id}'`;
+    let sql = `UPDATE sm_board_sheet SET name = '${name}', cover = '${coverUrl}', description = '${description}', visible = '${visible}' WHERE id = '${id}'`;
     await ctx.execSql(sql);
     ctx.success(ctx, null);
   } catch (error) {

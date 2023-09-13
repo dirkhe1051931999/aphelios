@@ -87,7 +87,7 @@ export const commonAddPost = async (ctx, postType) => {
     // 构建 SQL 查询
     let sql = `
     INSERT INTO sm_board_post_list
-    (id, srcTopicId, postType, createTime, updateTime,shelveTimeEnd,shelveTimeStart,status, view, comment, ${[...allParams, ...extraFieldNames].join(',')}, postTags)
+    (id, srcTopicId, postType, createTime, updateTime,status, view, comment, ${[...allParams, ...extraFieldNames].join(',')}, postTags)
     VALUES
     ('${id}', '${id}', '${postType}', ${createTime}, ${updateTime}, '${status}', ${view}, ${comment}, ${[sqlParams, ...extraFieldValues].join(',')}, '${JSON.stringify(postTags)}');
   `;

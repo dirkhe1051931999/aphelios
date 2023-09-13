@@ -5,16 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="763e0f0a-d612-4868-ab5a-96c6600554e2" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/admin.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_channel.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_channel.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/web/blog/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/web/blog/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.channel.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.channel.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/dashboard/index.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/dashboard/index.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/management/utils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/utils/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controllers/web/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/web/blog/post.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/helper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/util/code.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/code.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +49,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;settings.sync&quot;,
     &quot;ts.external.directory.path&quot;: &quot;D:\\code\\aphelios - nodejs - service\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -89,6 +88,14 @@
       <workItem from="1693794910342" duration="5802000" />
       <workItem from="1693813530887" duration="36000" />
       <workItem from="1693813871346" duration="5442000" />
+      <workItem from="1693880822762" duration="8168000" />
+      <workItem from="1693965374639" duration="57000" />
+      <workItem from="1693965741547" duration="4028000" />
+      <workItem from="1693983828999" duration="831000" />
+      <workItem from="1693985192939" duration="2138000" />
+      <workItem from="1694051057374" duration="6052000" />
+      <workItem from="1694401379696" duration="8834000" />
+      <workItem from="1694570537186" duration="8476000" />
     </task>
     <servers />
   </component>

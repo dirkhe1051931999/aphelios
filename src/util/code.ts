@@ -1,6 +1,7 @@
 const webErrorCode = {
   W1001: ['sortBy只支持id，createTime，view，comment排序', 'sortBy only supports id, createTime, view, comment sorting'],
   W1002: ['缺少必传参数id', 'Missing required parameter id'],
+  W1003: ['缺少关键字', 'Missing keywords'],
 };
 export const errorCode = {
   ...webErrorCode,

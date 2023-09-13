@@ -94,7 +94,8 @@ const processFileEntry = async (entry, ctx) => {
   entry.on('data', (chunk) => chunks.push(chunk));
   entry.on('end', async () => {
     const buffer = Buffer.concat(chunks);
-    const base64Image = buffer.toString('base64');
+    let base64Image = buffer.toString('base64');
+    base64Image = `data:image/${fileExtension};base64,` + base64Image;
     const fileData = await uploadBase64FileToMinio(base64Image, 'assets/cover_lib');
     const url = fileData.url;
     const sql = `INSERT INTO sm_board_cover_lib (id, title, description, category, source, createTime) VALUES ('${uuidv4().replace(/\-/g, '')}', '${title}', '${description}', '${JSON.stringify(

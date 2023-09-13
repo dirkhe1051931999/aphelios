@@ -5,8 +5,9 @@ import {
   getPostLevel1CommentsById,
   getPostList,
   getPostListByAuthorId,
-  getTopFivePost,
-  getPostLevel2CommentsById, getCarouselPost,
+  getHotTop,
+  getPostLevel2CommentsById, getHomeHeadPost, getCarouselPost, search,
+  getAuthorEssay,
 } from 'src/controllers/web/blog/post.controller';
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
@@ -19,9 +20,15 @@ export class WebBlogAPIController {
     return getPostList(ctx);
   }
 
-  @Route('/getTopFivePost', HTTP_METHODS.GET)
-  async getTopFivePost(ctx: Koa.Context, next: Koa.Next) {
-    return getTopFivePost(ctx);
+  // 获取home头部的post
+  @Route('/getHomeHeadPost', HTTP_METHODS.GET)
+  async getHomeHeadPost(ctx: Koa.Context, next: Koa.Next) {
+    return getHomeHeadPost(ctx);
+  }
+
+  @Route('/getHotTop', HTTP_METHODS.GET)
+  async getHotTop(ctx: Koa.Context, next: Koa.Next) {
+    return getHotTop(ctx);
   }
 
   @Route('/getCarouselPost', HTTP_METHODS.GET)
@@ -37,6 +44,16 @@ export class WebBlogAPIController {
   @Route('/getAllDirectory', HTTP_METHODS.GET)
   async getAllDirectory(ctx: Koa.Context, next: Koa.Next) {
     return getAllDirectory(ctx);
+  }
+
+  @Route('/search', HTTP_METHODS.GET)
+  async search(ctx: Koa.Context, next: Koa.Next) {
+    return search(ctx);
+  }
+
+  @Route('/getAuthorEssay', HTTP_METHODS.GET)
+  async getAuthorEssay(ctx: Koa.Context, next: Koa.Next) {
+    return getAuthorEssay(ctx);
   }
 
   @Route('/getPostLevel1CommentsById', HTTP_METHODS.GET)

@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 // 获取所有文章类别
 export const getAllChannel = async (ctx) => {
   let sql = `
-  SELECT c.id, c.name, c.pos, COUNT(p.id) as count
+  SELECT c.id, c.name, c.pos, c.visible,  COUNT(p.id) as count
   FROM sm_board_channel c
   LEFT JOIN sm_board_post_list p ON c.id = p.channelId
   GROUP BY c.id
@@ -91,3 +91,23 @@ export const removeChannel = async (ctx) => {
     ctx.error(ctx, 405);
   }
 };
+
+export const updateChannelVisible = async (ctx) => {
+  const { id, visible } = ctx.request.body;
+  if (ctx.isFalsy([id, visible])) {
+    ctx.error(ctx, '404#id, visible');
+    return;
+  }
+  try {
+    await ctx.execSql([
+      `
+      UPDATE sm_board_channel 
+      SET visible = '${visible}'
+      WHERE id = '${id}';`,
+    ]);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 405);
+  }
+}

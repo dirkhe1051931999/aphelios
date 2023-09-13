@@ -1,5 +1,7 @@
 let chips = ['pinned', 'recommended', 'hot', 'original', 'paid', 'free', 'carousel', 'political', 'privated', 'publiced'];
 let commonColumn = ['id', 'title', 'poster', 'content', 'createTime', 'updateTime', 'view', 'postType', 'postTags', 'videoPoster', 'videoUrl', 'galleries', 'srcTopicId', 'shelveTimeStart', 'shelveTimeEnd', 'authorId', 'directoryId', 'channelId'].concat(chips);
+let defaultAvatarName = ['/cdn/avatar/Malphite.png', '/cdn/avatar/LOL.png', '/cdn/avatar/Aphelios.png', '/cdn/avatar/Milio.png'];
+import setting from 'src/config';
 
 function findDirectory(directory, id) {
   let result = null;
@@ -39,7 +41,7 @@ async function getDirectory(ctx: any) {
   }
 
   let sql1 = `
-  SELECT id, name, cover,description FROM sm_board_sheet
+  SELECT id, name, cover,description FROM sm_board_sheet WHERE visible = '1'
   `;
   let sql2 = `
   SELECT id, name, subName, type, parent_id 
@@ -81,21 +83,22 @@ async function getColletList(ctx: any, list: any[]) {
 
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { page, rowsPerPage, sortBy, sortDirection } = ctx.query;
+  let { page, rowsPerPage, sortBy, sortDirection, channelId } = ctx.query;
   page = page || 1;
   rowsPerPage = rowsPerPage || 10;
-  sortBy = sortBy || 'id';
+  sortBy = sortBy || 'updateTime';
   sortDirection = sortDirection || 'DESC';
-  if (!['id', 'createTime', 'view', 'comment'].includes(sortBy)) {
+  if (!['id', 'createTime', 'view', 'comment', 'updateTime'].includes(sortBy)) {
     ctx.error(ctx, 'W1001');
     return;
   }
   try {
-    let whereSql = 'WHERE status = "PUBLISHED"';
+    let whereSql = `WHERE status = "PUBLISHED" AND carousel = '0' AND political = '0' ${channelId ? `AND channelId = '${channelId}'` : ''}`;
     const sqlTotal = `SELECT COUNT(*) as total FROM sm_board_post_list ${whereSql};`;
-    let postSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    let postSql = `SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId ) as comment  from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
     let postResult = await ctx.execSql([sqlTotal, postSql]);
     const result = await getColletList(ctx, postResult[1]);
+
     ctx.success(ctx, {
       total: postResult[0][0].total,
       pageData: result,
@@ -105,18 +108,52 @@ export const getPostList = async (ctx) => {
     ctx.error(ctx, 402);
   }
 };
-// 获取top5新闻
-export const getTopFivePost = async (ctx) => {
+export const getHomeHeadPost = async (ctx) => {
+  let carouselSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list  WHERE status = "PUBLISHED" AND carousel = '1';`;
+  let politicalSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list  WHERE status = "PUBLISHED" AND political = '1';`;
   try {
-    const results = await ctx.execSql(`
-      SELECT id,title,poster,createTime,view,comment,authorId,directoryId,channelId,postType
-      FROM sm_board_post_list
-      WHERE (status = 'PUBLISHED') AND (poster != '')
-      ORDER BY view DESC
-      LIMIT 5;
-    `);
+    const postResult = await ctx.execSql([carouselSql, politicalSql]);
+    const carouselResult = await getColletList(ctx, postResult[0]);
+    const politicalResult = await getColletList(ctx, postResult[1]);
     ctx.success(ctx, {
-      pageData: results,
+      carouselData: carouselResult,
+      politicalData: politicalResult,
+    });
+  } catch (e) {
+    console.log(e);
+    ctx.error(ctx, 402);
+  }
+};
+// 获取top5新闻
+export const getHotTop = async (ctx) => {
+  try {
+    let authorColumns = ['id', 'name', 'followCount', 'type', 'status', 'avatarUrl', 'articleCount', 'fansCount', 'nick', 'score', 'createTime', 'updateTime', 'loginTime', 'description', 'coverUrl'];
+    let commentColumns = ['id', 'id2', 'topId', 'content', 'postId', 'userId', 'replyId', 'postTime', 'status', `like`, `unlike`];
+    let userColumns = ['id', 'gender', 'avatarUrl', 'nickname', 'username'];
+    let userSql = `SELECT ${userColumns.join(',')} FROM sm_board_user WHERE type = '1'`;
+    const newsSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list WHERE status = "PUBLISHED" AND political = '0' AND poster!='' ORDER BY view DESC LIMIT 5;`;
+    const authorSql = `SELECT ${authorColumns.join(',')}, (SELECT COUNT(*) from sm_board_post_list WHERE authorId = a.id) as posts FROM sm_board_author a WHERE status = '0' OR status = '4' ORDER BY posts DESC LIMIT 5;`;
+    const commentSql = `SELECT ${commentColumns.map((column)=> `c.${column}`).join(',') } FROM sm_board_comment c WHERE c.status = '1' ORDER BY unlike DESC LIMIT 5;`;
+    const topFiveResult = await ctx.execSql([newsSql, authorSql, commentSql]);
+    let commentPostIds = topFiveResult[2].map((comment) => `'${comment.postId}'`);
+    const commentPosts = await ctx.execSql(`SELECT ${commonColumn.join(',')} FROM sm_board_post_list WHERE srcTopicId in (${commentPostIds.join(',')})`);
+    const allUser = await ctx.execSql(userSql);
+    allUser.map((user) => {
+      if (defaultAvatarName.includes(user.avatarUrl)) {
+        user.avatarUrl = setting.defaultCdnUrl.replace('/cdn', '') + user.avatarUrl;
+      }
+    });
+    const commentPost = await getColletList(ctx, commentPosts);
+    const newsResult = await getColletList(ctx, topFiveResult[0]);
+    topFiveResult[2].map((comment) => {
+      comment.user = allUser.find((user) => user.id === comment.userId);
+      comment.post = commentPost.find((post) => post.srcTopicId === comment.postId);
+      return comment;
+    });
+    ctx.success(ctx, {
+      newsData: newsResult,
+      authorData: topFiveResult[1],
+      commentData: topFiveResult[2],
     });
   } catch (error) {
     console.log(error);
@@ -127,7 +164,7 @@ export const getTopFivePost = async (ctx) => {
 export const getAllChannel = async (ctx) => {
   try {
     const results = await ctx.execSql(`
-      SELECT id,name FROM sm_board_channel;
+      SELECT id,name FROM sm_board_channel WHERE visible = '1'
     `);
     ctx.success(ctx, {
       pageData: results,
@@ -142,6 +179,71 @@ export const getAllDirectory = async (ctx) => {
   const sheets = await getDirectory(ctx);
   ctx.success(ctx, sheets);
 };
+// 搜索文章，作者或者用户
+export const search = async (ctx) => {
+  let { keyword, page, type, rowsPerPage } = ctx.query;
+  page = page || 1;
+  rowsPerPage = rowsPerPage || 10;
+  // post,author,user
+  type = type || 'post';
+  if (!keyword) {
+    ctx.error(ctx, 'W1003');
+    return;
+  }
+  try {
+    // 分3次查询，分别是文章，作者，用户
+    let postSql = `SELECT ${commonColumn.join(',')} FROM sm_board_post_list WHERE status = "PUBLISHED" AND title LIKE '%${keyword}%' ORDER BY updateTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    let authorSql = `SELECT id,name,followCount,type,avatarUrl,fansCount,nick,score,description,coverUrl FROM sm_board_author WHERE name LIKE '%${keyword}%' OR nick LIKE '%${keyword}%' ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    let userSql = `SELECT id,friendCount,gender,avatarUrl,articleCount,fansCount,type,nickname,score,loginTime,createTime,username,region,address,description,email FROM sm_board_user WHERE nickname LIKE '%${keyword}%' OR username LIKE '%${keyword}%' ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    if (type === 'post') {
+      let postResult = await ctx.execSql(postSql);
+      const postList = await getColletList(ctx, postResult);
+      ctx.success(ctx, {
+        list: postList,
+      });
+    } else if (type === 'author') {
+      let authorResult = await ctx.execSql(authorSql);
+      ctx.success(ctx, {
+        list: authorResult,
+      });
+    } else if (type === 'user') {
+      let userResult = await ctx.execSql(userSql);
+      userResult.map((user) => {
+        if (defaultAvatarName.includes(user.avatarUrl)) {
+          user.avatarUrl = setting.defaultCdnUrl.replace('/cdn', '') + user.avatarUrl;
+        }
+      });
+      ctx.success(ctx, {
+        list: userResult,
+      });
+    } else {
+      ctx.error(ctx, 'W1003');
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+// 获取没有poster的文章
+export const getAuthorEssay = async (ctx) => {
+  let { page, rowsPerPage } = ctx.query;
+  page = page || 1;
+  rowsPerPage = rowsPerPage || 10;
+  try {
+    let sql = `
+    SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId ) as comment FROM sm_board_post_list WHERE status = "PUBLISHED" AND poster = '' ORDER BY updateTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
+    `;
+    let results = await ctx.execSql(sql);
+    const postList = await getColletList(ctx, results);
+    ctx.success(ctx, {
+      list: postList,
+    });
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 402);
+  }
+};
+
 // 获取文章的评论
 export const getPostLevel1CommentsById = async (ctx) => {
   let { id, rowsPerPage, page } = ctx.query;
