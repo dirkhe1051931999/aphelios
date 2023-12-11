@@ -24,9 +24,13 @@ const app = new Koa();
 declare module 'koa' {
   interface Context {
     success(ctx: Context, data: any): void;
+
     error(ctx: Context, code: number | string): void;
+
     isFalsy(data: any[]): boolean;
+
     serializeObject(data: any): any;
+
     wechat_oauth: any;
   }
 }
@@ -35,8 +39,8 @@ app.use(
   cors({
     origin: '*',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'Language'],
-  })
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'Language', 'Client-Id'],
+  }),
 );
 /* Koa 应用程序中间件，用于解析 HTTP 请求正文并将其放入 ctx.request.body 中 */
 app.use(bodyParser());
@@ -57,20 +61,20 @@ app.use(resource(path.join(CONFIG.root, CONFIG.appPath)));
 app.use(
   staticCache(path.join(__dirname, 'templates'), {
     maxAge: 365 * 24 * 60 * 60,
-  })
+  }),
 );
 // session token
 app.use(
   session({
     store: new RedisStore(CONFIG.db.redis),
     maxAge: 24 * 60 * 60 * 1000, // 默认会话过期时间，单位为毫秒
-  })
+  }),
 );
 /* 配置模板引擎 */
 app.use(
   views(__dirname + '/views', {
     extension: 'ejs',
-  })
+  }),
 );
 /* response 封装 */
 app.use(async (ctx, next) => {

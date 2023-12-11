@@ -25,6 +25,7 @@
     "iconv-lite": "^0.6.3",
     "ioredis": "^5.3.1",
     "js-cookie": "^3.0.1",
+    "js-crypto-rsa": "^1.0.7",
     "jsonwebtoken": "^9.0.0",
     "koa": "^2.7.0",
     "koa-body": "^6.0.1",

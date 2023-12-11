@@ -1,8 +1,9 @@
-import { uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
+import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper';
 import fs from 'fs';
 import path from 'path';
+
 const CATEGORYOPTIONS = [];
 export const getAllCover = async (ctx): Promise<void> => {
   try {
@@ -20,7 +21,7 @@ export const getAllCover = async (ctx): Promise<void> => {
     const dataQuery = `SELECT * FROM sm_board_cover_lib ${whereClause} ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${offset};`;
     const results = await ctx.execSql([countQuery, dataQuery]);
     return ctx.success(ctx, {
-      pageData: results[1],
+      pageData: addPrefixToFields(results[1]),
       total: results[0][0].total,
     });
   } catch (error) {
@@ -47,9 +48,10 @@ export const addCover = async (ctx): Promise<void> => {
 
 export const updateCover = async (ctx): Promise<void> => {
   try {
-    const { id, title, description, categoryIds, file } = ctx.request.body;
+    let { id, title, description, categoryIds, file } = ctx.request.body;
+    file = removePrefixFromFields(file);
     const sql = `UPDATE sm_board_cover_lib SET title='${title}', description='${description}', category='${JSON.stringify(
-      categoryIds
+      categoryIds,
     )}', source='${file}', updateTime=${new Date().getTime()} WHERE id='${id}'`;
     await ctx.execSql(sql);
     return ctx.success(ctx, {});
@@ -99,7 +101,7 @@ const processFileEntry = async (entry, ctx) => {
     const fileData = await uploadBase64FileToMinio(base64Image, 'assets/cover_lib');
     const url = fileData.url;
     const sql = `INSERT INTO sm_board_cover_lib (id, title, description, category, source, createTime) VALUES ('${uuidv4().replace(/\-/g, '')}', '${title}', '${description}', '${JSON.stringify(
-      category
+      category,
     )}', '${url}', ${new Date().getTime()})`;
     await ctx.execSql(sql);
   });
@@ -113,7 +115,7 @@ export const batchAddCover = async (ctx) => {
     CATEGORYOPTIONS.push(...results);
     fs.createReadStream(file.path)
       .pipe(unzipper.Parse())
-      .on('entry', function (entry) {
+      .on('entry', function(entry) {
         const type = entry.type;
         if (type === 'File') {
           processFileEntry(entry, ctx).catch((error) => {

@@ -1,4 +1,10 @@
-import { formatDate, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
+import {
+  addPrefixToFields,
+  formatDate,
+  removePrefixFromFields,
+  uploadBase64FileToMinio,
+  uploadFileToMinio,
+} from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper';
 import fs from 'fs';
@@ -21,7 +27,7 @@ export const getAllVideo = async (ctx): Promise<void> => {
     const dataQuery = `SELECT * FROM sm_board_video_lib ${whereClause}  ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${offset};`;
     const results = await ctx.execSql([countQuery, dataQuery]);
     return ctx.success(ctx, {
-      pageData: results[1],
+      pageData: addPrefixToFields(results[1]),
       total: results[0][0].total,
     });
   } catch (error) {
@@ -46,11 +52,12 @@ export const addVideo = async (ctx): Promise<void> => {
 
 export const updateVideo = async (ctx): Promise<void> => {
   try {
-    const { id, title, description, categoryIds, file, poster } = ctx.request.body;
+    let { id, title, description, categoryIds, file, poster } = ctx.request.body;
     if (ctx.isFalsy([id, title, description, categoryIds, file, poster])) {
       ctx.error(ctx, '404#id,title,description,categoryIds,file,poster');
       return;
     }
+    poster = removePrefixFromFields(poster)
     const sql = `UPDATE sm_board_video_lib SET title='${title}', description='${description}', category='${JSON.stringify(
       categoryIds
     )}', source='${file}', updateTime=${new Date().getTime()}, poster='${poster}' WHERE id='${id}'`;

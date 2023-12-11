@@ -2,6 +2,9 @@ const webErrorCode = {
   W1001: ['sortBy只支持id，createTime，view，comment排序', 'sortBy only supports id, createTime, view, comment sorting'],
   W1002: ['缺少必传参数id', 'Missing required parameter id'],
   W1003: ['缺少关键字', 'Missing keywords'],
+  W1004: ['缺少用户名或密码', 'Missing username or password'],
+  W1005: ['用户不存在', 'User does not exist'],
+  W1006: ['账号和密码不匹配', 'Account and password do not match'],
 };
 export const errorCode = {
   ...webErrorCode,

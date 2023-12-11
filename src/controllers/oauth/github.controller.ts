@@ -62,7 +62,7 @@ export const githubOAuth = async (ctx) => {
             mobile: mobile,
             id: userId,
           };
-          ctx.redisDB.set(`${email}-${login}-${userId}`, userToken, 1000 * 60 * 60 * 24);
+          ctx.redisDB.set(`${email}-${login}-${userId}-${ctx.request.headers['client-id']}`, userToken, 1000 * 60 * 60 * 24);
           // 签发token
           const token = jwt.sign(userToken, CONFIG.tokenSecret, {
             expiresIn: '24h',

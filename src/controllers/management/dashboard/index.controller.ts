@@ -1,5 +1,6 @@
 import { Context } from 'koa';
 import { COMMON_QUERY_OTHER_COLUMN } from '../utils';
+import { addPrefixToFields } from '../../../util/helper';
 export const getOverview = async (ctx: Context): Promise<void> => {
   try {
     const results = await ctx.execSql([
@@ -96,11 +97,11 @@ export const getChannelSheetUserAuthorLimit5 = async (ctx): Promise<void> => {
     if (results.length) {
       return ctx.success(ctx, {
         channelLimit5: results[0],
-        sheetLimit5: results[1],
+        sheetLimit5: addPrefixToFields(results[1]),
         userLimit5: results[2],
-        authorLimit5: results[3],
-        postViewTop5: results[4],
-        postCommentTop5: results[5],
+        authorLimit5: addPrefixToFields(results[3]),
+        postViewTop5: addPrefixToFields(results[4]),
+        postCommentTop5: addPrefixToFields(results[5]),
       });
     } else {
       ctx.error(ctx, 402);

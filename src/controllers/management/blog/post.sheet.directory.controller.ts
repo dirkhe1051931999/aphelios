@@ -1,4 +1,4 @@
-import { uploadBase64FileToMinio } from 'src/util/helper';
+import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio } from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 // 获取所有文章类别
 export const getAllSheet = async (ctx) => {
@@ -12,7 +12,7 @@ export const getAllSheet = async (ctx) => {
       };
     });
     ctx.success(ctx, {
-      pageData: results,
+      pageData: addPrefixToFields(results),
     });
   } catch (error) {
     console.log(error);
@@ -186,12 +186,12 @@ export const updateSheet = async (ctx) => {
     return;
   }
   try {
-    let coverUrl = '';
+    let coverUrl: string | object = '';
     if (cover.indexOf('data:image') > -1) {
       const { url } = await uploadBase64FileToMinio(cover, 'assets');
       coverUrl = url;
     } else {
-      coverUrl = cover;
+      coverUrl = removePrefixFromFields(cover);
     }
     let sql = `UPDATE sm_board_sheet SET name = '${name}', cover = '${coverUrl}', description = '${description}', visible = '${visible}' WHERE id = '${id}'`;
     await ctx.execSql(sql);

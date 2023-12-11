@@ -1,3 +1,6 @@
+import { v4 as uuidv4 } from 'uuid';
+
+
 // 添加事件踪迹
 export const addEventTrack = async (ctx) => {
   // let ip = ctx.request.ip.replace("::ffff:", "");
@@ -34,4 +37,7 @@ export const addEventTrack = async (ctx) => {
   //     message: "上传数据出错",
   //   };
   // }
+};
+export const generateClientId = async (ctx) => {
+  ctx.success(ctx, uuidv4());
 };

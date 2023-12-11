@@ -96,7 +96,7 @@ export const addUser = async (ctx: Context): Promise<void> => {
           });
           const subject = '【koa实战】- 设置密码';
           ctx.redisDB.set(
-            token,
+            `${token}-${ctx.request.headers['client-id']}`,
             {
               email,
               username: userName,
@@ -353,7 +353,7 @@ export const reSendUrl = async (ctx: Context): Promise<void> => {
       });
       const subject = '【koa实战】- 设置密码';
       ctx.redisDB.set(
-        token,
+        `${token}-${ctx.request.headers['client-id']}`,
         {
           email: email,
           username: userName,

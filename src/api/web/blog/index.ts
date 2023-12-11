@@ -9,6 +9,7 @@ import {
   getPostLevel2CommentsById, getHomeHeadPost, getCarouselPost, search,
   getAuthorEssay,
 } from 'src/controllers/web/blog/post.controller';
+import { login } from 'src/controllers/web/blog/user.controller';
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
 import { getUserDetailById } from 'src/controllers/web/blog/user.controller';
@@ -79,5 +80,10 @@ export class WebBlogAPIController {
   @Route('/getUserDetailById', HTTP_METHODS.GET)
   async getUserDetailById(ctx: Koa.Context, next: Koa.Next) {
     return getUserDetailById(ctx);
+  }
+
+  @Route('/login', HTTP_METHODS.POST)
+  async login(ctx: Koa.Context, next: Koa.Next) {
+    return login(ctx);
   }
 }

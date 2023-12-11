@@ -1,3 +1,5 @@
+import { addPrefixToFields } from '../../../util/helper';
+
 export const getAuthorCompanyList = async (ctx) => {
   const { page, rowsPerPage } = ctx.request.body;
   if (ctx.isFalsy([page, rowsPerPage])) {
@@ -7,7 +9,7 @@ export const getAuthorCompanyList = async (ctx) => {
   try {
     let results = await ctx.execSql([`SELECT *  FROM sm_board_audit_author_approval ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`]);
     ctx.success(ctx, {
-      pageData: results[0],
+      pageData: addPrefixToFields(results[0]),
     });
   } catch (error) {
     console.log(error);
@@ -42,6 +44,7 @@ export const getAuthorCompanyDetail = async (ctx) => {
     rejectReason
     FROM sm_board_author WHERE id = '${id}';`,
     ]);
+    results[0] = addPrefixToFields(results[0])
     ctx.success(ctx, results[0][0]);
   } catch (error) {
     console.log(error);
@@ -150,6 +153,7 @@ export const getAuthorNormalList = async (ctx) => {
     rejectReason
      FROM sm_board_author WHERE status = 2 AND defaultUser = 0 ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`,
     ]);
+    results[0]  = addPrefixToFields(results[0])
     ctx.success(ctx, {
       pageData: results[0],
     });

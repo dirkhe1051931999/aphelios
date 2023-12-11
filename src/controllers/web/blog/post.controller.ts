@@ -1,3 +1,5 @@
+import { addPrefixToFields } from '../../../util/helper';
+
 let chips = ['pinned', 'recommended', 'hot', 'original', 'paid', 'free', 'carousel', 'political', 'privated', 'publiced'];
 let commonColumn = ['id', 'title', 'poster', 'content', 'createTime', 'updateTime', 'view', 'postType', 'postTags', 'videoPoster', 'videoUrl', 'galleries', 'srcTopicId', 'shelveTimeStart', 'shelveTimeEnd', 'authorId', 'directoryId', 'channelId'].concat(chips);
 let defaultAvatarName = ['/cdn/avatar/Malphite.png', '/cdn/avatar/LOL.png', '/cdn/avatar/Aphelios.png', '/cdn/avatar/Milio.png'];
@@ -54,7 +56,7 @@ async function getDirectory(ctx: any) {
   return new Promise(async (resolve, reject) => {
     try {
       let results = await ctx.execSql([sql1, sql2, sql3]);
-      let sheets = results[0];
+      let sheets = addPrefixToFields(results[0]);
       let directorys = results[1];
       let childDirectorys = results[2];
       sheets = buildTree([sheets, directorys, childDirectorys]);
@@ -72,6 +74,8 @@ async function getColletList(ctx: any, list: any[]) {
   let authorSql = `SELECT id,name,followCount,type,avatarUrl,fansCount,nick,score,description,coverUrl FROM sm_board_author;`;
   let channelResult = await ctx.execSql(channelSql);
   let authorResult = await ctx.execSql(authorSql);
+  authorResult = addPrefixToFields(authorResult);
+  list = addPrefixToFields(list);
   let directory = await getDirectory(ctx);
   list.forEach((item) => {
     item.channel = channelResult.find((channel) => channel.id === item.channelId);
@@ -98,7 +102,6 @@ export const getPostList = async (ctx) => {
     let postSql = `SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId ) as comment  from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
     let postResult = await ctx.execSql([sqlTotal, postSql]);
     const result = await getColletList(ctx, postResult[1]);
-
     ctx.success(ctx, {
       total: postResult[0][0].total,
       pageData: result,
@@ -152,8 +155,8 @@ export const getHotTop = async (ctx) => {
     });
     ctx.success(ctx, {
       newsData: newsResult,
-      authorData: topFiveResult[1],
-      commentData: topFiveResult[2],
+      authorData: addPrefixToFields(topFiveResult[1]),
+      commentData: addPrefixToFields(topFiveResult[2]),
     });
   } catch (error) {
     console.log(error);
@@ -203,6 +206,7 @@ export const search = async (ctx) => {
       });
     } else if (type === 'author') {
       let authorResult = await ctx.execSql(authorSql);
+      authorResult = addPrefixToFields(authorResult);
       ctx.success(ctx, {
         list: authorResult,
       });
@@ -428,7 +432,7 @@ export const getPostListByAuthorId = async (ctx) => {
     let results = await ctx.execSql([sql1, sql2]);
     ctx.success(ctx, {
       total: results[0][0].total,
-      pageData: results[1],
+      pageData: addPrefixToFields(results[1]),
     });
   } catch (error) {
     console.log(error);
@@ -447,6 +451,7 @@ export const getAuthorDetailById = async (ctx) => {
       SELECT id,name,followCount,type,status,avatarUrl,(SELECT COUNT(*) from sm_board_post_list WHERE authorId='${id}') as articleCount ,fansCount,nick,score,createTime,description,coverUrl from sm_board_author WHERE id = '${id}';
       `;
     let results = await ctx.execSql(sql);
+    results[0] = addPrefixToFields(results[0]);
     ctx.success(ctx, results[0] || null);
   } catch (error) {
     console.log(error);

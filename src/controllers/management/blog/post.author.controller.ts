@@ -1,4 +1,10 @@
-import { isFieldFile, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
+import {
+  addPrefixToFields,
+  isFieldFile,
+  removePrefixFromFields,
+  uploadBase64FileToMinio,
+  uploadFileToMinio,
+} from 'src/util/helper';
 import { v4 as uuidv4 } from 'uuid';
 import { fileToBase64 } from 'src/util/helper';
 import fs from 'fs';
@@ -10,7 +16,7 @@ export const getAllPostAuthor = async (ctx): Promise<void> => {
   try {
     let results = await ctx.execSql(sql);
     ctx.success(ctx, {
-      pageData: results,
+      pageData: addPrefixToFields(results),
     });
   } catch (error) {
     console.log(error);
@@ -70,6 +76,8 @@ export const updatePostAuthor = async (ctx): Promise<void> => {
     coverUrl = cover.value;
   }
   try {
+    avatarUrl = removePrefixFromFields(avatarUrl);
+    coverUrl = removePrefixFromFields(coverUrl);
     const sql = `
     UPDATE sm_board_author
     SET nick = '${nick}',
@@ -146,7 +154,8 @@ export const getCompanyAuthorVerifyInfo = async (ctx): Promise<void> => {
       ctx.error(ctx, '404#authorId');
       return;
     }
-    const result = await ctx.execSql(`SELECT * FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
+    let result = await ctx.execSql(`SELECT * FROM sm_board_audit_author_approval WHERE authorId = '${authorId}'`);
+    result = addPrefixToFields(result);
     ctx.success(ctx, result[0]);
   } catch (error) {
     console.log(error);

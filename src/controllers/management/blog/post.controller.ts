@@ -1,10 +1,21 @@
-import { transformResultsWithPrefix, uploadFileToMinio } from 'src/util/helper';
+import { addPrefixToFields, replacePrefix, transformResultsWithPrefix, uploadFileToMinio } from 'src/util/helper';
 import CONFIG from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
 import { COMMON_QUERY_OTHER_COLUMN, commonAddPost, commonUpdatePost } from '../utils';
 // 获取文章列表
 export const getPostList = async (ctx) => {
-  let { channelId, authorId, status, page, rowsPerPage, haveComment, orderProperty, orderDir, post_radio_option, postType } = ctx.request.body;
+  let {
+    channelId,
+    authorId,
+    status,
+    page,
+    rowsPerPage,
+    haveComment,
+    orderProperty,
+    orderDir,
+    post_radio_option,
+    postType,
+  } = ctx.request.body;
   channelId = channelId || '';
   status = status || '';
   authorId = authorId || '';
@@ -76,7 +87,7 @@ export const getPostList = async (ctx) => {
     let pageDataResult = await ctx.execSql([totalSql, pageDataSql]);
     const postIdList = pageDataResult[1].map((item) => item.id);
     const surveySql = `
-        SELECT * FROM sm_board_survey WHERE postId IN ('${postIdList.join("','")}')
+        SELECT * FROM sm_board_survey WHERE postId IN ('${postIdList.join('\',\'')}')
     `;
     const surveyList = await ctx.execSql(surveySql);
     // 使用 Map 对象对 survey 数据进行分组
@@ -86,10 +97,11 @@ export const getPostList = async (ctx) => {
       return acc;
     }, {});
     // 将 survey 数据合并到主查询结果中
-    const pageData = pageDataResult[1].map((item) => ({
+    let pageData = pageDataResult[1].map((item) => ({
       ...item,
       survey: surveyMap[item.id] || [],
     }));
+    pageData = addPrefixToFields(pageData);
     // 返回合并后的数据
     ctx.success(ctx, {
       pageData,
@@ -119,7 +131,7 @@ export const getPostListByCategoryId = async (ctx) => {
     `;
     let results = await ctx.execSql([totalSql, pageDataSql]);
     ctx.success(ctx, {
-      pageData: results[1],
+      pageData: addPrefixToFields(results[1]),
       total: results[0][0].total,
     });
   } catch (error) {
@@ -136,7 +148,7 @@ export const getPostRowById = async (ctx) => {
   try {
     let rowSql = `SELECT ${columnSqlString} FROM sm_board_post_list WHERE id = '${id}'`;
     let result = await ctx.execSql(rowSql);
-    ctx.success(ctx, result[0]);
+    ctx.success(ctx, addPrefixToFields(result)[0]);
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 402);
@@ -150,7 +162,7 @@ export const getPostContentById = async (ctx) => {
   }
   try {
     let result = await ctx.execSql(`SELECT content FROM sm_board_post_list WHERE id = '${id}'`);
-    ctx.success(ctx, result[0].content);
+    ctx.success(ctx, replacePrefix(result[0].content));
   } catch (error) {
     console.log(error);
     ctx.error(ctx, 402);

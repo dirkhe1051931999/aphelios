@@ -2,6 +2,7 @@
  * 用于post相关的管理端接口的工具函数
  */
 import { v4 as uuidv4 } from 'uuid';
+import { removePrefixFromFields } from '../../../util/helper';
 
 export const COMMON_QUERY_CHECKED_COLUMN = ['pinned', 'recommended', 'featured', 'hot', 'original', 'paid', 'free', 'political', 'carousel', 'privated', 'publiced'];
 export const COMMON_QUERY_OTHER_COLUMN = [
@@ -50,6 +51,8 @@ export const commonAddPost = async (ctx, postType) => {
     return;
   }
   let { postTags, videoPoster, galleries } = ctx.request.body;
+  videoPoster = removePrefixFromFields(videoPoster);
+  galleries = removePrefixFromFields(galleries);
   if (postTags.length === 0) {
     ctx.error(ctx, `404#postTags cannot be empty`);
     return;
@@ -63,7 +66,19 @@ export const commonAddPost = async (ctx, postType) => {
     }
   }
   try {
-    let sqlParams = allParams.map((param) => `'${ctx.request.body[param]}'`).join(',');
+    // 如果是poster，需要去掉前缀
+    // let sqlParams = allParams.map((param) => `'${ctx.request.body[param]}'`).join(',');
+    let sqlParams = allParams.map((param) => {
+      if (param === 'poster') {
+        return `'${removePrefixFromFields(ctx.request.body['poster'])}'`;
+      } else if (param === 'videoUrl') {
+        return `'${removePrefixFromFields(ctx.request.body['videoUrl'])}'`;
+      } else if (param === 'content') {
+        return `'${removePrefixFromFields(ctx.request.body['content'])})'`;
+      } else {
+        return `'${ctx.request.body[param]}'`;
+      }
+    }).join(',');
     let id = uuidv4().replace(/-/g, '');
     let status = 'OFFLINE';
     let createTime = new Date().getTime();
@@ -128,6 +143,8 @@ export const commonUpdatePost = async (ctx, postType) => {
     return;
   }
   let { postTags, videoPoster, galleries } = ctx.request.body;
+  videoPoster = removePrefixFromFields(videoPoster);
+  galleries = removePrefixFromFields(galleries);
   if (postTags.length === 0) {
     ctx.error(ctx, `404#postTags cannot be empty`);
     return;
@@ -141,7 +158,18 @@ export const commonUpdatePost = async (ctx, postType) => {
     }
   }
   try {
-    const sqlParams = allParams.map((param) => `${param} = '${ctx.request.body[param]}'`).join(',');
+    // const sqlParams = allParams.map((param) => `${param} = '${ctx.request.body[param]}'`).join(',');
+    const sqlParams = allParams.map((param) => {
+      if (param === 'poster') {
+        return `${param} = '${removePrefixFromFields(ctx.request.body['poster'])}'`;
+      } else if (param === 'videoUrl') {
+        return `${param} = '${removePrefixFromFields(ctx.request.body['videoUrl'])}'`;
+      } else if (param === 'content') {
+        return `${param} = '${removePrefixFromFields(ctx.request.body['content'])})'`;
+      } else {
+        return `${param} = '${ctx.request.body[param]}'`;
+      }
+    }).join(',');
     const updateTime = new Date().getTime();
     // 定义额外字段的默认值
     const extraFields = {

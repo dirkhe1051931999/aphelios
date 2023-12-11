@@ -3,11 +3,13 @@ import * as formidable from 'formidable';
 import * as fs from 'fs';
 import * as path from 'path';
 import CONFIG from 'src/config';
+import setting from 'src/config';
 import moment from 'moment';
 import * as Minio from 'minio';
 import { v4 as uuidv4 } from 'uuid';
 import NodeRSA from 'node-rsa';
 import mime from 'mime';
+
 const minioClient = new Minio.Client({
   endPoint: CONFIG.db.minio.endPoint,
   port: CONFIG.db.minio.port,
@@ -75,6 +77,7 @@ export function mkdirsSync(dirname: string): boolean {
     }
   }
 }
+
 /**
  * 上传文件
  */
@@ -102,13 +105,16 @@ export const uploadFileToMinio = (ctx: any, withData, dir): Promise<any> => {
           newName,
           tempPath,
           { 'Content-Type': file.type || 'application/octet-stream' }, // 使用file.type获取MIME类型
-          function (err, objInfo) {
+          function(err, objInfo) {
             if (err) {
               reject(err);
             }
             fs.unlinkSync(tempPath);
-            resolve({ url: `http://${CONFIG.db.minio.endPoint}:${CONFIG.db.minio.port}/${CONFIG.db.minio.buckets}/${newName}`, data: withData ? fields : null });
-          }
+            resolve({
+              url: `/${CONFIG.db.minio.buckets}/${newName}`,
+              data: withData ? fields : null,
+            });
+          },
         );
       });
     });
@@ -133,22 +139,16 @@ export const uploadBase64FileToMinio = (base64: any, dir: string): Promise<any> 
       fs.mkdirSync(imagePath, { recursive: true });
     }
     fs.writeFileSync(tempPath, imageBuffer);
-    minioClient.fPutObject(CONFIG.db.minio.buckets, newName, tempPath, { 'Content-Type': mimeType }, function (err, objInfo) {
+    minioClient.fPutObject(CONFIG.db.minio.buckets, newName, tempPath, { 'Content-Type': mimeType }, function(err, objInfo) {
       if (err) {
         reject(err);
       }
       fs.unlinkSync(tempPath);
-      resolve({ url: `http://${CONFIG.db.minio.endPoint}:${CONFIG.db.minio.port}/${CONFIG.db.minio.buckets}/${newName}` });
+      resolve({ url: `/${CONFIG.db.minio.buckets}/${newName}` });
     });
   });
 };
-export const rsaDecrypt = (data: string): string => {
-  let pk = CONFIG.rsaPrivateKey;
-  let encrypt = new NodeRSA(pk);
-  encrypt.setOptions({ encryptionScheme: 'pkcs1' });
-  let encrypted = encrypt.decrypt(data, 'utf8');
-  return encrypted;
-};
+
 export function formatDate(input: Date | number | null, format: string = 'yyyy-MM-dd hh:mm:ss'): string {
   if (!input || (typeof input === 'number' && input <= 0)) {
     return 'Invalid date';
@@ -176,6 +176,7 @@ export function formatDate(input: Date | number | null, format: string = 'yyyy-M
   }
   return formattedDate;
 }
+
 export function isFieldFile(ctx: any, fieldNames: string[]): Promise<{ [key: string]: any }> {
   return new Promise((resolve, reject) => {
     const form: any = new formidable.IncomingForm();
@@ -213,6 +214,7 @@ export function isFieldFile(ctx: any, fieldNames: string[]): Promise<{ [key: str
     });
   });
 }
+
 export function fileToBase64(filePath: string): Promise<string> {
   return new Promise((resolve, reject) => {
     fs.readFile(filePath, (readErr, data) => {
@@ -230,6 +232,7 @@ export function fileToBase64(filePath: string): Promise<string> {
     });
   });
 }
+
 export function transformResultsWithPrefix(prefix, resultsArray) {
   return resultsArray.map(row => {
     const transformedRow = { ...row }; // Clone the original row to avoid mutating it
@@ -250,3 +253,69 @@ export function transformResultsWithPrefix(prefix, resultsArray) {
     return transformedRow;
   });
 }
+
+export const rsaDecrypt = (data: string): string => {
+  let pk = CONFIG.rsaPrivateKey;
+  let encrypt = new NodeRSA(pk);
+  encrypt.setOptions({ encryptionScheme: 'pkcs1' });
+  return encrypt.decrypt(data, 'utf8');
+};
+
+export const rsaEncrypt = (data: string): string => {
+  let pk = CONFIG.rsaPublicKey;
+  let encrypt = new NodeRSA(pk);
+  encrypt.setOptions({ encryptionScheme: 'pkcs1' });
+  return encrypt.encrypt(data, 'base64');
+};
+
+
+// 遍历数组，给指定的字段加上前缀
+export const addPrefixToFields = (arr) => {
+  const prefix = `http://${setting.db.minio.endPoint}:${setting.db.minio.port}`;
+  const fields = ['companyLicense', 'avatarUrl', 'coverUrl', 'source', 'poster', 'videoPoster', 'videoUrl', 'cover'];
+  const objectFields = ['galleries'];
+
+  for (let item of arr) {
+    for (let key in item) {
+      if (!item[key]) continue;
+      if (fields.includes(key) && typeof item[key] === 'string' && !item[key].startsWith(prefix) && item[key].indexOf('data:image') === -1) {
+        item[key] = `${prefix}${item[key]}`;
+      } else if (objectFields.includes(key) && Array.isArray(item[key])) {
+        item[key] = item[key].map(innerItem => innerItem.startsWith(prefix) ? innerItem : `${prefix}${innerItem}`);
+      }
+    }
+  }
+  return arr;
+};
+// 替换一大段文本的前缀
+
+export const replacePrefix = (str) => {
+  if (!str) return str;
+  const regex = /"\/blog-service-oss\/(.*?)"/g;
+  const subst = `"http://${setting.db.minio.endPoint}:${setting.db.minio.port}/blog-service-oss/$1"`;
+  return str.replace(regex, subst);
+};
+
+// 编辑加了前缀的数据，去掉前缀
+export const removePrefixFromFields = (data: string | object) => {
+  let prefix = `http://${setting.db.minio.endPoint}:${setting.db.minio.port}`;
+  if (typeof data === 'string' && data.indexOf('data:image') === -1 && data) {
+    return data.replace(new RegExp(prefix, 'g'), '');
+  }
+  if (Array.isArray(data)) {
+    return data.map(item => {
+      if (typeof item === 'string' && item.indexOf('data:image') === -1) {
+        return item.replace(new RegExp(prefix, 'g'), '');
+      }
+      return item;
+    });
+  }
+  if (typeof data === 'object' && data) {
+    for (let key in data) {
+      if (typeof data[key] === 'string' && data[key].indexOf('data:image') === -1) {
+        data[key] = data[key].replace(new RegExp(prefix, 'g'), '');
+      }
+    }
+  }
+  return data;
+};
