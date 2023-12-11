@@ -5,14 +5,20 @@
       <span>{{ typeName }}</span>
     </div>
     <van-form @submit="onSubmit" v-if="typeName === '登录'">
-      <van-field v-model="loginParams.model.username" name="username" label="用户名" placeholder="用户名" :rules="loginParams.rules.username" />
-      <van-field v-model="loginParams.model.password" type="password" name="password" label="密码" placeholder="密码" :rules="loginParams.rules.password" />
+      <div class="field">
+        <van-field v-model="loginParams.model.username" name="username" label="用户名" placeholder="用户名" :rules="loginParams.rules.username" clearable />
+      </div>
+      <div class="field">
+        <van-field v-model="loginParams.model.password" type="password" name="password" label="密码" placeholder="密码" :rules="loginParams.rules.password" clearable />
+      </div>
       <div style="margin: 16px">
         <van-button round block type="info" native-type="submit">提交</van-button>
       </div>
     </van-form>
     <van-form @submit="onSubmit" v-if="typeName === '注册'">
-      <van-field v-model="registerParams.model.username" name="username" label="用户名" placeholder="用户名" :rules="registerParams.rules.username" />
+      <div class="field">
+        <van-field v-model="registerParams.model.username" name="username" label="用户名" placeholder="用户名" :rules="registerParams.rules.username" />
+      </div>
       <van-cell>
         <!-- 使用 title 插槽来自定义标题 -->
         <template #title>
@@ -21,25 +27,34 @@
           </p>
         </template>
       </van-cell>
-      <van-field v-model="registerParams.model.password" type="password" name="password" label="密码" placeholder="密码" :rules="registerParams.rules.password" />
+      <div class="field">
+        <van-field v-model="registerParams.model.password" type="password" name="password" label="密码" placeholder="密码" :rules="registerParams.rules.password" />
+      </div>
       <van-cell>
         <!-- 使用 title 插槽来自定义标题 -->
         <template #title>
           <p class="rules-desc">密码由6-20位字母、数字、特殊符号组成，不能有空格，不能有中文，必须包含！@#￥%&*等特殊字符至少一个，首字母大写</p>
         </template>
       </van-cell>
-      <van-field v-model="registerParams.model.rePassword" type="password" name="rePassword" label="确认密码" placeholder="密码" :rules="registerParams.rules.rePassword" />
-      <van-field v-model="registerParams.model.email" name="email" label="邮箱" placeholder="邮箱" :rules="registerParams.rules.email" />
-      <van-field name="gender" label="性别">
-        <template #input>
-          <van-radio-group v-model="registerParams.model.gender" direction="horizontal">
-            <van-radio name="1">男</van-radio>
-            <van-radio name="0">女</van-radio>
-          </van-radio-group>
-        </template>
-      </van-field>
-      <van-field readonly clickable name="area" :value="registerParams.model.address" label="地区选择" placeholder="点击选择省市区" @click="openPickAddress" />
-
+      <div class="field">
+        <van-field v-model="registerParams.model.rePassword" type="password" name="rePassword" label="确认密码" placeholder="密码" :rules="registerParams.rules.rePassword" />
+      </div>
+      <div class="field">
+        <van-field v-model="registerParams.model.email" name="email" label="邮箱" placeholder="邮箱" :rules="registerParams.rules.email" />
+      </div>
+      <div class="field no-bg">
+        <van-field name="gender" label="性别">
+          <template #input>
+            <van-radio-group v-model="registerParams.model.gender" direction="horizontal">
+              <van-radio name="1">男</van-radio>
+              <van-radio name="0">女</van-radio>
+            </van-radio-group>
+          </template>
+        </van-field>
+      </div>
+      <div class="field">
+        <van-field readonly clickable name="area" :value="registerParams.model.address" label="地区选择" placeholder="点击选择省市区" @click="openPickAddress" />
+      </div>
       <div style="margin: 16px">
         <van-button round block type="info" native-type="submit">提交</van-button>
       </div>
@@ -52,6 +67,12 @@
       <span class="split" v-if="typeName === '登录'"></span>
       <div class="login" @click="login" v-if="typeName === '注册'">登录</div>
       <div class="register" @click="register" v-if="typeName === '登录'">注册账号</div>
+    </div>
+    <div class="back" v-if="typeName === '登录'">
+      <div @click="back">
+        <van-icon name="arrow-left" />
+        <span>返回</span>
+      </div>
     </div>
   </div>
 </template>
@@ -141,6 +162,10 @@ export default {
   methods: {
     onSubmit() {
       console.log('submit');
+      this.$store.dispatch('modules/user/login', {
+        username: this.loginParams.model.username,
+        password: this.loginParams.model.password,
+      });
     },
     register() {
       this.registerParams.model = cloneDeep(registerModel);
@@ -162,6 +187,9 @@ export default {
     },
     openPickAddress() {
       this.registerParams.showArea = true;
+    },
+    back() {
+      this.$router.back();
     },
   },
   mounted() {},
@@ -213,5 +241,35 @@ export default {
   font-size: 12px;
   color: $subtle-text-color;
   line-height: 1.5;
+}
+
+.field {
+  margin: 16px;
+  border: solid 1px #adadad;
+  border-radius: 2px;
+
+  :deep(.van-field__control) {
+    background: #f5f5f5;
+    padding: 4px 8px;
+  }
+
+  &.no-bg {
+    :deep(.van-field__control) {
+      background: #ffffff;
+    }
+  }
+}
+
+.back {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  color: $subtle-text-color;
+  margin-bottom: 16px;
+
+  span {
+    margin-left: 4px;
+  }
 }
 </style>

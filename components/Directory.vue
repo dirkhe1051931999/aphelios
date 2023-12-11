@@ -45,6 +45,7 @@ export default {
     async getDirectory() {
       try {
         const { data } = await this.$axios.get('/blog/getAllDirectory');
+        console.log(data);
         this.directoryParams.list = data;
         this.directoryParams.level1List = data[0].children;
       } catch (e) {

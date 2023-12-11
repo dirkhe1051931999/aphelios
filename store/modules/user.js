@@ -14,6 +14,14 @@ const actions = {
     const info = await fetch('/api/user').then((res) => res.json());
     commit('setUserInfo', info);
   },
+  async login({ commit, state }, data) {
+    try {
+      const result = await this.$axios.$post('/blog/login', data);
+      console.log(result);
+    } catch (e) {
+      consoel.log(e);
+    }
+  },
 };
 
 const getters = {
