@@ -1,6 +1,7 @@
 import md5crypto from 'crypto-js/md5';
 import JSEncrypt from 'jsencrypt/bin/jsencrypt.min.js';
 import setting from 'src/setting.json';
+
 export const getCssVariableValue = (cssVariableName: string) => {
   let cssVariableValue = '';
   try {
@@ -49,6 +50,5 @@ export function RSAEnCrypty(data: string) {
   let encrypt = new JSEncrypt();
   let pk = setting.rsaPublicKey;
   encrypt.setPublicKey(pk);
-  const encrypted = encrypt.encrypt(data);
-  return encrypted;
+  return encrypt.encrypt(data);
 }

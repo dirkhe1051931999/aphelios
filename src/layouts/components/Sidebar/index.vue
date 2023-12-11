@@ -1,4 +1,3 @@
-
 <template>
   <div :class="{ 'has-logo': showSidebarLogo }">
     <SidebarLogo v-if="showSidebarLogo" :collapse="isCollapse" />
@@ -9,7 +8,6 @@
     </el-scrollbar>
   </div>
 </template>
-
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-facing-decorator';
@@ -61,7 +59,6 @@ export default class SidebarLogoComponent extends Vue {
   }
 }
 </script>
-
 
 <style lang="scss" scoped>
 .body--dark {
@@ -158,7 +155,7 @@ export default class SidebarLogoComponent extends Vue {
   color: var(--el-text-color-primary);
   font-size: 14px !important;
   .record {
-    font-size: 3px;
+    font-size: 12px;
     width: 3px;
     height: 3px;
   }

@@ -3,7 +3,7 @@ import { VuexModule, Module, Action, Mutation, getModule } from 'vuex-module-dec
 import { getToken, setToken, removeToken, setUsername, removeUsername, getUsername, setPagePermissionID, getPagePermissionID, removePagePermissionID, removeDynamicRoutes } from 'src/utils/cookie';
 import { resetRouter } from 'src/router';
 import store from 'src/store';
-import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld, oauthGithub } from 'src/api/user';
+import { changePassword, getVerifyCode, getUserInfo, login, signOut, forgotPassword, checkToken, changePasswordWithOutOld, oauthGithub, generateClientId } from 'src/api/user';
 import { uid } from 'quasar';
 import { TagsViewModule } from './tags';
 import { enCrypty, sleep } from 'src/utils/tools';
@@ -25,22 +25,33 @@ class User extends VuexModule implements IUserState {
   public SET_PAGE_PERMISION_ID(arr: any) {
     this.pagePermissionId = arr;
   }
+
   @Mutation
   public SET_TOKEN(token: string) {
     this.token = token;
   }
+
   @Mutation
   public SET_USERNAME(username: string) {
     this.username = username;
   }
+
   @Mutation
   public SET_INTRODUCTION(introduction: string) {
     this.introduction = introduction;
   }
+
   @Mutation
   public SET_USERINFO(userinfo: any) {
     this.userInfo = userinfo;
   }
+
+  @Action({ rawError: true })
+  public async generateClientId() {
+    const clientId = await generateClientId({});
+    localStorage.setItem(`${setting.title} client_id`, clientId);
+  }
+
   // 登录
   @Action({ rawError: true })
   public async Login(data: any) {
@@ -69,6 +80,7 @@ class User extends VuexModule implements IUserState {
     this.SET_PAGE_PERMISION_ID(pagePermissionId);
     return Promise.resolve();
   }
+
   @Action({ rawError: true })
   public async oauthGithub(code: any) {
     let { token, pagePermissionId, email, id, mobile, username, userType, avatar } = await oauthGithub(code || '');
@@ -93,6 +105,7 @@ class User extends VuexModule implements IUserState {
     this.SET_PAGE_PERMISION_ID(pagePermissionId);
     return Promise.resolve();
   }
+
   // 获取用户信息
   @Action({ rawError: true })
   public async getUserIntroduction() {
@@ -100,6 +113,7 @@ class User extends VuexModule implements IUserState {
     this.SET_INTRODUCTION('introduction');
     return Promise.resolve();
   }
+
   @Action({ rawError: true })
   public async getUserInfo(data: any) {
     const { id } = data;
@@ -107,6 +121,7 @@ class User extends VuexModule implements IUserState {
     this.SET_INTRODUCTION('introduction');
     return Promise.resolve();
   }
+
   // 退出
   @Action({ rawError: true })
   public async LogOut() {
@@ -118,34 +133,40 @@ class User extends VuexModule implements IUserState {
     this.ResetToken();
     return Promise.resolve();
   }
+
   @Action({ rawError: true })
   public async changePassword(data: any) {
     const { username, oldPassword, newPassword } = data;
     await changePassword({ userName: username, oldPassword: enCrypty(oldPassword), newPassword: enCrypty(newPassword) });
     return Promise.resolve();
   }
+
   @Action({ rawError: true })
   public async getVerifyCode(data: any) {
     const { mobile, email } = await getVerifyCode(data);
     return Promise.resolve({ email, mobile });
   }
+
   @Action({ rawError: true })
   public async forgotPassword(data: any) {
     const { email, username } = data;
     await forgotPassword({ email, username });
     return Promise.resolve();
   }
+
   @Action({ rawError: true })
   public async checkToken(data: any) {
     const { token } = data;
     const { code } = await checkToken({ token });
     return Promise.resolve(code);
   }
+
   @Action({ rawError: true })
   public async changePasswordWithOutOld(data: any) {
     const result = await changePasswordWithOutOld({ token: data.token, password: enCrypty(data.password) });
     return Promise.resolve(result);
   }
+
   // 重置cookie
   @Action({ rawError: true })
   public ResetToken() {
@@ -162,6 +183,7 @@ class User extends VuexModule implements IUserState {
     this.SET_PAGE_PERMISION_ID([]);
     this.SET_INTRODUCTION('');
     PermissionModule.REMOVE_ROUTES([]);
+    localStorage.removeItem(`${setting.title} client_id`);
   }
 }
 

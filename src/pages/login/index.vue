@@ -351,9 +351,11 @@ import { isValidEmail, isValidPassword } from 'src/utils/validate';
 import { getToken } from 'src/utils/cookie';
 import { PermissionModule } from 'src/store/modules/permission';
 import setting from 'src/setting.json';
+
 @Component({ name: 'LoginPage2' })
 export default class LoginPage2 extends Vue {
   declare $refs: any;
+
   @Watch('$route', { immediate: true })
   public onRouteChange(route: any) {
     // TODO: remove the "as Dictionary<string>" hack after v4 release for vue-router
@@ -364,6 +366,7 @@ export default class LoginPage2 extends Vue {
       this.otherQuery = this.getOtherQuery(query);
     }
   }
+
   @Watch('pageType')
   public onPageTypeChange(route: any) {
     this.changePasswordForm.username = '';
@@ -380,26 +383,37 @@ export default class LoginPage2 extends Vue {
       this.$refs.resetPasswordForm && this.$refs.resetPasswordForm.resetValidation();
     });
   }
+
   @Watch('resetPasswordForm.password', { deep: true })
   onResetPasswordChange() {
     this.$refs['resetRePassword'].validate();
   }
+
   @Watch('resetPasswordForm.rePassword', { deep: true })
   onResetRePasswordChange() {
     this.$refs['resetPassword'].validate();
   }
+
   @Watch('changePasswordForm.password', { deep: true })
   onChangePasswordChange() {
     this.$refs['changeRePassword'].validate();
   }
+
   @Watch('changePasswordForm.rePassword', { deep: true })
   onChangeRePasswordChange() {
     this.$refs['changePassword'].validate();
   }
+
   get token() {
     return this.$route.query.token;
   }
-  async created() {}
+
+  created() {
+    if (!localStorage.getItem(`${setting.title} client_id`)) {
+      UserModule.generateClientId();
+    }
+  }
+
   async mounted() {
     if (this.token) {
       this.pageType = 'resetPassword';
@@ -449,6 +463,7 @@ export default class LoginPage2 extends Vue {
       location.replace('index.html#/login');
     }
   }
+
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public passwordRules = setting.passwordRules;
   public pageType = 'signIn';
@@ -556,6 +571,7 @@ export default class LoginPage2 extends Vue {
     ],
   };
   public redirect?: string;
+
   /* event */
   public getOtherQuery(query: Dictionary<string>) {
     return Object.keys(query).reduce((acc, cur) => {
@@ -565,6 +581,7 @@ export default class LoginPage2 extends Vue {
       return acc;
     }, {} as Dictionary<string>);
   }
+
   public async resetPasswordToSignIn() {
     if (getToken()) {
       const result = await this.$globalConfirm.show({
@@ -585,9 +602,11 @@ export default class LoginPage2 extends Vue {
     this.pageType = 'signIn';
     this.$router.push('/login');
   }
+
   public clickGithubLogin() {
     location.href = setting.github_oauth_url;
   }
+
   /* http */
   public async handlerSignIn() {
     if (!this.signInParams.username || !this.signInParams.password) {
@@ -624,6 +643,7 @@ export default class LoginPage2 extends Vue {
       location.reload();
     }
   }
+
   public async handleClickSendCode() {
     if (!this.signInParams.username) {
       this.$globalMessage.show({
@@ -662,6 +682,7 @@ export default class LoginPage2 extends Vue {
       this.signInParams.getCodeConfig.getVerifyCodeLoading = false;
     }
   }
+
   public handlerChangePassword() {
     this.$refs.changePasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
@@ -685,6 +706,7 @@ export default class LoginPage2 extends Vue {
       }
     });
   }
+
   public handlerForgetPassword() {
     this.$refs.forgotPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
@@ -705,6 +727,7 @@ export default class LoginPage2 extends Vue {
       }
     });
   }
+
   public handlerResetPassword() {
     this.$refs.resetPasswordForm.validate().then(async (valid: boolean) => {
       if (valid) {
@@ -742,16 +765,19 @@ export default class LoginPage2 extends Vue {
     box-shadow: 0px 6px 16px 3px rgba($color: #ffffff, $alpha: 0.09);
   }
 }
+
 .body--light {
   .cover {
     box-shadow: 0px 6px 16px 3px rgba($color: #000000, $alpha: 0.09);
   }
 }
+
 .cover {
   width: 100%;
   height: 100%;
   background: var(--my-grey-1);
   border-radius: 16px;
+
   .intro {
     text-align: center;
     padding: 16px;
@@ -759,6 +785,7 @@ export default class LoginPage2 extends Vue {
     width: 100%;
     bottom: 10%;
   }
+
   .img {
     padding: 16px;
     margin: 32px auto;
@@ -771,10 +798,12 @@ body.screen--md {
       width: 600px;
     }
   }
+
   .intro {
     bottom: 5%;
   }
 }
+
 body.screen--lg {
   .cover {
     .img {
@@ -782,6 +811,7 @@ body.screen--lg {
     }
   }
 }
+
 body.screen--xl {
   .cover {
     .img {

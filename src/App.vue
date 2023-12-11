@@ -7,6 +7,7 @@ import { Component, Vue } from 'vue-facing-decorator';
 import { myIcons } from 'src/utils/custom-svg';
 import setting from 'src/setting.json';
 import { getDarkTheme } from './utils/localStorage';
+import { UserModule } from 'src/store/modules/user';
 
 const NODE_ENV = process.env.NODE_ENV;
 const development = NODE_ENV === 'development';

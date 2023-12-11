@@ -354,6 +354,7 @@ export default class MyAuthorCompanyComponent extends Vue {
       const result = await AuditModule.getAuthorCompanyDetail({
         id,
       });
+      console.log(result);
       this.$q.loading.hide();
       this.approvalParams.authorCompany.detailParams.data = result;
       this.approvalParams.authorCompany.detailParams.model = true;

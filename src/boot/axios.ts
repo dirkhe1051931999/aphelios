@@ -8,6 +8,7 @@ import { Loading } from 'quasar';
 import { v4 as uuidv4 } from 'uuid';
 import SHA256 from 'sha256';
 import { AppModule } from 'src/store/modules/app';
+
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
@@ -38,6 +39,7 @@ axios.interceptors.request.use(
       config.getResHeader = true;
     }
     config.headers['Language'] = 'zh_CN';
+    config.headers['Client-ID'] = localStorage.getItem(`${setting.title} client_id`);
     if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${config.data.token}`;
     } else if (UserModule.token) {
@@ -49,7 +51,7 @@ axios.interceptors.request.use(
     console.log(error);
     globalMessage.show({ type: 'error', content: error });
     Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptors
@@ -87,8 +89,8 @@ axios.interceptors.response.use(
               {
                 ...response.headers,
                 'content-disposition': window.decodeURIComponent(response.headers['content-disposition'] || ''),
-              }
-            )
+              },
+            ),
             // Object.assign({ blob: response.data }, response.headers)
           );
         } else {
@@ -136,7 +138,7 @@ axios.interceptors.response.use(
     }
     Loading.hide();
     return Promise.reject('error');
-  }
+  },
 );
 
 const api = axios.create({

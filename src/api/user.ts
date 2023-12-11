@@ -2,6 +2,7 @@ import { request } from 'src/boot/axios';
 
 const api = {
   login: '/management/blog/auth/login',
+  generateClientId: '/track/generateClientId',
   signOut: '/management/blog/auth/signOut',
   changePassword: '/management/blog/auth/changePassword',
   getUserInfo: '/management/blog/auth/getUserInfo',
@@ -11,6 +12,12 @@ const api = {
   changePasswordWithOutOld: '/management/blog/auth/changePasswordWithOutOld',
   oauth_github: '/oauth/github/?code=',
 };
+export const generateClientId = (data: any): any =>
+  request({
+    url: api.generateClientId,
+    method: 'post',
+    data,
+  });
 export const login = (data: any): any =>
   request({
     url: api.login,

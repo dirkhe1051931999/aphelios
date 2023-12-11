@@ -8,6 +8,7 @@ import { AppModule } from 'src/store/modules/app';
 import i18n from 'src/i18n';
 import store from 'src/store';
 import { getUserinfo } from 'src/utils/localStorage';
+
 const whiteList = ['/login'];
 const getPageTitle = (to: any) => {
   if (whiteList.indexOf(to.path) !== -1) {
@@ -25,7 +26,7 @@ const getPageTitle = (to: any) => {
 
 router.beforeEach(async (to, _from, next) => {
   // 判断该用户是否登录
-  if (getToken() && getUserinfo() && getUsername()) {
+  if (getToken() && getUserinfo() && getUsername() && localStorage.getItem(`${setting.title} client_id`)) {
     if (whiteList.indexOf(to.path) !== -1) {
       // 如果已经登录，并且没有带query token 参数，并准备进入 Login 页面，则重定向到主页
       if (to.query.token) {
@@ -82,5 +83,5 @@ store.watch(
   // 第二参数也是箭头函数，是数据改变后的回调监听
   (newVal: string, oldVal: string) => {
     if (router.currentRoute.value) document.title = getPageTitle(router.currentRoute.value);
-  }
+  },
 );

@@ -296,6 +296,7 @@ export default class BlogPostUserComponent extends Vue {
       return `Lv.${getAuthorLevel(score)} ${getAuthorLevelName(score)}`;
     };
   }
+
   get calacAavatar() {
     return (path: string) => {
       return `${setting.ip}${path}`;
@@ -632,6 +633,7 @@ export default class BlogPostUserComponent extends Vue {
       }
       return retVal;
     }
+
     this.dialogDetailParams.params.username = generate();
   }
 
