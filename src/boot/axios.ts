@@ -39,7 +39,10 @@ axios.interceptors.request.use(
       config.getResHeader = true;
     }
     config.headers['Language'] = 'zh_CN';
-    config.headers['Client-ID'] = localStorage.getItem(`${setting.title} client_id`);
+    config.headers['Client-Type'] = 'management';
+    if (localStorage.getItem(`${setting.title} client_id`)) {
+      config.headers['Client-ID'] = localStorage.getItem(`${setting.title} client_id`);
+    }
     if (['/management/blog/auth/checkToken', '/management/blog/auth/changePasswordWithOutOld'].includes(config.url)) {
       config.headers['Authorization'] = `Bearer ${config.data.token}`;
     } else if (UserModule.token) {

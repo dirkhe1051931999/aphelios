@@ -53,7 +53,7 @@ const api = {
   addComment: 'management/blog/post/addComment',
   getAllPostUser: 'management/blog/post_user/getAllPostUser',
   getAreaData: `${setting.minio}/blog-service-oss/province_city_region_town/`,
-  getIP: 'web/app/getIP',
+  getIP: 'common/getIP',
   addPostUser: 'management/blog/post_user/addPostUser',
   deletePostUser: 'management/blog/post_user/deletePostUser',
   viewUserPassword: 'management/blog/post_user/viewUserPassword',

@@ -2,7 +2,7 @@ import { request } from 'src/boot/axios';
 
 const api = {
   login: '/management/blog/auth/login',
-  generateClientId: '/track/generateClientId',
+  generateClientId: '/common/generateClientId',
   signOut: '/management/blog/auth/signOut',
   changePassword: '/management/blog/auth/changePassword',
   getUserInfo: '/management/blog/auth/getUserInfo',
