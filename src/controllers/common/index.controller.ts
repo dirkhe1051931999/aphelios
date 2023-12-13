@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 export const getIP = async (ctx) => {
   return new Promise((resolve, reject) => {
@@ -10,4 +11,7 @@ export const getIP = async (ctx) => {
       resolve({});
     }
   });
+};
+export const generateClientId = async (ctx) => {
+  ctx.success(ctx, uuidv4());
 };

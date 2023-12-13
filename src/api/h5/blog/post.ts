@@ -8,13 +8,11 @@ import {
   getHotTop,
   getPostLevel2CommentsById, getHomeHeadPost, getCarouselPost, search,
   getAuthorEssay,
-} from 'src/controllers/web/blog/post.controller';
-import { login } from 'src/controllers/web/blog/user.controller';
+} from 'src/controllers/h5/blog/post.controller';
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
-import { getUserDetailById } from 'src/controllers/web/blog/user.controller';
 
-export class WebBlogAPIController {
+export class h5BlogPostAPIController {
   // 获取文章列表
   @Route('/getPostList', HTTP_METHODS.GET)
   async getPostList(ctx: Koa.Context, next: Koa.Next) {
@@ -75,15 +73,5 @@ export class WebBlogAPIController {
   @Route('/getAuthorDetailById', HTTP_METHODS.GET)
   async getAuthorDetailById(ctx: Koa.Context, next: Koa.Next) {
     return getAuthorDetailById(ctx);
-  }
-
-  @Route('/getUserDetailById', HTTP_METHODS.GET)
-  async getUserDetailById(ctx: Koa.Context, next: Koa.Next) {
-    return getUserDetailById(ctx);
-  }
-
-  @Route('/login', HTTP_METHODS.POST)
-  async login(ctx: Koa.Context, next: Koa.Next) {
-    return login(ctx);
   }
 }

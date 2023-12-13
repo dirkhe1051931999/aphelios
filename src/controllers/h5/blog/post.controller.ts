@@ -63,7 +63,7 @@ async function getDirectory(ctx: any) {
       resolve(sheets);
     } catch (error) {
       console.log(error);
-      ctx.error(ctx, 402);
+      ctx.error(ctx, 'W1000');
     }
   });
 }
@@ -108,7 +108,7 @@ export const getPostList = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 export const getHomeHeadPost = async (ctx) => {
@@ -124,7 +124,7 @@ export const getHomeHeadPost = async (ctx) => {
     });
   } catch (e) {
     console.log(e);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取top5新闻
@@ -160,7 +160,7 @@ export const getHotTop = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取所有频道
@@ -174,7 +174,7 @@ export const getAllChannel = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取所有分类，树形结构
@@ -225,7 +225,7 @@ export const search = async (ctx) => {
     }
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取没有poster的文章
@@ -244,7 +244,7 @@ export const getAuthorEssay = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 
@@ -321,7 +321,7 @@ export const getPostLevel1CommentsById = async (ctx) => {
     }
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 export const getPostLevel2CommentsById = async (ctx) => {
@@ -406,7 +406,7 @@ export const getPostLevel2CommentsById = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取作者的所有文章
@@ -436,7 +436,7 @@ export const getPostListByAuthorId = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取作者详情
@@ -455,7 +455,7 @@ export const getAuthorDetailById = async (ctx) => {
     ctx.success(ctx, results[0] || null);
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };
 // 获取轮播图新闻
@@ -470,6 +470,6 @@ export const getCarouselPost = async (ctx) => {
     });
   } catch (error) {
     console.log(error);
-    ctx.error(ctx, 402);
+    ctx.error(ctx, 'W1000');
   }
 };

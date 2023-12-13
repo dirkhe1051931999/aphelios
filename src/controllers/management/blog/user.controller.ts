@@ -96,12 +96,12 @@ export const addUser = async (ctx: Context): Promise<void> => {
           });
           const subject = '【koa实战】- 设置密码';
           ctx.redisDB.set(
-            `${token}-${ctx.request.headers['client-id']}`,
+            `${token}-${ctx.request.headers['client-id']}-${ctx.request.headers['client-type']}-${ctx.request.headers['client-type']}`,
             {
               email,
               username: userName,
             },
-            10 * 60 * 1000
+            10 * 60 * 1000,
           );
           const content = '点击该链接设置密码：' + '<a href=' + url + token + ' style=color: white>' + url + token + '</a>' + '，账号有效时间<b>10分钟</b>。过期需让管理员重制链接';
           const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);
@@ -353,12 +353,12 @@ export const reSendUrl = async (ctx: Context): Promise<void> => {
       });
       const subject = '【koa实战】- 设置密码';
       ctx.redisDB.set(
-        `${token}-${ctx.request.headers['client-id']}`,
+        `${token}-${ctx.request.headers['client-id']}-${ctx.request.headers['client-type']}`,
         {
           email: email,
           username: userName,
         },
-        10 * 60 * 1000
+        10 * 60 * 1000,
       );
       const content = '点击该链接设置密码：' + '<a href=' + url + token + ' style=color: white>' + url + token + '</a>' + '，账号有效时间<b>10分钟</b>。过期需让管理员重制链接';
       const html = fs.readFileSync(path.resolve(__dirname, '../../../templates/email.template.html'), 'utf-8').replace('{{username}}', email).replace('{{content}}', content);

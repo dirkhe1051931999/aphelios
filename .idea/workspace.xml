@@ -6,21 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="763e0f0a-d612-4868-ab5a-96c6600554e2" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/api/web/blog/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/web/blog/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/audit.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/audit.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.author.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.author.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.video_lib.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.video_lib.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/dashboard/index.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/dashboard/index.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/utils/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/utils/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/web/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/web/blog/post.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/web/blog/user.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/web/blog/user.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/code.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/code.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/helper.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/auth.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/user.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/user.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/middlreware/tokenError.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middlreware/tokenError.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,6 +30,9 @@
   &quot;associatedIndex&quot;: 1
 }</component>
   <component name="ProjectId" id="2Un1sABoXu22uYkS0s3KNxD0ILS" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -56,7 +49,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;yarn&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;settings.sync&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
     &quot;ts.external.directory.path&quot;: &quot;D:\\code\\aphelios - nodejs - service\\node_modules\\typescript\\lib&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -105,6 +98,10 @@
       <workItem from="1694570537186" duration="8476000" />
       <workItem from="1701656055695" duration="8257000" />
       <workItem from="1702016805300" duration="13784000" />
+      <workItem from="1702264463354" duration="15330000" />
+      <workItem from="1702347728980" duration="4254000" />
+      <workItem from="1702433664592" duration="597000" />
+      <workItem from="1702434909164" duration="95000" />
     </task>
     <servers />
   </component>

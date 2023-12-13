@@ -39,7 +39,7 @@ app.use(
   cors({
     origin: '*',
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'Language', 'Client-Id'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'Language', 'Client-Id', 'Client-Type'],
   }),
 );
 /* Koa 应用程序中间件，用于解析 HTTP 请求正文并将其放入 ctx.request.body 中 */

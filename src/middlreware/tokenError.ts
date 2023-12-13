@@ -1,50 +1,55 @@
 import jwt from 'jsonwebtoken';
 import CONFIG from 'src/config';
+import { getPathsToTry } from 'tsconfig-paths/lib/try-path';
 
-/**
- * 判断token是否可用
- */
 export default function() {
   return async (ctx, next) => {
-    let token = ctx.request.headers.authorization;
-    let no_verify_token = false;
-    /* 这些接口不校验token */
-    let unless_reg = [/^\/management\/blog\/auth*/, /^\/web\/blog*/, /^\/web\/app*/, /^\/oauth*/, /^\/track*/];
-    unless_reg.forEach((reg) => {
-      if (reg.test(ctx.request.url)) {
-        no_verify_token = true;
-      }
-    });
-    if (no_verify_token) {
-      // url不需要校验token的，直接放行
+    const { url, headers } = ctx.request;
+    const token = headers.authorization;
+    const clientType = headers['client-type'];
+
+    // 不需要 token 校验的 URL 列表
+    const noVerifyTokenUrls = [/^\/management\/blog\/auth*/, /^\/oauth*/, /^\/common*/, /^\/track*/, /^\/h5\/blog\/post*/, /^\/h5\/blog\/auth*/];
+
+    // 检查 URL 是否在无需验证列表中
+    const requiresToken = !noVerifyTokenUrls.some(reg => reg.test(url));
+
+    if (!requiresToken) {
       await next();
-    } else {
-      if (!token) {
-        // 如果没有token，直接返回401
-        ctx.error(ctx, 401);
-        return;
+      return;
+    }
+
+    if (!token) {
+      ctx.error(ctx, 401);
+      return;
+    }
+
+    try {
+      const decoded = jwt.verify(token.split(' ')[1], CONFIG.tokenSecret);
+      const tokenKey = getTokenKey(decoded, clientType, headers);
+      const redisToken = await ctx.redisDB.get(tokenKey);
+      if (!redisToken || isTokenExpired(decoded)) {
+        await ctx.redisDB.destroy(tokenKey);
+        throw new Error('Token expired');
       }
-      try {
-        // 如果有token，进行校验
-        token = token.split(' ')[1];
-        const decoded = jwt.verify(token, CONFIG.tokenSecret);
-        const redis_db_token = await ctx.redisDB.get(`${decoded.email}-${decoded.name}-${decoded.id}-${ctx.request.headers['client-id']}`);
-        if (!redis_db_token) {
-          throw new Error('Token expired');
-        }
-        // 检查 token 是否过期了
-        const now = Math.floor(Date.now() / 1000);
-        const exp = decoded.exp;
-        if (exp < now) {
-          await ctx.redisDB.destroy(`${decoded.email}-${decoded.name}-${decoded.id}-${ctx.request.headers['client-id']}`);
-          throw new Error('Token expired');
-        } else {
-          await next();
-        }
-      } catch (err) {
-        console.log(err);
-        ctx.error(ctx, 401);
-      }
+      await next();
+    } catch (err) {
+      console.log(err);
+      ctx.error(ctx, 401);
     }
   };
+}
+
+function getTokenKey(decoded, clientType, headers) {
+  const clientId = headers['client-id'];
+  if (clientType === 'h5') {
+    return `${decoded.username}-${decoded.id}-${clientId}-${clientType}`;
+  } else if (clientType === 'management') {
+    return `${decoded.email}-${decoded.name}-${decoded.id}-${clientId}-${clientType}`;
+  }
+}
+
+function isTokenExpired(decoded) {
+  const now = Math.floor(Date.now() / 1000);
+  return decoded.exp < now;
 }
