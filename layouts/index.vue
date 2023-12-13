@@ -33,7 +33,6 @@ export default {
       this.$store.commit('modules/app/SET_ACTIVE_TAB', item.name);
     },
   },
-  mounted() {},
 };
 </script>
 <style scoped lang="scss">

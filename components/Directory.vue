@@ -30,7 +30,6 @@
 
 <script>
 export default {
-  name: 'Directory-Component',
   data() {
     return {
       directoryParams: {
@@ -44,8 +43,7 @@ export default {
   methods: {
     async getDirectory() {
       try {
-        const { data } = await this.$axios.get('/blog/getAllDirectory');
-        console.log(data);
+        const { data } = await this.$axios.get('/h5/blog/post/getAllDirectory');
         this.directoryParams.list = data;
         this.directoryParams.level1List = data[0].children;
       } catch (e) {

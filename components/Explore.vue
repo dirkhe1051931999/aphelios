@@ -72,7 +72,6 @@ function replaceURLsWithLinks(text) {
 }
 
 export default {
-  name: 'Explore-Component',
   data() {
     return {
       exploreParams: {
@@ -88,7 +87,7 @@ export default {
     async getExplore() {
       try {
         this.exploreParams.loading = true;
-        const { data } = await this.$axios.get('/blog/getAuthorEssay', {
+        const { data } = await this.$axios.get('/h5/blog/post/getAuthorEssay', {
           params: {
             page: this.exploreParams.page,
             rowsPerPage: this.exploreParams.rowsPerPage,

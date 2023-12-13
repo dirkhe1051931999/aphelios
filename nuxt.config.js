@@ -34,6 +34,11 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: ['@/plugins/vant', '@/plugins/axios.js'],
 
+  // Router: https://nuxtjs.org/docs/2.x/features/file-system-routing#the-router-property
+  router: {
+    middleware: ['check-client-id', 'load-userinfo'],
+  },
+
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
 
@@ -47,12 +52,13 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    'cookie-universal-nuxt',
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: 'http://localhost:3000/web',
+    baseURL: 'http://localhost:3000',
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build

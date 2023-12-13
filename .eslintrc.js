@@ -4,14 +4,11 @@ module.exports = {
     browser: true,
     node: true,
   },
-  extends: [
-    '@nuxtjs/eslint-config-typescript',
-    'plugin:nuxt/recommended',
-    'prettier',
-  ],
+  extends: ['@nuxtjs/eslint-config-typescript', 'plugin:nuxt/recommended', 'prettier'],
   plugins: [],
   // add your custom rules here
   rules: {
     '@typescript-eslint/no-unused-vars': 'off',
+    'no-console': 'off',
   },
-}
+};

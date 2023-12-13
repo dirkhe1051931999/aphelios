@@ -12,7 +12,7 @@
         <van-field v-model="loginParams.model.password" type="password" name="password" label="密码" placeholder="密码" :rules="loginParams.rules.password" clearable />
       </div>
       <div style="margin: 16px">
-        <van-button round block type="info" native-type="submit">提交</van-button>
+        <van-button round block type="info" native-type="submit" :loading="loginParams.loading">提交</van-button>
       </div>
     </van-form>
     <van-form @submit="onSubmit" v-if="typeName === '注册'">
@@ -96,7 +96,7 @@ const registerModel = {
   address: '',
 };
 export default {
-  name: 'Login-Page',
+  middleware: 'no-token',
   data() {
     return {
       typeName: '登录',
@@ -160,12 +160,14 @@ export default {
     };
   },
   methods: {
-    onSubmit() {
-      console.log('submit');
-      this.$store.dispatch('modules/user/login', {
+    async onSubmit() {
+      this.loginParams.loading = true;
+      await this.$store.dispatch('modules/user/login', {
         username: this.loginParams.model.username,
         password: this.loginParams.model.password,
       });
+      this.loginParams.loading = false;
+      this.$router.back();
     },
     register() {
       this.registerParams.model = cloneDeep(registerModel);
@@ -189,6 +191,7 @@ export default {
       this.registerParams.showArea = true;
     },
     back() {
+      if (this.loginParams.loading) return;
       this.$router.back();
     },
   },

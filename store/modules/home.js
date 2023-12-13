@@ -61,7 +61,7 @@ const actions = {
       }
       currentPostList.lock = true;
       currentPostList.loading = true;
-      const { total, pageData } = await this.$axios.$get('/blog/getPostList', {
+      const { total, pageData } = await this.$axios.$get('/h5/blog/post/getPostList', {
         params: {
           channelId: state.activeChannelId,
         },
@@ -88,7 +88,7 @@ const actions = {
     return Promise.resolve();
   },
   async fetchPostChannels({ commit, state }) {
-    const { pageData } = await this.$axios.$get('/blog/getAllChannel');
+    const { pageData } = await this.$axios.$get('/h5/blog/post/getAllChannel');
     const currentChannel = pageData.find((channel) => channel.id === state.activeChannelId);
     const postList = {};
     pageData.forEach((channel) => {
@@ -106,16 +106,16 @@ const actions = {
     commit('SET_POST_CHANNELS', pageData);
   },
   async fetchHomeHeadPost({ commit }) {
-    const { carouselData, politicalData } = await this.$axios.$get('/blog/getHomeHeadPost');
+    const { carouselData, politicalData } = await this.$axios.$get('/h5/blog/post/getHomeHeadPost');
     commit('SET_CAROUSEL_DATA', carouselData);
     commit('SET_POLITICAL_DATA', politicalData);
   },
   async fetchHotTop({ commit }) {
     try {
-      const result = await this.$axios.$get('/blog/getHotTop');
+      const result = await this.$axios.$get('/h5/blog/post/getHotTop');
       commit('SET_HOT_TOP', result);
     } catch (e) {
-      consoel.log(e);
+      console.log(e);
     }
   },
 };

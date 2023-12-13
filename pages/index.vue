@@ -12,6 +12,7 @@ import Directory from '~/components/Directory.vue';
 import Explore from '~/components/Explore.vue';
 import Home from '~/components/Home.vue';
 import Profile from '~/components/Profile.vue';
+import Config from '~/utils/config';
 
 export default {
   components: {

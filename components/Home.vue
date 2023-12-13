@@ -128,7 +128,7 @@ export default {
         loading: true,
       });
       _currentPostList.page++;
-      const { pageData } = await this.$axios.$get('/blog/getPostList', {
+      const { pageData } = await this.$axios.$get('/h5/blog/post/getPostList', {
         params: {
           channelId: this.activeChannelId,
           page: _currentPostList.page,

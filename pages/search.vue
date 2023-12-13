@@ -162,7 +162,7 @@ export default {
       const _searchParams = cloneDeep(this.searchParams);
       const { pagination } = _searchParams[activeTab];
       const { page, rowsPerPage } = pagination;
-      const { data } = await this.$axios.get(`/blog/search/`, {
+      const { data } = await this.$axios.get(`/h5/blog/post/search/`, {
         params: {
           page,
           rowsPerPage,
@@ -202,7 +202,7 @@ export default {
       const _searchParams = cloneDeep(this.searchParams);
       const { pagination } = _searchParams[activeTab];
       const { page, rowsPerPage } = pagination;
-      const { data } = await this.$axios.get(`/blog/search/`, {
+      const { data } = await this.$axios.get(`/h5/blog/post/search/`, {
         params: {
           page,
           rowsPerPage,
