@@ -22,7 +22,8 @@
     "vant": "^2.12.50",
     "vue": "^2.7.10",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10"
+    "vue-template-compiler": "^2.7.10",
+    "node-rsa": "^1.1.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",

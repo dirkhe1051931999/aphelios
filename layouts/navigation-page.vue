@@ -8,13 +8,15 @@
         <span>{{ layoutHeadOptions.title }}</span>
       </div>
       <div class="right-container">
-        <div class="right" v-if="layoutHeadOptions.showShare"></div>
-        <div class="right" v-if="layoutHeadOptions.showSearch"></div>
-        <div class="right" v-if="layoutHeadOptions.showMore"></div>
+        <div v-if="layoutHeadOptions.showShare" class="right"></div>
+        <div v-if="layoutHeadOptions.showSearch" class="right"></div>
+        <div v-if="layoutHeadOptions.showMore" class="right"></div>
       </div>
     </div>
     <div class="page-container">
-      <Nuxt />
+      <keep-alive>
+        <Nuxt />
+      </keep-alive>
     </div>
   </div>
 </template>

@@ -36,7 +36,7 @@ export default {
 
   // Router: https://nuxtjs.org/docs/2.x/features/file-system-routing#the-router-property
   router: {
-    middleware: ['check-client-id', 'load-userinfo'],
+    middleware: ['check-client-id', 'load-userinfo', 'load-ip-address'],
   },
 
   // Auto import components: https://go.nuxtjs.dev/config-components

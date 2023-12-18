@@ -25,13 +25,13 @@
 
 <script>
 import { throttle, cloneDeep } from 'lodash';
-import HomeSearch from '~/components/widget/home/HomeSearch.vue';
-import HomeLogo from '~/components/widget/home/HomeLogo.vue';
-import HomeHot from '~/components/widget/home/HomeHot.vue';
-import HomeScrollNavBar from '~/components/widget/home/HomeScrollNavBar.vue';
-import NavBarDetail from '~/components/widget/home/NavBarDetail.vue';
-import NavBarPolitical from '~/components/widget/home/NavBarPolitical.vue';
-import NavBarCarousel from '~/components/widget/home/NavBarCarousel.vue';
+import HomeSearch from '~/components/Widget/Home/HomeSearch.vue';
+import HomeLogo from '~/components/Widget/Home/HomeLogo.vue';
+import HomeHot from '~/components/Widget/Home/HomeHot.vue';
+import HomeScrollNavBar from '~/components/Widget/Home/HomeScrollNavBar.vue';
+import NavBarDetail from '~/components/Widget/Home/NavBarDetail.vue';
+import NavBarPolitical from '~/components/Widget/Home/NavBarPolitical.vue';
+import NavBarCarousel from '~/components/Widget/Home/NavBarCarousel.vue';
 
 export default {
   components: {

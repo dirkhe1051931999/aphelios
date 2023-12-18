@@ -12,7 +12,7 @@ export default function ({ $axios, redirect, app, store }) {
       config.headers['Client-Id'] = store.getters['modules/user/clientId'];
     }
     if (store.getters['modules/user/userInfo']) {
-      config.headers.Authorization = store.getters['modules/user/userInfo'].token;
+      config.headers.Authorization = `Bearer ${store.getters['modules/user/userInfo'].token}`;
     }
     console.log('请求地址', '=>', config.url);
   });
@@ -44,4 +44,5 @@ export default function ({ $axios, redirect, app, store }) {
   $axios.onError((error) => {
     return Promise.reject(error);
   });
+  return $axios;
 }

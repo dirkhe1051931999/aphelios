@@ -1,10 +1,12 @@
 <template>
   <div @scroll="exploreScroll" class="explore-container">
-    <van-loading text-color="#5469d4" v-if="exploreParams.loading" />
     <ul class="list-container">
       <van-tabs style="margin: 12px 0">
         <van-tab title="探索"></van-tab>
       </van-tabs>
+      <div class="loading-wrap">
+        <van-loading text-color="#5469d4" v-if="exploreParams.loading" />
+      </div>
       <li v-for="item in exploreParams.list" :key="item.id">
         <div class="top">
           <div class="left">
@@ -151,6 +153,10 @@ export default {
   height: calc(100vh - 50px);
   width: 100%;
   overflow: auto;
+
+  .loading-wrap {
+    text-align: center;
+  }
 
   .list-container {
     padding: 0 10px;

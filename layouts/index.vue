@@ -2,6 +2,7 @@
 <template>
   <div class="layouts-container">
     <Nuxt />
+    <FixedFwPage v-show="pageVisible" />
     <footer>
       <ul class="bottomTabBar">
         <li v-for="item in bottomTabBar" :key="item.name" :class="{ active: activeTab === item.name }" @click="bottomTabBarItemClick(item)">
@@ -13,7 +14,10 @@
   </div>
 </template>
 <script>
+import FixedFwPage from '~/layouts/fixed-fw-page.vue';
+
 export default {
+  components: { FixedFwPage },
   computed: {
     activeTab() {
       return this.$store.getters['modules/app/activeTab'];
@@ -21,6 +25,9 @@ export default {
     currentIcon() {
       const item = this.bottomTabBar.find((item) => item.name === this.activeTab);
       return item ? item.activeIcon : null;
+    },
+    pageVisible() {
+      return this.$store.getters['modules/fixed_fw_page/pageVisible'];
     },
   },
   data() {

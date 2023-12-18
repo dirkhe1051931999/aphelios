@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import PostItem from '~/components/widget/home/PostItem.vue';
+import PostItem from '~/components/Widget/Home/PostItem.vue';
 
 export default {
   components: {

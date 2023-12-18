@@ -81,7 +81,7 @@
 
 <script>
 import { cloneDeep, throttle } from 'lodash';
-import PostItem from '~/components/widget/home/PostItem.vue';
+import PostItem from '~/components/Widget/Home/PostItem.vue';
 
 // 给搜索keyword加上高亮的函数
 function highlightKeyword(keyword, str) {
