@@ -188,12 +188,16 @@ export const onEditorVisiableShow = (context: any, row: any, type: string) => {
   }
 };
 export const onBeforeEditorDone = (context: any, type: string) => {
+  // 用正则把content 的<img alt="" src='http://192.168.124.40:9000/blog-service-oss/20240130/f35ad04770194d15941721de0aa1b158.jpg' /> 的 src='' 单引号 改成双引号
+  const content = context.dialogEditorParams.params.content.replace(/src='([^']*)'/g, (match: any, p1: any) => {
+    return `src="${p1}"`;
+  });
   const params: any = {
     authorId: context.dialogEditorParams.params.authorId,
     shelveTimeStart: new Date(context.dialogEditorParams.params.time[0]).getTime(),
     shelveTimeEnd: new Date(context.dialogEditorParams.params.time[1]).getTime(),
     channelId: context.dialogEditorParams.params.channelId,
-    content: context.dialogEditorParams.params.content,
+    content: content,
     directoryId: context.dialogEditorParams.params.directoryId,
     title: context.dialogEditorParams.params.title,
     postTags: context.dialogEditorParams.params.postTags.map((item: any) => item.text),

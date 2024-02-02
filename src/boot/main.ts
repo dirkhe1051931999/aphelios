@@ -13,8 +13,8 @@ import 'src/utils/types';
 import VueSidePanel from 'vue3-side-panel';
 import 'vue3-side-panel/dist/vue3-side-panel.css';
 import { defaultFill } from 'src/utils/tools';
-import { date } from 'quasar';
-import { Platform } from 'quasar';
+import { date, Platform } from 'quasar';
+
 export default boot(({ app }) => {
   // We globally register our directive with Vue;
   // Rememeber that all directives in Vue will start with 'v-'
@@ -65,8 +65,7 @@ export default boot(({ app }) => {
         const days = Math.floor(diffInMilliseconds / millisecondsPerDay);
         return `${days}天前`;
       } else {
-        const formattedDate = new Date(dateTime).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
-        return formattedDate;
+        return new Date(dateTime).toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
       }
     }
     let timeStamp = '';

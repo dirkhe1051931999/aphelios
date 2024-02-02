@@ -15,7 +15,9 @@
       <li class="thin-shadow q-pa-md q-mt-md">
         <div class="fs-16 bold">文章发表走势</div>
         <q-option-group :options="articleTrend.dayOptions" type="radio" v-model="articleTrend.day" @update:model-value="onPostDayChange" inline class="q-mb-md q-mt-sm" />
-        <q-card flat title="data"> <ChartsLine :cid="'article-trend'" ref="articleTrendRef" v-if="!articleTrend.getDataLoading" /></q-card>
+        <q-card flat title="data">
+          <ChartsLine :cid="'article-trend'" ref="articleTrendRef" v-if="!articleTrend.getDataLoading" />
+        </q-card>
         <q-card class="h-300" flat v-if="articleTrend.getDataLoading">
           <q-item>
             <q-item-section>
@@ -42,14 +44,17 @@
               <q-avatar color="primary" text-color="white" v-if="!item.poster">
                 {{ index + 1 }}
               </q-avatar>
-              <q-img :src="item.poster" :ratio="16 / 9" v-else />
+              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" />
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ item.title }}</q-item-label>
               <q-item-label caption lines="1">{{ item.status }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-item-label><q-icon name="visibility"></q-icon> {{ item.view }}</q-item-label>
+              <q-item-label>
+                <q-icon name="visibility"></q-icon>
+                {{ item.view }}
+              </q-item-label>
             </q-item-section>
           </q-item>
           <div class="text-center">
@@ -65,14 +70,17 @@
               <q-avatar color="primary" text-color="white" v-if="!item.poster">
                 {{ index + 1 }}
               </q-avatar>
-              <q-img :src="item.poster" :ratio="16 / 9" v-else />
+              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" />
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ item.title }}</q-item-label>
               <q-item-label caption lines="1">{{ item.status }}</q-item-label>
             </q-item-section>
             <q-item-section side>
-              <q-item-label><q-icon name="chat"></q-icon> {{ item.comment }}</q-item-label>
+              <q-item-label>
+                <q-icon name="chat"></q-icon>
+                {{ item.comment }}
+              </q-item-label>
             </q-item-section>
           </q-item>
           <div class="text-center">
@@ -108,7 +116,7 @@
                 {{ index + 1 }}
               </q-avatar>
               <q-avatar v-else>
-                <q-img :src="item.cover"></q-img>
+                <q-img :src="item.cover" spinner-size="12px"></q-img>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -127,7 +135,7 @@
           <q-item v-for="item in channelSheetUserAuthor.userData" :key="item.id" class="q-my-sm b-bottom" clickable v-ripple>
             <q-item-section avatar>
               <q-avatar color="primary" text-color="white">
-                <q-img :src="calacAavatar(item.avatarUrl)"></q-img>
+                <q-img :src="item.avatarUrl" spinner-size="12px"></q-img>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -147,7 +155,7 @@
           <q-item v-for="item in channelSheetUserAuthor.authorData" :key="item.id" class="q-my-sm b-bottom" clickable v-ripple>
             <q-item-section avatar>
               <q-avatar color="primary" text-color="white">
-                <q-img :src="item.avatarUrl"></q-img>
+                <q-img :src="item.avatarUrl" spinner-size="12px"></q-img>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -176,9 +184,9 @@
 <script lang="ts">
 import { DashboardModule } from 'src/store/modules/dashboard';
 import ChartsLine from './components/chartsLine.vue';
-import { Vue, Component, Watch } from 'vue-facing-decorator';
-import setting from 'src/setting.json';
+import { Component, Vue } from 'vue-facing-decorator';
 import { BlogPostModule } from 'src/store/modules/blog-post';
+
 @Component({
   name: 'DashboardComponent',
   components: {
@@ -187,21 +195,16 @@ import { BlogPostModule } from 'src/store/modules/blog-post';
 })
 export default class DashboardComponent extends Vue {
   $refs: any;
-  get calacAavatar() {
-    return (path: string) => {
-      return `${setting.ip}${path}`;
-    };
-  }
-  async created() {}
+
   async mounted() {
-    this.getOverview();
-    this.getChannelSheetUserAuthorLimit5();
+    await this.getOverview();
+    await this.getChannelSheetUserAuthorLimit5();
     this.articleTrend.getDataLoading = true;
     const result = await this.getPostTrends(90);
     const dataX = result.map((item: any) => item.date);
     const dataY1 = result.map((item: any) => item.count);
     this.articleTrend.getDataLoading = false;
-    this.$nextTick(() => {
+    await this.$nextTick(() => {
       this.$refs.articleTrendRef.initChart({
         dataX: dataX,
         dataY1: dataY1,
@@ -209,6 +212,7 @@ export default class DashboardComponent extends Vue {
       });
     });
   }
+
   public overviewData = {
     postCount: {
       value: 0,
@@ -270,6 +274,7 @@ export default class DashboardComponent extends Vue {
     userData: [],
     authorData: [],
   };
+
   /* event */
   public onPostDayChange() {
     this.articleTrend.getDataLoading = true;
@@ -286,6 +291,7 @@ export default class DashboardComponent extends Vue {
       });
     });
   }
+
   public clickLink(link: string) {
     switch (link) {
       case 'post-index':
@@ -308,6 +314,7 @@ export default class DashboardComponent extends Vue {
         break;
     }
   }
+
   public openCommentDialog(row: any) {
     const detail = {
       id: row.id,
@@ -316,9 +323,11 @@ export default class DashboardComponent extends Vue {
     BlogPostModule.SET_COMMENT_DETAIL(detail);
     BlogPostModule.SET_COMMENT_VISIABLE(true);
   }
+
   public handlerClickUpdate(row: any) {
     this.$router.push(`/blog-post/list?id=${row.id}`);
   }
+
   /* http */
   public async getOverview() {
     try {
@@ -328,12 +337,14 @@ export default class DashboardComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async getPostTrends(days: any) {
     try {
       const { postTrends } = await DashboardModule.getPostTrends({ days });
       return Promise.resolve(postTrends);
     } catch (error) {}
   }
+
   public async getChannelSheetUserAuthorLimit5() {
     try {
       const { channelLimit5, sheetLimit5, userLimit5, authorLimit5, postViewTop5, postCommentTop5 } = await DashboardModule.getChannelSheetUserAuthorLimit5({});
@@ -345,6 +356,7 @@ export default class DashboardComponent extends Vue {
       this.channelSheetUserAuthor.postCommentTop5 = postCommentTop5;
     } catch (error) {}
   }
+
   public async getAuthor() {
     try {
       let { pageData } = await BlogPostModule.getAllPostAuthor({});
@@ -352,6 +364,7 @@ export default class DashboardComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getCategories() {
     try {
       const allSheet = await BlogPostModule.getAllSheet({});
@@ -379,6 +392,7 @@ export default class DashboardComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getChannel() {
     try {
       await BlogPostModule.getAllChannel({});
@@ -391,6 +405,7 @@ export default class DashboardComponent extends Vue {
 <style lang="scss">
 .body--dark {
 }
+
 .body--light {
 }
 </style>
@@ -400,6 +415,7 @@ export default class DashboardComponent extends Vue {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   grid-gap: 16px;
+
   li {
     display: flex;
     align-items: center;
@@ -407,17 +423,20 @@ export default class DashboardComponent extends Vue {
     padding: 16px;
     border-radius: 8px;
     cursor: pointer;
+
     .label-value {
       .label {
         font-size: 14px;
         color: #999;
       }
+
       .value {
         font-size: 24px;
         color: #333;
         padding-top: 4px;
       }
     }
+
     .icon {
       width: 48px;
       height: 48px;
@@ -431,17 +450,21 @@ export default class DashboardComponent extends Vue {
     }
   }
 }
+
 .channel-sheet-user-author {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-gap: 16px;
   padding: 16px;
   margin-top: 16px;
+
   li {
     margin-top: 16px;
+
     .process-verify {
       filter: grayscale(100%);
     }
+
     .not-verify {
       filter: grayscale(100%);
     }

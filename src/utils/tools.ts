@@ -12,6 +12,7 @@ export const getCssVariableValue = (cssVariableName: string) => {
   }
   return cssVariableValue;
 };
+
 // loadBdScript
 export function loadBdScript(scriptId: string, url: string, callback: () => void) {
   const script: any = document.createElement('script');
@@ -34,21 +35,29 @@ export function loadBdScript(scriptId: string, url: string, callback: () => void
   script.id = scriptId;
   document.getElementsByTagName('head')[0].appendChild(script);
 }
+
 export function defaultFill(val: any) {
   if (val === 0 || String(val) === '0') return val;
   if (!!!val) return '--';
   else return val;
 }
+
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 export function enCrypty(psw: string) {
   let sugar = '!@A#$Q%W^E&R*T()_+a_1';
   return md5crypto(sugar + psw).toString();
 }
+
 export function RSAEnCrypty(data: string) {
   let encrypt = new JSEncrypt();
   let pk = setting.rsaPublicKey;
   encrypt.setPublicKey(pk);
   return encrypt.encrypt(data);
+}
+
+export function isCdnUrl(url: string) {
+  return url.indexOf('/cdn/') === 0;
 }

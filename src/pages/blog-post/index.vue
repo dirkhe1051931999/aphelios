@@ -130,7 +130,8 @@
                 <div v-if="col.name === 'chip'">
                   <q-chip dense :color="item.color" :label="item.label" outline v-for="(item, index) in tableParams.chips" :key="index" :class="{ hide: props.row[item.value] !== '1' }" />
                 </div>
-                <div v-if="col.name === 'postTags' && props.row.postTags">
+                <div v-if="col.name === 'postTags' && props.row.postTags" class="row items-center w-200">
+                  <!-- 一行最多5个 -->
                   <q-chip :label="item" v-for="(item, index) in props.row.postTags" :key="index" dense />
                 </div>
                 <div v-if="col.name === 'postTags' && !props.row.postTags">--</div>
@@ -141,7 +142,7 @@
                   }}</span>
                 </div>
                 <!-- authorId -->
-                <div v-if="col.name === 'authorId'" class="row items-center">
+                <div v-if="col.name === 'authorId'" class="row items-center no-wrap">
                   <div class="border-all q-pa-xs b-r-100 q-mr-sm" v-if="postAuthorImg(props.row)">
                     <q-avatar size="30px" font-size="22px">
                       <q-img :src="postAuthorImg(props.row)" spinner-color="primary" spinner-size="12px" />
@@ -201,6 +202,7 @@ import { commonPost } from 'src/mixins/post';
 
 const CONST_PARAMS: any = {
   query: {
+    title: '',
     channelId: '',
     status: '',
     authorId: '',
@@ -308,6 +310,12 @@ export default class BlogPostComponent extends commonPost {
     resetLoading: false,
     params: cloneDeep(CONST_PARAMS.query),
     input: [
+      {
+        placeholder: '标题',
+        type: 'text',
+        class: 'w-250 m-r-15 m-b-15',
+        id: 'title',
+      },
       {
         placeholder: '频道',
         type: 'select',
@@ -538,6 +546,7 @@ export default class BlogPostComponent extends commonPost {
     try {
       this.tableParams.loading = true;
       const { pageData, total } = await BlogPostModule.getPostList({
+        title: this.queryParams.params.title,
         channelId: this.queryParams.params.channelId,
         status: this.queryParams.params.status,
         authorId: this.queryParams.params.authorId,

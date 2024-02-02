@@ -267,7 +267,7 @@ import { Component, Vue, Watch } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
 import { isValidEmail, isValidUsername } from 'src/utils/validate';
 import setting from 'src/setting.json';
-import { RSAEnCrypty } from 'src/utils/tools';
+import { isCdnUrl, RSAEnCrypty } from 'src/utils/tools';
 import { getAuthorLevel, getAuthorLevelName } from './utils';
 
 const CONST_PARAMS: any = {
@@ -299,7 +299,8 @@ export default class BlogPostUserComponent extends Vue {
 
   get calacAavatar() {
     return (path: string) => {
-      return `${setting.ip}${path}`;
+      if (isCdnUrl(path)) return setting.ip + path;
+      return `${setting.minio}${path}`;
     };
   }
 
