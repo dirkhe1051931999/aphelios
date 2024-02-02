@@ -7,6 +7,10 @@ const webErrorCode = {
   W1004: ['缺少用户名或密码', 'Missing username or password'],
   W1005: ['用户不存在', 'User does not exist'],
   W1006: ['账号和密码不匹配', 'Account and password do not match'],
+  W1007: ['用户已存在', 'User already exists'],
+  W1008: ['重置密码链接失效', 'Reset password link invalid'],
+  W1009: ['验证码无效', 'Verification code is invalid'],
+  W1010: ['验证码错误', 'Verification code error'],
 };
 export const errorCode = {
   ...webErrorCode,

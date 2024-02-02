@@ -279,10 +279,18 @@ export const addPrefixToFields = (arr) => {
     for (let key in item) {
       if (!item[key]) continue;
       if (fields.includes(key) && typeof item[key] === 'string' && !item[key].startsWith(prefix) && item[key].indexOf('data:image') === -1) {
-        item[key] = `${prefix}${item[key]}`;
+        if (isCdnAvatar(item[key])) {
+          item[key] = replacePrefixForText2(item[key]);
+        } else {
+          item[key] = `${prefix}${item[key]}`;
+        }
       } else if (objectFields.includes(key) && Array.isArray(item[key])) {
         item[key] = item[key].map(innerItem => innerItem.startsWith(prefix) ? innerItem : `${prefix}${innerItem}`);
       }
+      if (key === 'content') {
+        item[key] = replacePrefix(item[key]);
+      }
+
     }
   }
   return arr;
@@ -291,9 +299,21 @@ export const addPrefixToFields = (arr) => {
 
 export const replacePrefix = (str) => {
   if (!str) return str;
-  const regex = /"\/blog-service-oss\/(.*?)"/g;
+  str = ensureImgSrcQuoted(str);
+  const regex = /['"]\/blog-service-oss\/(.*?)['"]/g;
   const subst = `"http://${setting.db.minio.endPoint}:${setting.db.minio.port}/blog-service-oss/$1"`;
   return str.replace(regex, subst);
+};
+
+// 替换普通文本的前缀
+export const replacePrefixForText = (str) => {
+  if (!str) return str;
+  return `http://${setting.db.minio.endPoint}:${setting.db.minio.port}${str}`;
+};
+
+export const replacePrefixForText2 = (str) => {
+  if (!str) return str;
+  return `${setting.accessControlAllowOrigin}${str}`;
 };
 
 // 编辑加了前缀的数据，去掉前缀
@@ -319,3 +339,16 @@ export const removePrefixFromFields = (data: string | object) => {
   }
   return data;
 };
+// 读static/cdn/avatar 下面的文件，返回文件名数组，判断传入的path是否是否包含数组里面的某一个文件名，如果包含，就返回true
+export const isCdnAvatar = (url) => {
+  const avatarDir = path.join(CONFIG.root, CONFIG.appPath, 'cdn/avatar');
+  const avatarFiles = fs.readdirSync(avatarDir);
+  return avatarFiles.some(fileName => url.indexOf(fileName) !== -1);
+};
+
+function ensureImgSrcQuoted(html) {
+  return html.replace(/<img\s+([^>]*?)src=(?:(["'])(.*?)\2|([^\s>]+))(.*?)>/gi, (match, prefix, quote, srcWithQuote, srcWithoutQuote, suffix) => {
+    const src = srcWithQuote || srcWithoutQuote;
+    return `<img ${prefix}src='${src}'${suffix}>`;
+  });
+}

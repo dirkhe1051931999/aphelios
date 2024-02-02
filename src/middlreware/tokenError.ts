@@ -18,7 +18,6 @@ export default function() {
       await next();
       return;
     }
-
     if (!token) {
       ctx.error(ctx, 401);
       return;

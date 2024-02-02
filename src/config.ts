@@ -1,4 +1,5 @@
 import * as path from 'path';
+
 interface Config {
   db: {
     mysql: {
@@ -42,6 +43,7 @@ interface Config {
   root: string;
   appPath: string;
   resetPasswordUrl: string;
+  h5ResetPasswordUrl: string;
   defaultCdnUrl: string;
   tempUploads: string;
   uploads: string;
@@ -58,6 +60,7 @@ interface Config {
   rsaPublicKey: string;
   rsaPrivateKey: string;
 }
+
 const config: Config = {
   db: {
     mysql: {
@@ -101,6 +104,7 @@ const config: Config = {
   root: path.normalize(__dirname + '/..'),
   appPath: 'src/static',
   resetPasswordUrl: 'http://localhost:9002/index.html#/login?token=',
+  h5ResetPasswordUrl: 'http://localhost:9003/login?token=',
   defaultCdnUrl: 'http://localhost:3000/cdn',
   tempUploads: 'tempUploads',
   uploads: 'uploads',

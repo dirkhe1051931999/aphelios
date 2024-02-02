@@ -1,9 +1,9 @@
-import { addPrefixToFields } from '../../../util/helper';
+import { addPrefixToFields, isCdnAvatar, replacePrefix, replacePrefixForText } from '../../../util/helper';
+import setting from 'src/config';
 
 let chips = ['pinned', 'recommended', 'hot', 'original', 'paid', 'free', 'carousel', 'political', 'privated', 'publiced'];
 let commonColumn = ['id', 'title', 'poster', 'content', 'createTime', 'updateTime', 'view', 'postType', 'postTags', 'videoPoster', 'videoUrl', 'galleries', 'srcTopicId', 'shelveTimeStart', 'shelveTimeEnd', 'authorId', 'directoryId', 'channelId'].concat(chips);
 let defaultAvatarName = ['/cdn/avatar/Malphite.png', '/cdn/avatar/LOL.png', '/cdn/avatar/Aphelios.png', '/cdn/avatar/Milio.png'];
-import setting from 'src/config';
 
 function findDirectory(directory, id) {
   let result = null;
@@ -99,12 +99,38 @@ export const getPostList = async (ctx) => {
   try {
     let whereSql = `WHERE status = "PUBLISHED" AND carousel = '0' AND political = '0' ${channelId ? `AND channelId = '${channelId}'` : ''}`;
     const sqlTotal = `SELECT COUNT(*) as total FROM sm_board_post_list ${whereSql};`;
-    let postSql = `SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId ) as comment  from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
+    let postSql = `SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId AND status = 1 ) as comment  from sm_board_post_list ${whereSql} ORDER BY ${sortBy} ${sortDirection} LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};`;
     let postResult = await ctx.execSql([sqlTotal, postSql]);
     const result = await getColletList(ctx, postResult[1]);
+    const postIdList = result.map((item) => item.id);
+    const surveySql = `
+        SELECT * FROM sm_board_survey WHERE postId IN ('${postIdList.join('\',\'')}')
+    `;
+    const surveyResult = await ctx.execSql(surveySql);
+    let surveyMap = surveyResult.reduce((acc, item) => {
+      acc[item.postId] = acc[item.postId] || [];
+      acc[item.postId].push(item);
+      return acc;
+    }, {});
+    let currentTime = Date.now();
+    for (let key in surveyMap) {
+      surveyMap[key] = surveyMap[key].filter(item => item.startTime < currentTime && item.endTime > currentTime);
+    }
+    for (let key in surveyMap) {
+      surveyMap[key] = surveyMap[key].map((item) => {
+        item.selectOption.forEach((option) => {
+          option.voteUserList = addPrefixToFields(option.voteUserList);
+        });
+        return item;
+      });
+    }
+    let pageData = result.map((item) => ({
+      ...item,
+      survey: surveyMap[item.id] || [],
+    }));
     ctx.success(ctx, {
       total: postResult[0][0].total,
-      pageData: result,
+      pageData,
     });
   } catch (error) {
     console.log(error);
@@ -238,7 +264,10 @@ export const getAuthorEssay = async (ctx) => {
     SELECT ${commonColumn.join(',')}, (SELECT COUNT(*)  FROM sm_board_comment WHERE postId = srcTopicId ) as comment FROM sm_board_post_list WHERE status = "PUBLISHED" AND poster = '' ORDER BY updateTime DESC LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
     `;
     let results = await ctx.execSql(sql);
-    const postList = await getColletList(ctx, results);
+    let postList = await getColletList(ctx, results);
+    for (let i = 0; i < postList.length; i++) {
+      postList[i].content = replacePrefix(postList[i].content);
+    }
     ctx.success(ctx, {
       list: postList,
     });
@@ -250,165 +279,13 @@ export const getAuthorEssay = async (ctx) => {
 
 // 获取文章的评论
 export const getPostLevel1CommentsById = async (ctx) => {
-  let { id, rowsPerPage, page } = ctx.query;
-  rowsPerPage = rowsPerPage || 10;
-  page = page || 1;
-  if (!id) {
-    ctx.error(ctx, 'W1002');
-    return;
-  }
-  try {
-    let sql1 = `
-    SELECT COUNT(*) as commentCount 
-    FROM sm_board_comment 
-    WHERE postId = (SELECT srcTopicId FROM sm_board_post_list WHERE id = '${id}');
-    `;
-    let sql2 = `
-      SELECT
-        c.id,
-        c.id2,
-        c.content,
-        c.postId,
-        c.userId,
-        c.replyId,
-        c.status,
-        c.postTime,
-        c.like,
-        c.unlike,
-        c.topId,
-        JSON_OBJECT(
-          'id', u.id,
-          'friendCount', u.friendCount,
-          'gender', u.gender,
-          'avatarUrl', u.avatarUrl,
-          'articleCount', u.articleCount,
-          'fansCount', u.fansCount,
-          'type', u.type,
-          'nickname', u.nickname,
-          'score', u.score,
-          'loginTime', u.loginTime,
-          'createTime', u.createTime,
-          'username', u.username,
-          'ip', u.ip,
-          'region', u.region,
-          'address', u.address,
-          'description', u.description,
-          'email', u.email
-        ) AS account,
-        COUNT(sc.postId) AS childCommentCount
-      FROM sm_board_post_list p
-      LEFT JOIN sm_board_comment c ON p.srcTopicId = c.postId
-      LEFT JOIN sm_board_user u ON c.userId = u.id
-      LEFT JOIN sm_board_comment sc ON c.id2 = sc.topId
-      WHERE p.id = '${id}' AND c.replyId IS NULL
-      GROUP BY c.id
-      ORDER BY c.postTime DESC
-      LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};      
-    `;
-    let result1 = await ctx.execSql(sql1);
-    if (result1[0].commentCount === 0) {
-      ctx.success(ctx, {
-        total: 0,
-        pageData: [],
-      });
-      return;
-    } else {
-      let result2 = await ctx.execSql(sql2);
-      ctx.success(ctx, {
-        total: result1[0].commentCount,
-        pageData: result2,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 'W1000');
-  }
+  await getComments(ctx, 'level1');
 };
+// 获取文章二级的评论
 export const getPostLevel2CommentsById = async (ctx) => {
-  let { id, rowsPerPage, page } = ctx.query;
-  rowsPerPage = rowsPerPage || 10;
-  page = page || 1;
-  if (ctx.isFalsy([id])) {
-    ctx.error(ctx, '404#id');
-    return;
-  }
-  try {
-    let sql = `
-    SELECT
-      c.id,
-      c.id2,
-      c.content,
-      c.postId,
-      c.userId,
-      c.replyId,
-      c.status,
-      c.postTime,
-      c.like,
-      c.unlike,
-      c.topId,
-      JSON_OBJECT(
-        'id', u.id,
-        'friendCount', u.friendCount,
-        'gender', u.gender,
-        'avatarUrl', u.avatarUrl,
-        'articleCount', u.articleCount,
-        'fansCount', u.fansCount,
-        'type', u.type,
-        'nickname', u.nickname,
-        'score', u.score,
-        'loginTime', u.loginTime,
-        'createTime', u.createTime,
-        'username', u.username,
-        'ip', u.ip,
-        'region', u.region,
-        'address', u.address,
-        'description', u.description,
-        'email', u.email
-      ) AS account,
-      (
-        SELECT JSON_OBJECT(
-          'id', u2.id,
-          'friendCount', u2.friendCount,
-          'gender', u2.gender,
-          'avatarUrl', u2.avatarUrl,
-          'articleCount', u2.articleCount,
-          'fansCount', u2.fansCount,
-          'type', u2.type,
-          'nickname', u2.nickname,
-          'score', u2.score,
-          'loginTime', u2.loginTime,
-          'createTime', u2.createTime,
-          'username', u2.username,
-          'ip', u2.ip,
-          'region', u2.region,
-          'address', u2.address,
-          'description', u2.description,
-          'email', u2.email
-        )
-        FROM sm_board_comment c2
-        LEFT JOIN sm_board_user u2 ON c2.userId = u2.id
-        WHERE c2.id2 = c.replyId
-      )  AS replyAccount,
-      (
-        SELECT c3.content 
-        FROM sm_board_comment c3
-        WHERE c3.id2 = c.replyId
-      )  AS replyContent
-    FROM sm_board_comment c
-    LEFT JOIN sm_board_user u ON c.userId = u.id
-    WHERE c.topId = '${id}'
-    ORDER BY c.postTime DESC
-    LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
-    `;
-    const results = await ctx.execSql(sql);
-    ctx.success(ctx, {
-      pageData: results,
-    });
-  } catch (error) {
-    console.log(error);
-    ctx.error(ctx, 'W1000');
-  }
+  await getComments(ctx, 'level2');
 };
+
 // 获取作者的所有文章
 export const getPostListByAuthorId = async (ctx) => {
   let { id, rowsPerPage, page } = ctx.query;
@@ -473,3 +350,243 @@ export const getCarouselPost = async (ctx) => {
     ctx.error(ctx, 'W1000');
   }
 };
+// 记录文章view数
+export const addPostView = async (ctx) => {
+  let { id } = ctx.query;
+  if (!id) {
+    ctx.error(ctx, 'W1002');
+    return;
+  }
+  try {
+    let sql = `
+      UPDATE sm_board_post_list SET view = view + 2 WHERE id = '${id}';
+    `;
+    await ctx.execSql(sql);
+    ctx.success(ctx, null);
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 'W1000');
+  }
+};
+export const getUserComments = async (ctx) => {
+  let { id, rowsPerPage, page } = ctx.request.body;
+  rowsPerPage = rowsPerPage || 10;
+  page = page || 1;
+  if (!id) {
+    ctx.error(ctx, 'W1002');
+    return;
+  }
+  try {
+    const sql1 = `SELECT COUNT(*) as total FROM sm_board_comment WHERE userId = '${id}'"`;
+    ctx.success(ctx, null);
+  } catch (e) {
+    console.log(e);
+    ctx.error(ctx, 'W1000');
+  }
+};
+
+export const getAuthorPost = async (ctx) => {
+  let { id, rowsPerPage, page } = ctx.query;
+  rowsPerPage = rowsPerPage || 10;
+  page = page || 1;
+  if (!id) {
+    ctx.error(ctx, 'W1002');
+    return;
+  }
+  try {
+    let sql1 = `
+    SELECT COUNT(*) as total FROM sm_board_post_list WHERE authorId = '${id}';
+    `;
+    const newsSql = `SELECT ${commonColumn.join(',')} from sm_board_post_list WHERE status = "PUBLISHED" AND political = '0' AND poster!='' ORDER BY createTime DESC LIMIT ${rowsPerPage} OFFSET ${rowsPerPage * (page - 1)};`;
+    let results = await ctx.execSql([sql1, newsSql]);
+    const newsResult = await getColletList(ctx, results[1]);
+    ctx.success(ctx, {
+      total: results[0][0].total,
+      pageData: newsResult,
+    });
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 'W1000');
+  }
+};
+
+/*-------------------------------------------------------------------------------------------------------------共用方法------------------------------------------------------------------------------------------------------------- */
+async function getComments(ctx, type) {
+  let { id, rowsPerPage, page } = ctx.query;
+
+  rowsPerPage = rowsPerPage || 10;
+  page = page || 1;
+
+
+  if (!id) {
+    ctx.error(ctx, 'W1002');
+    return;
+  }
+
+  function calcItem(item) {
+    item.content = replacePrefix(item.content);
+    if (item.account) {
+      if (isCdnAvatar(item.account.avatarUrl)) {
+        item.account.avatarUrl = setting.defaultCdnUrl.replace('/cdn', '') + item.account.avatarUrl;
+      } else {
+        item.account.avatarUrl = replacePrefixForText(item.account.avatarUrl);
+      }
+    }
+    return item;
+  }
+
+  try {
+    if (type === 'level1') {
+      // 构造获取一级评论的 SQL
+      let sql1 = `
+    SELECT COUNT(*) as commentCount 
+    FROM sm_board_comment 
+    WHERE postId = (SELECT srcTopicId FROM sm_board_post_list WHERE id = '${id}') AND status = 1;
+    `;
+      let sql2 = `
+      SELECT
+        c.id,
+        c.id2,
+        c.content,
+        c.postId,
+        c.userId,
+        c.replyId,
+        c.status,
+        c.postTime,
+        c.like,
+        c.unlike,
+        c.topId,
+        JSON_OBJECT(
+          'id', u.id,
+          'friendCount', u.friendCount,
+          'gender', u.gender,
+          'avatarUrl', u.avatarUrl,
+          'articleCount', u.articleCount,
+          'fansCount', u.fansCount,
+          'type', u.type,
+          'nickname', u.nickname,
+          'score', u.score,
+          'loginTime', u.loginTime,
+          'createTime', u.createTime,
+          'username', u.username,
+          'ip', u.ip,
+          'region', u.region,
+          'address', u.address,
+          'description', u.description,
+          'email', u.email
+        ) AS account,
+        COUNT(sc.postId) AS childCommentCount
+      FROM sm_board_post_list p
+      LEFT JOIN sm_board_comment c ON p.srcTopicId = c.postId  AND c.status = 1
+      LEFT JOIN sm_board_user u ON c.userId = u.id
+      LEFT JOIN sm_board_comment sc ON c.id2 = sc.topId AND sc.status = 1
+      WHERE p.id = '${id}' AND c.replyId IS NULL
+      GROUP BY c.id
+      ORDER BY c.postTime DESC
+      LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};      
+    `;
+      let result1 = await ctx.execSql(sql1);
+      if (result1[0].commentCount === 0) {
+        ctx.success(ctx, {
+          total: 0,
+          pageData: [],
+        });
+        return;
+      } else {
+        let result2 = await ctx.execSql(sql2);
+        for (let item of result2) {
+          item = calcItem(item);
+        }
+        ctx.success(ctx, {
+          total: result1[0].commentCount,
+          pageData: result2,
+        });
+      }
+    } else if (type === 'level2') {
+      let sql = `
+        SELECT
+          c.id,
+          c.id2,
+          c.content,
+          c.postId,
+          c.userId,
+          c.replyId,
+          c.status,
+          c.postTime,
+          c.like,
+          c.unlike,
+          c.topId,
+          JSON_OBJECT(
+            'id', u.id,
+            'friendCount', u.friendCount,
+            'gender', u.gender,
+            'avatarUrl', u.avatarUrl,
+            'articleCount', u.articleCount,
+            'fansCount', u.fansCount,
+            'type', u.type,
+            'nickname', u.nickname,
+            'score', u.score,
+            'loginTime', u.loginTime,
+            'createTime', u.createTime,
+            'username', u.username,
+            'ip', u.ip,
+            'region', u.region,
+            'address', u.address,
+            'description', u.description,
+            'email', u.email
+          ) AS account,
+          (
+            SELECT JSON_OBJECT(
+              'id', u2.id,
+              'friendCount', u2.friendCount,
+              'gender', u2.gender,
+              'avatarUrl', u2.avatarUrl,
+              'articleCount', u2.articleCount,
+              'fansCount', u2.fansCount,
+              'type', u2.type,
+              'nickname', u2.nickname,
+              'score', u2.score,
+              'loginTime', u2.loginTime,
+              'createTime', u2.createTime,
+              'username', u2.username,
+              'ip', u2.ip,
+              'region', u2.region,
+              'address', u2.address,
+              'description', u2.description,
+              'email', u2.email
+            )
+            FROM sm_board_comment c2
+            LEFT JOIN sm_board_user u2 ON c2.userId = u2.id
+            WHERE c2.id2 = c.replyId
+          )  AS replyAccount,
+          (
+            SELECT c3.content 
+            FROM sm_board_comment c3
+            WHERE c3.id2 = c.replyId
+          )  AS replyContent
+        FROM sm_board_comment c
+        LEFT JOIN sm_board_user u ON c.userId = u.id
+        WHERE c.topId = '${id}' AND c.status = 1
+        ORDER BY c.postTime DESC
+        LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
+    `;
+      const results = await ctx.execSql(sql);
+      for (let item of results) {
+        item = calcItem(item);
+        if (item.replyAccount) {
+          if (isCdnAvatar(item.replyAccount.avatarUrl)) {
+            item.replyAccount.avatarUrl = setting.defaultCdnUrl.replace('/cdn', '') + item.replyAccount.avatarUrl;
+          } else {
+            item.replyAccount.avatarUrl = replacePrefixForText(item.replyAccount.avatarUrl);
+          }
+        }
+      }
+      ctx.success(ctx, {
+        pageData: results,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    ctx.error(ctx, 'W1000');
+  }
+}

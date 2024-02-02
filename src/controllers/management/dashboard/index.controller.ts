@@ -98,7 +98,7 @@ export const getChannelSheetUserAuthorLimit5 = async (ctx): Promise<void> => {
       return ctx.success(ctx, {
         channelLimit5: results[0],
         sheetLimit5: addPrefixToFields(results[1]),
-        userLimit5: results[2],
+        userLimit5: addPrefixToFields(results[2]),
         authorLimit5: addPrefixToFields(results[3]),
         postViewTop5: addPrefixToFields(results[4]),
         postCommentTop5: addPrefixToFields(results[5]),

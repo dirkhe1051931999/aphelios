@@ -1,13 +1,19 @@
 import {
+  addPostView,
   getAllChannel,
   getAllDirectory,
   getAuthorDetailById,
+  getAuthorEssay,
+  getAuthorPost,
+  getCarouselPost,
+  getHomeHeadPost,
+  getHotTop,
   getPostLevel1CommentsById,
+  getPostLevel2CommentsById,
   getPostList,
   getPostListByAuthorId,
-  getHotTop,
-  getPostLevel2CommentsById, getHomeHeadPost, getCarouselPost, search,
-  getAuthorEssay,
+  getUserComments,
+  search,
 } from 'src/controllers/h5/blog/post.controller';
 import { HTTP_METHODS, Route } from 'src/util/route.decorator';
 import Koa from 'koa';
@@ -74,4 +80,20 @@ export class h5BlogPostAPIController {
   async getAuthorDetailById(ctx: Koa.Context, next: Koa.Next) {
     return getAuthorDetailById(ctx);
   }
+
+  @Route('/addPostView', HTTP_METHODS.GET)
+  async addPostView(ctx: Koa.Context, next: Koa.Next) {
+    return addPostView(ctx);
+  }
+
+  @Route('/getUserComments', HTTP_METHODS.POST)
+  async getUserComments(ctx: Koa.Context, next: Koa.Next) {
+    return getUserComments(ctx);
+  }
+
+  @Route('/getAuthorPost', HTTP_METHODS.GET)
+  async getAuthorPost(ctx: Koa.Context, next: Koa.Next) {
+    return getAuthorPost(ctx);
+  }
+
 }

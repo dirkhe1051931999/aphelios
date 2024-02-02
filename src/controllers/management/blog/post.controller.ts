@@ -1,10 +1,17 @@
-import { addPrefixToFields, replacePrefix, transformResultsWithPrefix, uploadFileToMinio } from 'src/util/helper';
+import {
+  addPrefixToFields,
+  isCdnAvatar,
+  replacePrefix,
+  replacePrefixForText,
+  uploadFileToMinio,
+} from 'src/util/helper';
 import CONFIG from 'src/config';
 import { v4 as uuidv4 } from 'uuid';
 import { COMMON_QUERY_OTHER_COLUMN, commonAddPost, commonUpdatePost } from '../utils';
 // 获取文章列表
 export const getPostList = async (ctx) => {
   let {
+    title,
     channelId,
     authorId,
     status,
@@ -16,6 +23,7 @@ export const getPostList = async (ctx) => {
     post_radio_option,
     postType,
   } = ctx.request.body;
+  title = title || '';
   channelId = channelId || '';
   status = status || '';
   authorId = authorId || '';
@@ -48,8 +56,9 @@ export const getPostList = async (ctx) => {
                 FROM sm_board_comment
                 GROUP BY postId
             ) AS c ON p.srcTopicId = c.postId
-            WHERE 
-            (p.channelId = '${channelId}' OR '${channelId}' = '') 
+            WHERE
+            (p.title LIKE '%${title}%' OR '${title}' = '')
+            AND (p.channelId = '${channelId}' OR '${channelId}' = '') 
             AND (p.status = '${status}' OR '${status}'  = '') 
             AND (p.authorId = '${authorId}' OR '${authorId}'  = '')
             AND (
@@ -65,8 +74,9 @@ export const getPostList = async (ctx) => {
         SELECT COUNT(c.postId) AS comment, ${columnSqlString}
         FROM sm_board_post_list AS p
         LEFT JOIN sm_board_comment AS c ON p.srcTopicId = c.postId
-        WHERE 
-            (p.channelId = '${channelId}' OR '${channelId}' = '') 
+        WHERE
+            (p.title LIKE '%${title}%' OR '${title}' = '') 
+            AND (p.channelId = '${channelId}' OR '${channelId}' = '') 
             AND (p.status = '${status}' OR '${status}' = '') 
             AND (p.authorId = '${authorId}' OR '${authorId}' = '')
             ${postRadioOptionConditions}
@@ -90,12 +100,21 @@ export const getPostList = async (ctx) => {
         SELECT * FROM sm_board_survey WHERE postId IN ('${postIdList.join('\',\'')}')
     `;
     const surveyList = await ctx.execSql(surveySql);
+
     // 使用 Map 对象对 survey 数据进行分组
     const surveyMap = surveyList.reduce((acc, item) => {
       acc[item.postId] = acc[item.postId] || [];
       acc[item.postId].push(item);
       return acc;
     }, {});
+    for (let key in surveyMap) {
+      surveyMap[key] = surveyMap[key].map((item) => {
+        item.selectOption.forEach((option) => {
+          option.voteUserList = addPrefixToFields(option.voteUserList);
+        });
+        return item;
+      });
+    }
     // 将 survey 数据合并到主查询结果中
     let pageData = pageDataResult[1].map((item) => ({
       ...item,
@@ -315,7 +334,11 @@ export const getLevel1CommentsByPostId = async (ctx) => {
     LIMIT ${rowsPerPage} OFFSET ${(page - 1) * rowsPerPage};
   `);
     for (let item of results) {
-      item.account.avatarUrl = `${CONFIG.defaultCdnUrl.split('/cdn')[0]}${item.account.avatarUrl}`;
+      if (isCdnAvatar(item.account.avatarUrl)) {
+        item.account.avatarUrl = `${CONFIG.defaultCdnUrl.split('/cdn')[0]}${item.account.avatarUrl}`;
+      } else {
+        item.account.avatarUrl = replacePrefixForText(item.account.avatarUrl);
+      }
     }
     ctx.success(ctx, {
       pageData: results,
@@ -404,7 +427,11 @@ export const getLevel2CommentsByTopId = async (ctx) => {
     `;
     const results = await ctx.execSql(sql);
     for (let item of results) {
-      item.account.avatarUrl = `${CONFIG.defaultCdnUrl.split('/cdn')[0]}${item.account.avatarUrl}`;
+      if (isCdnAvatar(item.account.avatarUrl)) {
+        item.account.avatarUrl = `${CONFIG.defaultCdnUrl.split('/cdn')[0]}${item.account.avatarUrl}`;
+      } else {
+        item.account.avatarUrl = replacePrefixForText(item.account.avatarUrl);
+      }
     }
     ctx.success(ctx, {
       pageData: results,
@@ -474,8 +501,8 @@ export const replyComment = async (ctx) => {
     return;
   }
   try {
-    let id = uuidv4().replace(/\-/g, '');
-    let id2 = uuidv4().replace(/\-/g, '');
+    let id = uuidv4().replace(/-/g, '');
+    let id2 = uuidv4().replace(/-/g, '');
     let postTime = new Date().getTime();
     let status = 1;
     let like = 0;
@@ -499,8 +526,8 @@ export const addComment = async (ctx) => {
     return;
   }
   try {
-    let id = uuidv4().replace(/\-/g, '');
-    let id2 = uuidv4().replace(/\-/g, '');
+    let id = uuidv4().replace(/-/g, '');
+    let id2 = uuidv4().replace(/-/g, '');
     let postTime = new Date().getTime();
     let status = 1;
     let like = 0;
