@@ -1,0 +1,22 @@
+{
+  "primaryColor": "#5469d4",
+  "primaryHoverColor": "#3a4d8c",
+  "primaryActiveColor": "#3a4d8c",
+  "primaryFocusColor": "#3a4d8c",
+  "whiteColor": "#ffffff",
+  "secondaryColor": "#74788d",
+  "successColor": "#46be8a",
+  "infoColor": "#00d7c3",
+  "warningColor": "#fb7b6b",
+  "dangerColor": "#e93030",
+  "lightColor": "#f1f5f9",
+  "darkColor": "#425a70",
+  "grayColor": "#d3dce6",
+  "backgroundColor": "#f5f5f5",
+  "borderColor": "#eeeeee",
+  "subtleBodyColor": "#999999",
+  "subtleTextColor": "#7b7b7b",
+  "primaryTextColor": "#323232",
+  "bottomTabBarHeight": "50px",
+  "topBarHeight": "95px"
+}

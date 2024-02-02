@@ -1,4 +1,5 @@
 import Config from '~/utils/config';
+import { isCdnUrl } from '~/utils/tools';
 
 const userInfoCookieKey = `${Config.title} userInfo`;
 
@@ -37,19 +38,23 @@ const actions = {
     const userInfo = this.$cookies.get(userInfoCookieKey);
     if (!userInfo) return Promise.resolve(true);
     if (type === 'Avatar') {
-      userInfo.avatarUrl = result;
+      userInfo.avatarUrl = Config.defaultCdnUrl + result;
       commit('setUserInfo', userInfo);
     } else {
       const key = type.charAt(0).toLowerCase() + type.slice(1);
       userInfo[key] = data[key];
       commit('setUserInfo', userInfo);
     }
-
     return Promise.resolve(true);
   },
   async login({ commit, state }, data) {
     try {
       const result = await this.$axios.$post('/h5/blog/auth/login', data);
+      if (isCdnUrl(result.avatarUrl)) {
+        result.avatarUrl = Config.oldCdnUrl + result.avatarUrl;
+      } else {
+        result.avatarUrl = Config.defaultCdnUrl + result.avatarUrl;
+      }
       commit('setUserInfo', result);
       return Promise.resolve(true);
     } catch (e) {
@@ -158,14 +163,6 @@ const actions = {
   async getIP({ commit, state }, data) {
     try {
       const result = await this.$axios.$get('/common/getIP');
-      return Promise.resolve(result);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  },
-  async addComment({ commit, state }, data) {
-    try {
-      const result = await this.$axios.$post('/h5/blog/user/addComment', data);
       return Promise.resolve(result);
     } catch (e) {
       return Promise.reject(e);

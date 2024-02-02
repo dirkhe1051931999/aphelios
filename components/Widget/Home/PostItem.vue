@@ -1,8 +1,11 @@
 <template>
   <div>
     <!-- 政治   -->
-    <div class="post-item-container political" v-if="isPolitical">
-      <div class="title" v-html="post.title"></div>
+    <div class="post-item-container political" v-if="isPolitical" @click="toPostDetail(post, 'post-political')">
+      <div class="title-wrap">
+        <van-tag color="#ffe1e1" text-color="#ad0000">置顶</van-tag>
+        <div class="title" v-html="post.title"></div>
+      </div>
       <div class="sub-title">
         <span>
           {{ post.author.name }}
@@ -14,34 +17,41 @@
       </div>
     </div>
     <!-- 1普通文章，2纯视频，3纯图片-->
-    <div class="post-item-container normal" v-if="isNormal">
-      <div class="left">
-        <div class="title" v-html="post.title"></div>
-        <div class="sub-title">
-          <span>
-            {{ post.author.name }}
-          </span>
-          <span v-if="post.comment"> {{ post.comment }} 评 </span>
-          <span>
-            {{ timeAgo(post.createTime) }}
-          </span>
+    <div v-if="isNormal">
+      <div class="post-item-container normal" @click="toPostDetail(post, 'post-normal')" :class="{ 'have-survey': post.survey.length && userInfo }">
+        <div class="left">
+          <div class="title" v-html="post.title"></div>
+          <div class="sub-title">
+            <span>
+              {{ post.author.name }}
+            </span>
+            <span v-if="post.comment"> {{ post.comment }} 评 </span>
+            <span>
+              {{ timeAgo(post.createTime) }}
+            </span>
+            <span v-if="post.view" style="margin-left: auto">
+              <van-icon name="eye-o" />
+              {{ post.view }}
+            </span>
+          </div>
+        </div>
+        <div class="right">
+          <van-image :src="post.postType === '2' && post.videoPoster ? post.videoPoster : post.poster" radius="4" class="image">
+            <template v-slot:loading>
+              <van-loading type="spinner" size="12" />
+            </template>
+            <template v-slot:error>
+              <img :src="randomDefaultImage()" fit="cover" class="image" />
+            </template>
+          </van-image>
+          <div class="cover" v-if="post.postType === '2' && post.videoPoster">
+            <van-icon name="play-circle-o" class="play-icon" />
+          </div>
         </div>
       </div>
-      <div class="right">
-        <van-image :src="post.postType === '2' && post.videoPoster ? post.videoPoster : post.poster" radius="4" class="image">
-          <template v-slot:loading>
-            <van-loading type="spinner" size="12" />
-          </template>
-          <template v-slot:error>
-            <img :src="randomDefaultImage()" fit="cover" class="image" />
-          </template>
-        </van-image>
-        <div class="cover" v-if="post.postType === '2' && post.videoPoster">
-          <van-icon name="play-circle-o" class="play-icon" />
-        </div>
-      </div>
+      <Survey v-if="post.survey.length && userInfo" :survey="post.survey" @vote="userVoteDone" />
     </div>
-    <div class="post-item-container video" v-if="isVideo">
+    <div class="post-item-container video" v-if="isVideo" @click="toPostDetail(post, 'post-video')">
       <div class="top" v-html="post.title"></div>
       <div class="video">
         <div class="cover" @click.stop.prevent="playVideo(post)" :ref="post.id + '_' + 'video_cover'">
@@ -57,9 +67,13 @@
         <span>
           {{ timeAgo(post.createTime) }}
         </span>
+        <span v-if="post.view" style="margin-left: auto">
+          <van-icon name="eye-o" />
+          {{ post.view }}
+        </span>
       </div>
     </div>
-    <div class="post-item-container gallery" v-if="isGallery">
+    <div class="post-item-container gallery" v-if="isGallery" @click="toPostDetail(post, 'post-gallery')">
       <div class="top" v-html="post.title"></div>
       <div class="gallery">
         <van-image v-for="(item, index) in post.galleries.slice(0, 3)" :key="index" :src="item" radius="4" class="image">
@@ -79,15 +93,25 @@
         <span>
           {{ timeAgo(post.createTime) }}
         </span>
+        <span v-if="post.view" style="margin-left: auto">
+          <van-icon name="eye-o" />
+          {{ post.view }}
+        </span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { timeAgo } from '~/utils/tools';
+import { removeKeywordStyle, timeAgo } from '~/utils/tools';
+import PostDetail from '~/components/PostDetail/Index.vue';
+import Survey from '~/components/Widget/Home/PostItem/Survey.vue';
+import Config from '~/utils/config';
 
 export default {
+  components: {
+    Survey,
+  },
   props: {
     post: {
       type: Object,
@@ -95,6 +119,9 @@ export default {
     },
   },
   computed: {
+    userInfo() {
+      return this.$store.getters['modules/user/userInfo'];
+    },
     isPolitical() {
       return this.post.postType === '1' && this.post.political === '1';
     },
@@ -119,6 +146,25 @@ export default {
       const random = Math.floor(Math.random() * 5) + 1;
       return require(`~/assets/images/default-${random}.jpg`);
     },
+    toPostDetail(post, from) {
+      post.title = removeKeywordStyle(post.title);
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', PostDetail);
+      this.$store.commit('modules/post_detail/SET_POST_DETAIL', { ...post, fr: from });
+    },
+    userVoteDone(item) {
+      for (let i = 0; i < item.selectOption.length; i++) {
+        const option = item.selectOption[i];
+        for (let j = 0; j < option.voteUserList.length; j++) {
+          const user = option.voteUserList[j];
+          user.avatarUrl = user.avatarUrl.split(Config.defaultCdnUrl)[1];
+        }
+      }
+      this.$store.dispatch('modules/post_detail/addVote', {
+        id: item.id,
+        selectOption: item.selectOption,
+      });
+    },
   },
 };
 </script>
@@ -130,19 +176,25 @@ export default {
   background: $white-color;
   padding: 10px;
 
-  .title {
-    //最多两行，超过两行显示省略号
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    font-size: 14px;
-    line-height: 1.7;
+  .title-wrap {
+    display: flex;
+    align-items: center;
+
+    .title {
+      //最多两行，超过两行显示省略号
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-left: 10px;
+    }
   }
 
   .sub-title {
-    margin-top: 2px;
+    margin-top: 4px;
     display: flex;
     align-items: center;
     font-size: 12px;
@@ -157,11 +209,15 @@ export default {
 .post-item-container.normal {
   display: flex;
   justify-content: space-between;
-  border-bottom: solid 1px $border-color;
   background: $white-color;
+  border-bottom: solid 1px $border-color;
   padding: 10px;
   min-height: 80px;
   max-height: 110px;
+
+  &.have-survey {
+    border-bottom: none;
+  }
 
   .left {
     width: 70%;

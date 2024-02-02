@@ -4,7 +4,7 @@
       <div class="search-input">
         <van-search v-model="searchParams.value" placeholder="请输入搜索关键词" @input="searchInput" show-action @cancel="onCancel" autofocus />
       </div>
-      <van-tabs v-model="searchParams.activeTab" @change="tabChange">
+      <van-tabs v-model="searchParams.activeTab" @change="tabChange" color="#5469d4">
         <van-tab title="文章" name="post">
           <div class="search-results post" @scroll="postResultScroll">
             <van-empty image="search" description="输入关键字搜索文章" v-if="!searchParams.post.list.length && !searchParams.post.noData" />

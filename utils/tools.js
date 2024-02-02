@@ -4,7 +4,9 @@ import Config from '~/utils/config';
 export function timeAgo(timestamp) {
   const now = Date.now(); // 当前时间的时间戳（单位：毫秒）
   const diff = Math.floor((now - timestamp) / 1000); // 差异时间（单位：秒）
-
+  if (diff < 30) {
+    return '刚刚';
+  }
   if (diff < 60) {
     return `${diff} 秒前`;
   }
@@ -103,4 +105,14 @@ export function enRegionToZhRegion(region) {
     Macau: '澳门',
   };
   return obj[region];
+}
+
+export function isCdnUrl(url) {
+  return url.indexOf('/cdn/') === 0;
+}
+
+export function removeKeywordStyle(str) {
+  const reg = /<span style="color: #e93030">/gi;
+  const reg2 = /<\/span>/gi;
+  return str.replace(reg, '').replace(reg2, '');
 }

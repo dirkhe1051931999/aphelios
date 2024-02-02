@@ -17,16 +17,23 @@
       <keep-alive>
         <Nuxt />
       </keep-alive>
+      <FixedFwPage v-show="pageVisible" />
     </div>
   </div>
 </template>
 
 <script>
 import { mapMutations } from 'vuex';
+import FixedFwPage from '~/layouts/fixed-fw-page.vue';
+
 export default {
+  components: { FixedFwPage },
   computed: {
     layoutHeadOptions() {
       return this.$store.getters['modules/app/layoutHeadOptions'];
+    },
+    pageVisible() {
+      return this.$store.getters['modules/fixed_fw_page/pageVisible'];
     },
   },
   beforeDestroy() {

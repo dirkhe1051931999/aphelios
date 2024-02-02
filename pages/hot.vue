@@ -1,9 +1,9 @@
 <template>
-  <van-tabs type="card" animated class="tabs">
+  <van-tabs type="card" animated class="tabs" color="#5469d4">
     <van-tab v-for="(item, index) in tabs" :title="item.title" :key="index">
       <div class="hot-news-container" v-if="item.id === 'hot-news'">
         <ul v-if="hotTop.newsData.length">
-          <li v-for="(item, index) in hotTop.newsData" :key="item.id">
+          <li v-for="(item, index) in hotTop.newsData" :key="item.id" @click="toNewsDetailFromHot(item)">
             <div class="left">
               {{ index + 1 }}
             </div>
@@ -16,8 +16,12 @@
                   {{ item.author.name }}
                 </span>
                 <span v-if="item.comment"> {{ item.comment }} 评 </span>
-                <span>
+                <span class="ml-1">
                   {{ timeAgo(item.createTime) }}
+                </span>
+                <span v-if="item.view" style="margin-left: auto">
+                  <van-icon name="eye-o" />
+                  {{ item.view }}
                 </span>
               </div>
             </div>
@@ -36,7 +40,7 @@
       </div>
       <div class="hot-author-container" v-if="item.id === 'hot-author'">
         <ul>
-          <li v-for="(item, index) in hotTop.authorData" :key="item.id">
+          <li v-for="(item, index) in hotTop.authorData" :key="item.id" @click="toAuthorDetail(item)">
             <div class="left">
               {{ index + 1 }}
             </div>
@@ -55,7 +59,7 @@
               </div>
             </div>
             <div class="right">
-              <van-image :src="item.avatarUrl" radius="4" class="image">
+              <van-image :src="item.avatarUrl" radius="50%" class="image" fit="cover">
                 <template v-slot:loading>
                   <van-loading type="spinner" size="12" />
                 </template>
@@ -72,10 +76,10 @@
             </div>
             <div class="content">
               <div class="top">
-                <span class="username"> {{ item.user.username }}：</span>
+                <span class="username" @click="toUserDetail(item)"> {{ item.user.username }}：</span>
                 {{ item.content }}
               </div>
-              <div class="bottom">
+              <div class="bottom" @click="toNewsDetailFromComment(item)">
                 <div class="cover">
                   <van-image :src="item.post.postType === '2' && item.post.videoPoster ? item.post.videoPoster : item.post.poster" radius="4" class="image">
                     <template v-slot:loading>
@@ -100,13 +104,16 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { timeAgo } from '~/utils/tools';
+import { removeKeywordStyle, timeAgo } from '~/utils/tools';
+import PostDetail from '~/components/PostDetail/Index.vue';
+import UserDetail from '~/components/UserDetail/Index.vue';
+import AuthorDetail from '~/components/AuthorDetail/Index.vue';
 
 export default {
+  layout: 'navigation-page',
   async asyncData({ store }) {
     await store.dispatch('modules/home/fetchHotTop');
   },
-  layout: 'navigation-page',
   computed: {
     ...mapGetters({
       hotTop: 'modules/home/hotTop',
@@ -138,6 +145,42 @@ export default {
     timeAgo(timestamp) {
       return timeAgo(timestamp);
     },
+    getPostFrom(item) {
+      let from = '';
+      if ((item.postType === '1' && item.political === '0' && item.carousel === '0') || (item.postType === '2' && item.videoPoster)) {
+        from = 'post-normal';
+      } else if (item.postType === '2' && !item.videoPoster) {
+        from = 'post-video';
+      } else if (item.postType === '3') {
+        from = 'post-gallery';
+      }
+      return from;
+    },
+    toNewsDetailFromHot(item) {
+      const from = this.getPostFrom(item);
+      item.title = removeKeywordStyle(item.title);
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', PostDetail);
+      this.$store.commit('modules/post_detail/SET_POST_DETAIL', { ...item, fr: from });
+    },
+    toNewsDetailFromComment(item) {
+      const post = item.post;
+      const from = this.getPostFrom(post);
+      post.title = removeKeywordStyle(post.title);
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', PostDetail);
+      this.$store.commit('modules/post_detail/SET_POST_DETAIL', { ...post, fr: from });
+    },
+    toUserDetail(item) {
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', UserDetail);
+      this.$store.commit('modules/user_detail/SET_USER_DETAIL', item.user);
+    },
+    toAuthorDetail(item) {
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', AuthorDetail);
+      this.$store.commit('modules/author_detail/SET_AUTHOR_DETAIL', item);
+    },
   },
 };
 </script>
@@ -165,16 +208,18 @@ export default {
       }
 
       .left {
-        text-align: center;
         font-size: 16px;
-        margin-bottom: auto;
-        margin-top: 10px;
         font-weight: 600;
+        margin-bottom: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-style: italic;
         background: $background-color;
         padding: 6px;
         border-radius: 50%;
-        width: 20px;
+        width: 34px;
+        height: 34px;
       }
 
       .content {
@@ -205,6 +250,8 @@ export default {
           -webkit-line-clamp: 1;
           -webkit-box-orient: vertical;
           margin-top: auto;
+          display: flex;
+          align-items: center;
         }
       }
 
@@ -232,21 +279,24 @@ export default {
       align-items: center;
       padding: 12px 0;
       border-bottom: 1px solid $border-color;
+
       &:last-child {
         border-bottom: none;
       }
 
       .left {
-        text-align: center;
         font-size: 16px;
-        margin-bottom: auto;
-        margin-top: 10px;
         font-weight: 600;
+        margin-bottom: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-style: italic;
         background: $background-color;
         padding: 6px;
         border-radius: 50%;
-        width: 20px;
+        width: 34px;
+        height: 34px;
       }
 
       .content {
@@ -300,7 +350,7 @@ export default {
       }
 
       .right {
-        width: 80px;
+        width: 60px;
         height: 60px;
 
         .image {
@@ -323,21 +373,24 @@ export default {
       align-items: center;
       padding: 12px 0;
       border-bottom: 1px solid $border-color;
+
       &:last-child {
         border-bottom: none;
       }
 
       .left {
-        text-align: center;
         font-size: 16px;
-        margin-bottom: auto;
-        margin-top: 10px;
         font-weight: 600;
+        margin-bottom: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-style: italic;
         background: $background-color;
         padding: 6px;
         border-radius: 50%;
-        width: 20px;
+        width: 34px;
+        height: 34px;
       }
 
       .content {

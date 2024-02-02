@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
-    "build": "nuxt build",
+    "prebuild": "node ./convert-json-to-scss.js",
+    "dev": "npm run prebuild & nuxt",
+    "build": "npm run prebuild & nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
@@ -14,16 +15,19 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.6",
+    "@nuxtjs/tailwindcss": "^6.11.0",
     "@vant/area-data": "^1.5.0",
     "cookie-universal-nuxt": "^2.2.2",
     "core-js": "^3.25.3",
+    "he": "^1.2.0",
     "lodash": "^4.17.21",
+    "node-rsa": "^1.1.1",
     "nuxt": "^2.15.8",
+    "plyr": "^3.6.4",
     "vant": "^2.12.50",
     "vue": "^2.7.10",
     "vue-server-renderer": "^2.7.10",
-    "vue-template-compiler": "^2.7.10",
-    "node-rsa": "^1.1.1"
+    "vue-template-compiler": "^2.7.10"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",

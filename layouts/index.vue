@@ -52,7 +52,7 @@ footer {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: $bottomTabBarHeight;
+  height: $bottom-tab-bar-height;
   background-color: $white-color;
   border-top: 1px solid $border-color;
 

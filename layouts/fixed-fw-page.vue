@@ -1,11 +1,12 @@
 <template>
-  <div class="fixed-fw-page" ref="fixed-fw-page">
-    <component :is="currentComponent" v-if="currentComponent"></component>
+  <div ref="fixed-fw-page" class="fixed-fw-page" @scroll="onFixedFwPageScroll">
+    <component :is="currentComponent"></component>
   </div>
 </template>
 
 <script>
 export default {
+  name: 'FixedFwPage',
   computed: {
     currentComponent() {
       return this.$store.getters['modules/fixed_fw_page/currentComponent'];
@@ -18,8 +19,24 @@ export default {
     pageVisible(val) {
       if (val) {
         this.$nextTick(() => {
-          this.$refs['fixed-fw-page'].scrollTop = 0;
+          if (this.$refs['fixed-fw-page']) {
+            this.$refs['fixed-fw-page'].scrollTop = 0;
+          }
         });
+      }
+    },
+  },
+  methods: {
+    onFixedFwPageScroll(e) {
+      const { scrollTop, scrollHeight, clientHeight } = e.target;
+      // 判断是否滚动到底部
+      if (scrollTop + clientHeight >= scrollHeight - 50) {
+        if (this.currentComponent.name === 'PostDetail') {
+          if (!this.$store.getters['modules/post_detail/lockPageToBottom']) {
+            this.$store.commit('modules/post_detail/SET_LOCK_PAGE_TO_BOTTOM', true);
+            this.$store.commit('modules/post_detail/SET_PAGE_TO_BOTTOM', true);
+          }
+        }
       }
     },
   },

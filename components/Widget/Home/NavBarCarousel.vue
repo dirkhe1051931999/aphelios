@@ -1,6 +1,6 @@
 <template>
   <van-swipe :loop="false" :height="220" class="swipe" indicator-color="#5469d4">
-    <van-swipe-item v-for="item in postList" :key="item.id" class="swipe-item">
+    <van-swipe-item v-for="item in postList" :key="item.id" class="swipe-item" @click="toPostDetail(item, 'post-carousel')">
       <div class="image-container">
         <van-image :src="item.poster" class="image">
           <template #loading>
@@ -31,6 +31,7 @@
 
 <script>
 import { timeAgo } from '~/utils/tools';
+import PostDetail from '~/components/PostDetail/Index.vue';
 
 export default {
   props: {
@@ -46,6 +47,11 @@ export default {
     randomDefaultImage() {
       const random = Math.floor(Math.random() * 5) + 1;
       return require(`~/assets/images/default-${random}.jpg`);
+    },
+    toPostDetail(post, from) {
+      this.$store.commit('modules/fixed_fw_page/SET_PAGE_VISIBLE', true);
+      this.$store.commit('modules/fixed_fw_page/SET_CURRENT_COMPONENT', PostDetail);
+      this.$store.commit('modules/post_detail/SET_POST_DETAIL', { ...post, fr: from });
     },
   },
 };

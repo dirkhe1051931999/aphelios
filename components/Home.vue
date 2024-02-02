@@ -165,7 +165,7 @@ export default {
   left: 0;
   width: 100%;
   box-sizing: border-box;
-  max-height: $topBarHeight;
+  max-height: $top-bar-height;
 
   .header-search {
     display: flex;
@@ -180,9 +180,9 @@ export default {
 }
 
 .home-container {
-  margin-top: $topBarHeight;
-  height: calc(100vh - $topBarHeight - $bottomTabBarHeight);
-  margin-bottom: $bottomTabBarHeight;
+  margin-top: $top-bar-height;
+  height: calc(100vh - $top-bar-height - $bottom-tab-bar-height);
+  margin-bottom: $bottom-tab-bar-height;
 
   .pull-refresh {
     overflow: auto;
