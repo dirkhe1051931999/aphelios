@@ -108,7 +108,7 @@
               <span v-if="!col.inSlot">{{ col.value }}</span>
               <div class="text-left" v-else>
                 <!-- title -->
-                <div v-if="col.name === 'title'">
+                <div v-if="col.name === 'title'" class="row items-center">
                   <div>
                     <span class="q-pa-xs b-r-100 bg-grey-2 border-all">
                       <q-icon :name="postTypeSvgName(props.row)" size="18px">
@@ -126,6 +126,7 @@
                     <q-btn size="8px" color="grey" label="添加问卷" class="q-ml-sm" outline @click="handlerClickAddQuestion(props.row)" v-if="props.row.survey && !props.row.survey.length" />
                     <q-btn size="8px" color="primary" label="编辑问卷" class="q-ml-sm" outline @click="handlerClickUpdateQuestion(props.row)" v-if="props.row.survey && props.row.survey.length" />
                   </div>
+                  <q-img :src="props.row.poster" width="60px" fit="cover" height="40px" class="q-ml-md rounded-borders" spinner-size="12px" spinner-color="primary"></q-img>
                 </div>
                 <div v-if="col.name === 'chip'">
                   <q-chip dense :color="item.color" :label="item.label" outline v-for="(item, index) in tableParams.chips" :key="index" :class="{ hide: props.row[item.value] !== '1' }" />
@@ -195,9 +196,9 @@
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_OPTION, POST_TYPE_SVG_NAME, TEST_ACCOUNT, updatePost, addWhatPost } from './utils';
+import { addWhatPost, POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, POST_STATUS, POST_TYPE_OPTION, POST_TYPE_SVG_NAME, TEST_ACCOUNT, updatePost } from './utils';
 import { commonPost } from 'src/mixins/post';
 
 const CONST_PARAMS: any = {

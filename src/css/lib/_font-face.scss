@@ -1,4 +1,4 @@
-$path: if($publicPath == null, '', '/' + $publicPath);
+$path: if($publicPath == null, '/', '/' + $publicPath);
 /* 新字体 */
 @font-face {
   font-family: 'Poppins';
