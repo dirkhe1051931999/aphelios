@@ -67,7 +67,6 @@ module.exports = configure(function (ctx) {
       rtl: false, // https://quasar.dev/options/rtl-support
       preloadChunks: true,
       showProgress: true,
-      scssLoaderOptions: { additionalData: `$publicPath: ${process.env.NODE_ENV === 'production' ? setting.publicPath.replace(/\//g, '""') : 'null'};` },
       gzip: true,
       analyze: false,
 
