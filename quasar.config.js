@@ -59,7 +59,7 @@ module.exports = configure(function (ctx) {
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       transpile: false,
       publicPath: process.env.NODE_ENV !== 'production' ? null : setting.publicPath,
-      distDir: ctx.modeName === 'spa' ? `dist${setting.publicPath}` : `dist/${ctx.modeName}`, // Add dependencies for transpiling with Babel (Array of string/regex)
+      distDir: ctx.modeName === 'spa' ? `dist` : `dist/${ctx.modeName}`, // Add dependencies for transpiling with Babel (Array of string/regex)
       // (from node_modules, which are by default not transpiled).
       // Applies only if "transpile" is set to true.
       transpileDependencies: ['vuex-module-decorators'],
@@ -67,6 +67,7 @@ module.exports = configure(function (ctx) {
       rtl: false, // https://quasar.dev/options/rtl-support
       preloadChunks: true,
       showProgress: true,
+      scssLoaderOptions: { additionalData: `$publicPath: ${process.env.NODE_ENV === 'production' ? setting.publicPath.replace(/\//g, '') : 'null'};` },
       gzip: true,
       analyze: false,
 

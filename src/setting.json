@@ -2,7 +2,7 @@
   "language": "en-US",
   "title": "jen full stack management service",
   "policy": "",
-  "publicPath": "/",
+  "publicPath": "/aphelios-management/",
   "pro": "",
   "version": "V1.0.0",
   "devServerPort": 9002,
