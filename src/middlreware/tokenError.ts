@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import CONFIG from 'src/config';
+import CONFIG from '../config';
 import { getPathsToTry } from 'tsconfig-paths/lib/try-path';
 
 export default function() {

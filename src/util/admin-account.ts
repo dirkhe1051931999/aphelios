@@ -1,7 +1,7 @@
 import moment from "moment";
 import { makeSalt, encryptPassword } from "./helper";
 import sqlQuery from "./mysql-async";
-import CONFIG from "src/config";
+import CONFIG from "../config";
 
 const account = {
   name: CONFIG.adminName,

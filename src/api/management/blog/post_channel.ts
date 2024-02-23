@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 import {
   addChannel,
@@ -7,7 +7,7 @@ import {
   updateChannelName,
   updateChannelPos,
   updateChannelVisible,
-} from 'src/controllers/management/blog/post.channel.controller';
+} from '../../../controllers/management/blog/post.channel.controller';
 
 export class ManagementBlogChannelAPIController {
   @Route('/getAllChannel', HTTP_METHODS.POST)

@@ -2,8 +2,8 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import { Context } from 'koa';
 import path from 'path';
-import CONFIG from 'src/config';
-import { sendMail } from 'src/util/send-email';
+import CONFIG from '../../../config';
+import { sendMail } from '../../../util/send-email';
 /* 查询所有用户 */
 export const getAllUser = async (ctx: Context): Promise<void> => {
   const userName = (ctx.request.body as { userName?: 'string' }).userName || '';

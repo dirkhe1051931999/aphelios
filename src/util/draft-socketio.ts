@@ -1,5 +1,5 @@
 import { Server as SocketServer } from "socket.io";
-import CONFIG from "src/config";
+import CONFIG from "../config";
 import RedisDB from "./redis-db";
 import * as redisMysql from "./redis-mysql";
 

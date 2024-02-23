@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import * as crypto from 'crypto';
-import CONFIG from 'src/config';
+import CONFIG from '../config';
 
 const salt = CONFIG.db.db_salt;
 const saltBuffer = Buffer.from(salt, 'base64');

@@ -1,5 +1,5 @@
 import mysql from 'mysql2';
-import CONFIG from 'src/config';
+import CONFIG from '../config';
 
 const pool = mysql.createPool({
   host: CONFIG.db.mysql.host,

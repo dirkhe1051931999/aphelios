@@ -3,17 +3,21 @@ import Router from 'koa-router';
 import 'reflect-metadata';
 import fs from 'fs';
 import path from 'path';
+
 const ROUTE_PREFIX = 'ROUTE_PREFIX';
 let api = {};
 let apiName = [];
 const root = path.join(__dirname, '../api');
+// 如果是生产，就是.js 否则就是.ts
+const fileMine = process.env.NODE_ENV === 'production' ? '.js' : '.ts';
+
 export function registerRoutes(app: Koa, dir: string) {
   let router = new Router();
-  fs.readdirSync(dir).forEach(function (file) {
+  fs.readdirSync(dir).forEach(function(file) {
     const filePath = path.join(dir, file);
     if (fs.statSync(filePath).isDirectory()) {
       registerRoutes(app, filePath);
-    } else if (file.endsWith('.ts')) {
+    } else if (file.endsWith(fileMine)) {
       let controller = require(filePath);
       api = Object.assign(api, controller);
       let name = Object.keys(controller);

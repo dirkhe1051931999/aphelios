@@ -1,5 +1,5 @@
 import { addPrefixToFields, isCdnAvatar, replacePrefix, replacePrefixForText } from '../../../util/helper';
-import setting from 'src/config';
+import setting from '../../../config';
 
 let chips = ['pinned', 'recommended', 'hot', 'original', 'paid', 'free', 'carousel', 'political', 'privated', 'publiced'];
 let commonColumn = ['id', 'title', 'poster', 'content', 'createTime', 'updateTime', 'view', 'postType', 'postTags', 'videoPoster', 'videoUrl', 'galleries', 'srcTopicId', 'shelveTimeStart', 'shelveTimeEnd', 'authorId', 'directoryId', 'channelId'].concat(chips);

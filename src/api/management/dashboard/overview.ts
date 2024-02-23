@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
-import { getChannelSheetUserAuthorLimit5, getOverview, getPostTrends } from 'src/controllers/management/dashboard/index.controller';
+import { getChannelSheetUserAuthorLimit5, getOverview, getPostTrends } from '../../../controllers/management/dashboard/index.controller';
 
 export class ManagementDashboardAPIController {
   @Route('/getOverview', HTTP_METHODS.POST)

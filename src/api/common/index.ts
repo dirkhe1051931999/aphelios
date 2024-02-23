@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../util/route.decorator';
 import Koa from 'koa';
-import { getIP, generateClientId } from 'src/controllers/common/index.controller';
+import { getIP, generateClientId } from '../../controllers/common/index.controller';
 
 export class CommonAPIController {
   @Route('/getIP', HTTP_METHODS.GET)

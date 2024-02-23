@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from "src/util/route.decorator";
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from "koa";
 import {
   addRole,
@@ -6,7 +6,7 @@ import {
   getAllPermission,
   getAllRole,
   updateRole,
-} from "src/controllers/management/blog/role.controller";
+} from '../../../controllers/management/blog/role.controller';
 export class ManagementBlogRoleAPIController {
   @Route("/getAllRole", HTTP_METHODS.POST)
   async getAllRole(ctx: Koa.Context, next: Koa.Next) {

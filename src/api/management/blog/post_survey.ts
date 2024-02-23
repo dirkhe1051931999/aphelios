@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
-import { addPostSurvey, deletePostSurvey, updatePostSurvey } from 'src/controllers/management/blog/post.survey.controller';
+import { addPostSurvey, deletePostSurvey, updatePostSurvey } from '../../../controllers/management/blog/post.survey.controller';
 
 export class ManagementBlogPostSurveyAPIController {
   @Route('/addPostSurvey', HTTP_METHODS.POST)

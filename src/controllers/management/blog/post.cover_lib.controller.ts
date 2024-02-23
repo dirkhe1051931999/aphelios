@@ -1,4 +1,4 @@
-import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio, uploadFileToMinio } from 'src/util/helper';
+import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio } from '../../../util/helper';
 import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper';
 import fs from 'fs';

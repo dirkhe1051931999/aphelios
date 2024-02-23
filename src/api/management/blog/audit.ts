@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 import {
   rejectAuthorCompany,
@@ -10,7 +10,7 @@ import {
   passAuthorNormal,
   rejectAuthorNormal,
   getAuthorCompanyDetail,
-} from 'src/controllers/management/blog/audit.controller';
+} from '../../../controllers/management/blog/audit.controller';
 export class ManagementBlogAuditAPIController {
   @Route('/getAuthorCompanyList', HTTP_METHODS.POST)
   async getAuthorCompanyList(ctx: Koa.Context, next: Koa.Next) {

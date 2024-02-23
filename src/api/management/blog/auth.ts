@@ -7,8 +7,8 @@ import {
   forgotPassword,
   checkToken,
   changePasswordWithOutOld,
-} from "src/controllers/management/blog/auth.controller";
-import { HTTP_METHODS, Route } from "src/util/route.decorator";
+} from '../../../controllers/management/blog/auth.controller';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from "koa";
 export class ManagementBlogAuthAPIController {
   /* 以下是登录 */

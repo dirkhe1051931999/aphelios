@@ -1,8 +1,8 @@
 import { Context } from 'koa';
 import jwt from 'jsonwebtoken';
-import { encryptInputPassword } from 'src/util/helper';
-import CONFIG from 'src/config';
-import { sendMail } from 'src/util/send-email';
+import { encryptInputPassword } from '../../../util/helper';
+import CONFIG from '../../../config';
+import { sendMail } from '../../../util/send-email';
 import fs from 'fs';
 import path from 'path';
 

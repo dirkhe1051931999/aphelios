@@ -1,6 +1,6 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import CONFIG from 'src/config';
+import CONFIG from '../../config';
 
 // 吊起github登录
 export const githubOAuth = async (ctx) => {

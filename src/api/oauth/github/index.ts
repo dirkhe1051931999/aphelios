@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from "src/util/route.decorator";
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from "koa";
-import { githubOAuth } from "src/controllers/oauth/github.controller";
+import { githubOAuth } from '../../../controllers/oauth/github.controller';
 
 export class OauthGithubController {
   @Route("/", HTTP_METHODS.GET)

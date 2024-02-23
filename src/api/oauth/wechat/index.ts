@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from "src/util/route.decorator";
+import { HTTP_METHODS, Route } from "../../../util/route.decorator";
 import Koa from "koa";
-import { getAccessToken, getAuthorizeURL } from "src/controllers/oauth/wechat.controller";
+import { getAccessToken, getAuthorizeURL } from '../../../controllers/oauth/wechat.controller';
 
 export class OauthGithubController {
   @Route("/login", HTTP_METHODS.GET)

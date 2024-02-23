@@ -1,4 +1,4 @@
-import CONFIG from 'src/config';
+import CONFIG from '../../config';
 import OAuth from 'wechat-oauth';
 const oauth = new OAuth(CONFIG.oAuth.wechat.appId, CONFIG.oAuth.wechat.appSecret);
 export const getAuthorizeURL = async (ctx) => {

@@ -4,8 +4,8 @@ import {
   replacePrefix,
   replacePrefixForText,
   uploadFileToMinio,
-} from 'src/util/helper';
-import CONFIG from 'src/config';
+} from '../../../util/helper';
+import CONFIG from '../../../config';
 import { v4 as uuidv4 } from 'uuid';
 import { COMMON_QUERY_OTHER_COLUMN, commonAddPost, commonUpdatePost } from '../utils';
 // 获取文章列表

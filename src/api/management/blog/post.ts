@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 import {
   addComment,
@@ -25,7 +25,7 @@ import {
   updateVideoEmbedPost,
   updateVideoPost,
   uploadPostImgs,
-} from 'src/controllers/management/blog/post.controller';
+} from '../../../controllers/management/blog/post.controller';
 
 export class ManagementBlogPostAPIController {
   @Route('/getPostContentById', HTTP_METHODS.POST)

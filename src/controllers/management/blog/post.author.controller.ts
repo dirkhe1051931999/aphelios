@@ -4,9 +4,9 @@ import {
   removePrefixFromFields,
   uploadBase64FileToMinio,
   uploadFileToMinio,
-} from 'src/util/helper';
+} from '../../../util/helper';
 import { v4 as uuidv4 } from 'uuid';
-import { fileToBase64 } from 'src/util/helper';
+import { fileToBase64 } from '../../../util/helper';
 import fs from 'fs';
 // 查询所有作者
 export const getAllPostAuthor = async (ctx): Promise<void> => {

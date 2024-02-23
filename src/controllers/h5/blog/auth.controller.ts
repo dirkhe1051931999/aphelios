@@ -1,6 +1,6 @@
 import { isCdnAvatar, rsaDecrypt } from '../../../util/helper';
 import jwt from 'jsonwebtoken';
-import CONFIG from 'src/config';
+import CONFIG from '../../../config';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';

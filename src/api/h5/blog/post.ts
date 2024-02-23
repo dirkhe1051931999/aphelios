@@ -14,8 +14,8 @@ import {
   getPostListByAuthorId,
   getUserComments,
   search,
-} from 'src/controllers/h5/blog/post.controller';
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+} from '../../../controllers/h5/blog/post.controller';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 
 export class h5BlogPostAPIController {

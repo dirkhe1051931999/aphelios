@@ -1,6 +1,6 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../util/route.decorator';
 import Koa from 'koa';
-import { addEventTrack } from 'src/controllers/track/track.controller';
+import { addEventTrack } from '../../controllers/track/track.controller';
 
 export class TrackController {
   @Route('/addEventTrack', HTTP_METHODS.GET)

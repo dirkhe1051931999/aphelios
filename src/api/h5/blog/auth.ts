@@ -7,7 +7,7 @@ import {
   resetPassword,
   checkResetPasswordToken,
   updateUserPassword,
-} from 'src/controllers/h5/blog/auth.controller';
+} from '../../../controllers/h5/blog/auth.controller';
 
 export class h5BlogAuthAPIController {
 

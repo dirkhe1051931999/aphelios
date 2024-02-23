@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 import {
   addChildDirectory,
@@ -13,7 +13,7 @@ import {
   updateChildDirectory,
   updateDirectory,
   updateSheet,
-} from 'src/controllers/management/blog/post.sheet.directory.controller';
+} from '../../../controllers/management/blog/post.sheet.directory.controller';
 export class ManagementBlogSheetDirectoryAPIController {
   @Route('/getAllSheet', HTTP_METHODS.POST)
   async getAllSheet(ctx: Koa.Context, next: Koa.Next) {

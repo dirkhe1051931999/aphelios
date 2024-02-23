@@ -2,7 +2,7 @@ import schedule from "node-schedule";
 import moment from "moment";
 import sqlQuery from "./mysql-async";
 import RedisDB from "./redis-db";
-import CONFIG from "src/config";
+import CONFIG from "../config";
 
 const draftPostRedisKey = CONFIG.draftPostRedisKey;
 

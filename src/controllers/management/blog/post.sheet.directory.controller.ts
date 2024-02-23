@@ -1,4 +1,4 @@
-import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio } from 'src/util/helper';
+import { addPrefixToFields, removePrefixFromFields, uploadBase64FileToMinio } from '../../../util/helper';
 import { v4 as uuidv4 } from 'uuid';
 // 获取所有文章类别
 export const getAllSheet = async (ctx) => {

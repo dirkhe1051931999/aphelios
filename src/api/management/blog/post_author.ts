@@ -1,4 +1,4 @@
-import { HTTP_METHODS, Route } from 'src/util/route.decorator';
+import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 import {
   addPostAuthor,
@@ -8,7 +8,7 @@ import {
   removePostAuthor,
   updatePostAuthor,
   verifyCompanyAuthor,
-} from 'src/controllers/management/blog/post.author.controller';
+} from '../../../controllers/management/blog/post.author.controller';
 export class ManagementBlogPostAuthorAPIController {
   @Route('/getAllPostAuthor', HTTP_METHODS.POST)
   async getAllPostAuthor(ctx: Koa.Context, next: Koa.Next) {

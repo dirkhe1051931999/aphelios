@@ -9,7 +9,7 @@ import {
   updateEmail,
   updateGender,
   updateNickName,
-} from 'src/controllers/h5/blog/user.controller';
+} from '../../../controllers/h5/blog/user.controller';
 import { HTTP_METHODS, Route } from '../../../util/route.decorator';
 import Koa from 'koa';
 
