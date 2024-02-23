@@ -1,7 +1,8 @@
 import os
 import random
+import re
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 from minio import Minio
 from selenium import webdriver
@@ -15,6 +16,9 @@ from bs4 import BeautifulSoup
 from io import BytesIO
 from PIL import Image
 import time
+
+
+# 这个是https://bbs.0513.org/ 这个论坛数据的爬取
 
 
 class Config:
@@ -41,7 +45,7 @@ class Config:
         "secure": False,
         "bucket_name": "blog-service-oss"
     }
-    URL = "https://tititxt.com/"
+    URL = "https://bbs.0513.org/"
     TEMP_IMG_DIR = "./temp_img"
     SQL_FILE = "./result.sql"
     CHANNEL_IDS = [
@@ -129,6 +133,7 @@ class Utils:
             img_url = img['src']
             img['alt'] = ''
             img['title'] = ''
+            img_url = Config.URL + img_url
             response = requests.get(img_url, headers=Config.HEADERS, allow_redirects=True)
             uuid_str = str(uuid.uuid4()).replace("-", "")
             extension = Utils.get_img_extension(response)
@@ -147,6 +152,43 @@ class Utils:
         """滚动到页面底部。"""
         self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)  # 等待页面加载可能的新内容
+
+    @staticmethod
+    def parse_semantic_time(time_str, current_time=datetime.now()):
+        # 定义正则表达式以匹配不同的时间描述
+        hour_ago_pattern = re.compile(r'(\d+)小时前')
+        yesterday_pattern = re.compile(r'昨天 (\d+):(\d+)')
+        date_time_pattern = re.compile(r'(\d+)-(\d+) (\d+):(\d+)')
+
+        # 尝试匹配“小时前”
+        hour_ago_match = hour_ago_pattern.search(time_str)
+        if hour_ago_match:
+            hours_ago = int(hour_ago_match.group(1))
+            target_time = current_time - timedelta(hours=hours_ago)
+            return int(target_time.timestamp())
+
+        # 尝试匹配“昨天”
+        yesterday_match = yesterday_pattern.search(time_str)
+        if yesterday_match:
+            hour = int(yesterday_match.group(1))
+            minute = int(yesterday_match.group(2))
+            target_time = (current_time - timedelta(days=1)).replace(hour=hour, minute=minute, second=0, microsecond=0)
+            return int(target_time.timestamp())
+
+        # 尝试匹配具体的日期和时间
+        date_time_match = date_time_pattern.search(time_str)
+        if date_time_match:
+            month = int(date_time_match.group(1))
+            day = int(date_time_match.group(2))
+            hour = int(date_time_match.group(3))
+            minute = int(date_time_match.group(4))
+            # 假设年份是当前年份，这可能需要根据上下文调整
+            year = current_time.year
+            target_time = datetime(year, month, day, hour, minute)
+            return int(target_time.timestamp())
+
+        # 如果没有匹配，返回None
+        return None
 
 
 class WebScraper:
@@ -196,14 +238,15 @@ class WebScraper:
         detail_link = title_element.get_attribute('href')
         Config.HEADERS['Referer'] = detail_link
         date_element = self.driver.find_element(By.XPATH, date_path)
-        date = date_element.text
+        datestamp = Utils.parse_semantic_time(date_element.text)
         view_element = self.driver.find_element(By.XPATH, view_path)
         view = view_element.text
         id = str(uuid.uuid4()).replace("-", "")
+
         self.post['id'] = id
         self.post['srcTopicId'] = id
         self.post['title'] = title
-        self.post['createTime'] = int(time.mktime(time.strptime(date, "%Y-%m-%d"))) * 1000
+        self.post['createTime'] = datestamp * 1000
         self.post['view'] = int(view)
         self.post['authorId'] = Utils.get_random_element(Config.AUTHOR_IDS)
         self.post['channelId'] = Utils.get_random_element(Config.CHANNEL_IDS)
@@ -220,45 +263,40 @@ class WebScraper:
         processed_posts = 0
 
         while continue_crawling:
-            all_articles_xpath = '//*[@id="sticky"]/div[1]/div/div[1]'
+            all_articles_xpath = '//*[@id="hbinfo"]'
 
             article_elements = self.driver.find_elements(By.XPATH, all_articles_xpath)
             if not article_elements:
                 print("No articles found.")
                 break
-            posts = article_elements[0].find_elements(By.XPATH, ".//div[contains(@class, 'post item')]")
+            posts = article_elements[0].find_elements(By.XPATH, './/li//div[@class="item-content cl"]')
             for i in range(processed_posts, len(posts)):
 
                 article_elements = self.driver.find_elements(By.XPATH, all_articles_xpath)
-                posts = article_elements[0].find_elements(By.XPATH, ".//div[contains(@class, 'post item')]")
+                posts = article_elements[0].find_elements(By.XPATH, './/li//div[@class="item-content cl"]')
                 post = posts[i]
 
-                title_element = post.find_element(By.XPATH, ".//h2/a")
+                title_element = post.find_element(By.XPATH, ".//div/div[1]/h2/a")
                 title = title_element.text
                 if title in crawled_titles:  # 如果帖子已处理，则跳过
                     continue
                 crawled_titles.add(title)
                 # ...提取帖子信息，处理帖子详情，生成SQL并写入文件...
                 detail_link = title_element.get_attribute('href')
-                date_element = post.find_element(By.XPATH, ".//div[contains(@class, 'info')]/span[contains(@class, 'date')]")
-                date = date_element.text
-                # 如果date不是今天的日期，停止循环
-                # if date != datetime.today().strftime("%Y-%m-%d"):
-                #     print("Date is not today's date. Stopping the loop.")
-                #     continue_crawling = False
-                #     break
-                if date == '2024-02-18':
-                    print("Date is 2024-02-18. Stopping the loop.")
+                date_element = post.find_element(By.XPATH, ".//div/div[2]/div[2]/span[2]")
+                datestamp = Utils.parse_semantic_time(date_element.text)
+                # 如果date是3天外的日期，停止循环
+                if datestamp < (int(time.time()) - 3 * 24 * 60 * 60):
                     continue_crawling = False
                     break
-                view_element = post.find_element(By.XPATH, ".//div[contains(@class, 'info')]/span[contains(@class, 'view')]")
+                view_element = post.find_element(By.XPATH, ".//div/div[2]/div[1]/span[1]/span")
                 view = view_element.text
                 id = str(uuid.uuid4()).replace("-", "")
                 self.post.update({
                     "id": id,
                     "srcTopicId": id,
                     "title": title,
-                    "createTime": int(time.mktime(time.strptime(date, "%Y-%m-%d"))) * 1000,
+                    "createTime": datestamp * 1000,
                     "view": int(view),
                     "authorId": Utils.get_random_element(Config.AUTHOR_IDS),
                     "channelId": Utils.get_random_element(Config.CHANNEL_IDS),
@@ -284,10 +322,7 @@ class WebScraper:
                 self.run_count = 0
                 print("Scrolling to bottom")
                 try:
-                    next_page_button_xpath = '//*[@id="sticky"]/div[1]/div/div[2]'
                     Utils.scroll_to_bottom(self)
-                    next_page_button = self.driver.find_element(By.XPATH, next_page_button_xpath)
-                    ActionChains(self.driver).move_to_element(next_page_button).click(next_page_button).perform()
                     print("Navigating to next page")
                     time.sleep(3)
 
@@ -297,7 +332,6 @@ class WebScraper:
                 self.run_count += 1
 
     def fetch_article_details(self, url):
-
         # 在新标签页中打开帖子详情
         self.driver.execute_script(f"window.open('{url}');")
         time.sleep(3)
@@ -305,40 +339,37 @@ class WebScraper:
         all_windows = self.driver.window_handles
         new_window = all_windows[-1]
         self.driver.switch_to.window(new_window)
-
-        content_element = self.driver.find_element(By.XPATH, '//*[@id="iddahe_com_style_div"]')  # 示例XPath
-        tag_list = []
         try:
-            tag_element = self.driver.find_element(By.XPATH, '//*[@id="sticky"]/div[1]/div/div[1]/div[1]/div[3]')
-            tags = tag_element.find_elements(By.TAG_NAME, 'a')
-            for tag in tags:
-                tag_list.append(tag.text)
-        except NoSuchElementException:
-            print("Tag element not found")
-        content_html = self.driver.execute_script(
-            "return document.getElementById('iddahe_com_style_div').innerHTML;"
-        )
-        soup = BeautifulSoup(content_html, 'html.parser')
-        for div in soup.find_all('div', {'class': 'google-auto-placed ap_container'}):
-            div.decompose()
-        self.post['postTags'] = str(tag_list).replace("'", '\\"')
-        self.post['poster'] = Utils.process_images(soup)
-        inner_html = ''
-        if len(soup.contents) == 1:
-            content = soup.find(id='iddahe_com_style_div')
-            inner_html = ''.join(str(child) for child in content.contents)
-        else:
-            inner_html = str(soup)
-        self.post['content'] = inner_html.replace("'", '\\"')
-        self.driver.close()
-        self.driver.switch_to.window(original_window)
+            try:
+                content_element = self.driver.find_element(By.XPATH, "//*[starts-with(@id, 'postmessage_')]")
+                tag_list = ['bbs.0513.org']
+                soup = BeautifulSoup(content_element.get_attribute('innerHTML'), 'html.parser')
+                for div in soup.find_all('div', {'class': 'google-auto-placed ap_container'}):
+                    div.decompose()
+                self.post['postTags'] = str(tag_list).replace("'", '\\"')
+                self.post['poster'] = Utils.process_images(soup)
+                inner_html = str(soup)
+                self.post['content'] = inner_html.replace("'", '\\"')
+                self.driver.close()
+                self.driver.switch_to.window(original_window)
+            except NoSuchElementException:
+                print("Content element not found, skipping...")
+                self.driver.close()
+                self.driver.switch_to.window(original_window)
+                return
+        except Exception as e:
+            # 处理其他可能的异常
+            print(f"An error occurred: {e}")
+            # 确保在任何异常情况下都能返回原窗口
+            self.driver.close()
+            self.driver.switch_to.window(original_window)
 
 
 def main():
     scraper = WebScraper()
-    # path = '//*[@id="sticky"]/div[1]/div/div[1]/div[1]/h2/a'
-    # date_path = '//*[@id="sticky"]/div[1]/div/div[1]/div[1]/div[1]/span[1]'
-    # view_path = '//*[@id="sticky"]/div[1]/div/div[1]/div[1]/div[1]/span[2]'
+    # path = '//*[@id="hbinfo"]/li[1]/div/div/div[1]/h2/a'
+    # date_path = '//*[@id="hbinfo"]/li[1]/div/div/div[2]/div[2]/span[2]'
+    # view_path = '//*[@id="hbinfo"]/li[1]/div/div/div[2]/div[1]/span[1]/span'
     # scraper.fetch_article(path, date_path, view_path)
     # sql = Utils.generate_sql(Utils, scraper.post)
     # Utils.write_to_file(Utils, Config.SQL_FILE, sql)
