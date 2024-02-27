@@ -24,13 +24,13 @@ This is a full-stack integrated service project with multiple server-side and cl
 
 ## installation environment
 
-```
+```bash
 ### centos8.3
-$ sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
-$ sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+sudo sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+sudo sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 ```
 
-```
+```bash
 ## Install docker
 sudo yum install -y yum-utils
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -70,7 +70,13 @@ docker-compose down
 # View started containers
 docker ps
 ```
-
+```txt
+Q&A
+1. docker: Error response from daemon: toomanyrequests
+sudo docker login --username=yourUsername
+2. 源“mySQL 8.0 Community Server”的GPG密钥已安装，但是不适用于此软件包。请检查源的公钥URL是否配置正确。
+sudo yum install mysql-server --nogpgcheck
+```
 ```yml
 # docker-compose.yml
 version: "3.7"
