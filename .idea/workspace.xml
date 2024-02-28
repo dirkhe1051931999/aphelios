@@ -6,49 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="763e0f0a-d612-4868-ab5a-96c6600554e2" name="更改" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/folder-alias.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/common/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/common/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/example/hello.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/example/hello.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/h5/blog/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/h5/blog/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/h5/blog/post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/h5/blog/post.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/h5/blog/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/h5/blog/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/audit.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/audit.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_author.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_author.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_channel.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_channel.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_cover_lib.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_cover_lib.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_sheet_directory.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_sheet_directory.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_survey.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_survey.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/post_video_lib.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/post_video_lib.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/role.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/role.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/blog/user.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/blog/user.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/management/dashboard/overview.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/management/dashboard/overview.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/oauth/github/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/oauth/github/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/oauth/wechat/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/oauth/wechat/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/api/track/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/api/track/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/h5/blog/auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/h5/blog/auth.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/h5/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/h5/blog/post.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/auth.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.author.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.author.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.cover_lib.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.sheet.directory.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/post.video_lib.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/post.video_lib.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/management/blog/user.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/management/blog/user.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/oauth/github.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/oauth/github.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controllers/oauth/wechat.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/oauth/wechat.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/middlreware/tokenError.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/middlreware/tokenError.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/admin-account.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/admin-account.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/draft-socketio.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/draft-socketio.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/helper.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/helper.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/mysql-async.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/mysql-async.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/redis-db.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/redis-db.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/util/redis-mysql.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/util/redis-mysql.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -162,6 +120,8 @@
       <workItem from="1708247889775" duration="595000" />
       <workItem from="1708413237003" duration="2159000" />
       <workItem from="1708598148849" duration="560000" />
+      <workItem from="1708653938280" duration="5074000" />
+      <workItem from="1709003934232" duration="1647000" />
     </task>
     <servers />
   </component>

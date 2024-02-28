@@ -71,9 +71,8 @@
     "@types/node-fetch": "2.x",
     "nodemon": "^2.0.22",
     "pm2": "^3.5.0",
-    "ts-node": "^8.1.0",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^3.4.5",
-    "lru-cache": "^5.1.1"
+    "typescript": "^5.3.3"
   }
 }
