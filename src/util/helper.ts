@@ -8,7 +8,8 @@ import moment from 'moment';
 import * as Minio from 'minio';
 import { v4 as uuidv4 } from 'uuid';
 import NodeRSA from 'node-rsa';
-import mime from 'mime';
+import { getExtension, getType } from './mime';
+
 
 const minioClient = new Minio.Client({
   endPoint: CONFIG.db.minio.endPoint,
@@ -130,7 +131,7 @@ export const uploadBase64FileToMinio = (base64: any, dir: string): Promise<any> 
     base64 = base64.replace(/^data:.+;base64,/, '');
     const mimeType = match[1];
     const imageBuffer = Buffer.from(base64, 'base64');
-    const extension = mime.getExtension(mimeType) || 'bin';
+    const extension = getExtension(mimeType) || 'bin';
     const imagePath = path.join(CONFIG.root, CONFIG.appPath, CONFIG.tempUploads);
     const imageName = uuidv4().replace(/\-/g, '');
     const tempPath = imagePath + '/' + imageName + '.' + extension;
@@ -224,7 +225,7 @@ export function fileToBase64(filePath: string): Promise<string> {
         return;
       }
       // 使用mime库获取文件的MIME类型
-      const mimeType = mime.getType(filePath) || 'application/octet-stream';
+      const mimeType = getType(filePath) || 'application/octet-stream';
       // 将文件内容转换为Base64字符串，并添加适当的前缀
       const base64File = `data:${mimeType};base64,` + data.toString('base64');
       // 解析成功，将Base64编码的文件内容解析为Promise的解析值
