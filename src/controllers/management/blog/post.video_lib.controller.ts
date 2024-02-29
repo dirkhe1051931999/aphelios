@@ -9,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import unzipper from 'unzipper';
 import fs from 'fs';
 import path from 'path';
+
 const CATEGORYOPTIONS = [];
 export const getAllVideo = async (ctx): Promise<void> => {
   try {
@@ -56,9 +57,10 @@ export const updateVideo = async (ctx): Promise<void> => {
       ctx.error(ctx, '404#id,title,description,categoryIds,file,poster');
       return;
     }
-    poster = removePrefixFromFields(poster)
+    poster = removePrefixFromFields(poster);
+    file = removePrefixFromFields(file);
     const sql = `UPDATE sm_board_video_lib SET title='${title}', description='${description}', category='${JSON.stringify(
-      categoryIds
+      categoryIds,
     )}', source='${file}', updateTime=${new Date().getTime()}, poster='${poster}' WHERE id='${id}'`;
     await ctx.execSql(sql);
     return ctx.success(ctx, {});
@@ -121,7 +123,7 @@ export const batchAddVideo = async (ctx) => {
     CATEGORYOPTIONS.push(...results);
     fs.createReadStream(file.path)
       .pipe(unzipper.Parse())
-      .on('entry', function (entry) {
+      .on('entry', function(entry) {
         const type = entry.type;
         if (type === 'File') {
           processFileEntry(entry, ctx).catch((error) => {
