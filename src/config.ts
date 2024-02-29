@@ -1,4 +1,11 @@
 import * as path from 'path';
+import * as process from 'process';
+
+const IP = '192.168.124.40';
+const HTTP_OR_HTTPS = process.env.NODE_ENV === 'production' ? 'http' : 'http';
+const CURRENT_IP = process.env.NODE_ENV === 'production' ? IP : 'localhost';
+const RESET_PASSWORD_URL = process.env.NODE_ENV === 'production' ? `${HTTP_OR_HTTPS}://${IP}/aphelios-management/index.html#/login?token=` : 'http://localhost:9002/index.html#/login?token=';
+const H5_RESET_PASSWORD_URL = process.env.NODE_ENV === 'production' ? `${HTTP_OR_HTTPS}://${IP}/aphelios-h5/login?token=` : 'http://localhost:9003/login?token=';
 
 interface Config {
   db: {
@@ -64,7 +71,7 @@ interface Config {
 const config: Config = {
   db: {
     mysql: {
-      host: '192.168.124.40',
+      host: IP,
       user: 'hejian',
       password: 'Hejian@123',
       port: 3306,
@@ -73,7 +80,7 @@ const config: Config = {
     },
     redis: {
       port: 6380,
-      host: '192.168.124.40',
+      host: IP,
       db: 3,
       options: {
         return_buffers: false,
@@ -81,7 +88,7 @@ const config: Config = {
       },
     },
     minio: {
-      endPoint: '192.168.124.40',
+      endPoint: IP,
       port: 9000,
       useSSL: false,
       accessKey: 'ZI5QYpqUVxhAVYRpQvIg',
@@ -98,20 +105,20 @@ const config: Config = {
     wechat: {
       appId: 'wx48f0181992fa8676',
       appSecret: 'd581afc54ddedf1a6ffef37d8b6d2c18',
-      auth_callback_url: 'http://192.168.200.130:3000/oauth/wechat/callback',
+      auth_callback_url: `${HTTP_OR_HTTPS}://${CURRENT_IP}:3000/oauth/wechat/callback`,
     },
   },
   root: path.normalize(__dirname + '/..'),
   appPath: 'src/static',
-  resetPasswordUrl: 'http://localhost:9002/index.html#/login?token=',
-  h5ResetPasswordUrl: 'http://localhost:9003/login?token=',
-  defaultCdnUrl: 'http://localhost:3000/cdn',
+  resetPasswordUrl: RESET_PASSWORD_URL,
+  h5ResetPasswordUrl: H5_RESET_PASSWORD_URL,
+  defaultCdnUrl: `${HTTP_OR_HTTPS}://${CURRENT_IP}:3000/cdn`,
   tempUploads: 'tempUploads',
   uploads: 'uploads',
   port: 3000,
   tokenSecret: 'test',
   isUpdateAdmin: false,
-  accessControlAllowOrigin: 'http://localhost:3000',
+  accessControlAllowOrigin: `${HTTP_OR_HTTPS}://${CURRENT_IP}:3000`,
   adminName: 'admin',
   adminPassword: '123456',
   socketioPath: '/testsocketiopath',
