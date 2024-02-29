@@ -2,6 +2,8 @@
 
 This is a full-stack integrated service project with multiple server-side and client-side to provide a one-stop service solution. The goal is to build a cross-platform application, from server-side to various types of clients.
 
+This project automated deployment using Jenkins pipelines
+
 ## Full-stack integrated services
 
 - ✅ Server-side: used to handle business logic and provide interfaces for clients to call.
@@ -48,6 +50,25 @@ docker run -d -p 3310:3306 -v mysql8:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=12345
 docker run -d --name redis -p 6380:6379 --restart always redis:latest
 # Create nginx
 docker run -d --name nginx -p 80:80 --restart always nginx:latest
+# Install nginx
+sudo yum install nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+ln -s /usr/share/nginx/html /root/nginx_html
+sudo systemctl reload nginx
+# Install jenkins
+sudo dnf install java-11-openjdk-devel
+sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+sudo rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+sudo yum install jenkins --nogpgcheck
+sudo systemctl start jenkins
+sudo systemctl enable jenkins
+systemctl status jenkins 
+sudo firewall-cmd --permanent --zone=public --add-port=8080/tcp
+sudo firewall-cmd --reload
 # Install git
 yum install git
 git config --global user.name "dirkhe1051931999"
@@ -69,13 +90,6 @@ docker-compose up -d
 docker-compose down
 # View started containers
 docker ps
-```
-```txt
-Q&A
-1. docker: Error response from daemon: toomanyrequests
-sudo docker login --username=yourUsername
-2. 源“mySQL 8.0 Community Server”的GPG密钥已安装，但是不适用于此软件包。请检查源的公钥URL是否配置正确。
-sudo yum install mysql-server --nogpgcheck
 ```
 ```yml
 # docker-compose.yml
@@ -102,7 +116,6 @@ services:
       timeout: 20s
       retries: 3
 ```
-
 ```shell
 # 获取源 以8.5为例 参考https://renjianzhide.com/archives/centos-install-mysql
 cat /etc/redhat-release
@@ -136,4 +149,11 @@ ALTER USER 'hejian'@'%' IDENTIFIED WITH mysql_native_password BY 'Hejian@123';
 # 防火墙需要允许3306端口连接
 sudo firewall-cmd --permanent --zone=public --add-port=3306/tcp
 sudo firewall-cmd --reload
+```
+```txt
+Q&A
+1. docker: Error response from daemon: toomanyrequests
+sudo docker login --username=yourUsername
+2. 源“mySQL 8.0 Community Server”的GPG密钥已安装，但是不适用于此软件包。请检查源的公钥URL是否配置正确。
+sudo yum install mysql-server --nogpgcheck
 ```
