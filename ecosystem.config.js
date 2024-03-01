@@ -7,6 +7,8 @@ module.exports = {
       watch: true, // 是否监听文件变化重启应用
       autorestart: true, // 应用崩溃后自动重启
       interpreter: 'node@18.16.0', // 使用 Babel 解释器
+      script: './node_modules/nuxt/bin/nuxt.js',
+      args: 'start',
       env: {
         NODE_ENV: 'production', // 设置环境变量
         HOST: '0.0.0.0', // 应用监听的主机地址
