@@ -4,6 +4,7 @@ export default {
     height: '2px',
   },
   server: {
+    host: '0.0.0.0',
     port: 9003, // 默认为 3000
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
