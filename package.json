@@ -11,7 +11,10 @@
     "lint:js": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
     "lint:prettier": "prettier --check .",
     "lint": "yarn lint:js && yarn lint:prettier",
-    "lintfix": "prettier --write --list-different . && yarn lint:js --fix"
+    "lintfix": "prettier --write --list-different . && yarn lint:js --fix",
+    "pro": "pm2 start ecosystem.config.js --env production",
+    "restart": "pm2 restart ecosystem.config.js --env production",
+    "stop": "pm2 stop ecosystem.config.js"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.6",
