@@ -12,6 +12,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production', // 设置环境变量
         HOST: '0.0.0.0', // 应用监听的主机地址
+        PORT: 9003,
       },
     },
   ],
