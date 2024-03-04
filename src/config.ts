@@ -79,7 +79,7 @@ const config: Config = {
       connectionLimit: 10,
     },
     redis: {
-      port: 6380,
+      port: 6379,
       host: IP,
       db: 3,
       options: {
