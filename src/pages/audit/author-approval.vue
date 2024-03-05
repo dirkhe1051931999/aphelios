@@ -27,7 +27,7 @@
               </q-tr>
             </template>
             <template v-slot:header-cell-action="props">
-              <q-th :props="props"> </q-th>
+              <q-th :props="props"></q-th>
             </template>
             <template v-slot:body="props">
               <q-tr :props="props">
@@ -77,21 +77,21 @@
             <q-card-section>
               <q-list bordered>
                 <q-item v-ripple>
-                  <q-item-section avatar> 用户名： </q-item-section>
+                  <q-item-section avatar> 用户名：</q-item-section>
                   <q-item-section>{{ approvalParams.authorCompany.detailParams.data.name }}</q-item-section>
                 </q-item>
                 <q-item v-ripple>
-                  <q-item-section avatar> 昵称： </q-item-section>
+                  <q-item-section avatar> 昵称：</q-item-section>
                   <q-item-section>{{ approvalParams.authorCompany.detailParams.data.nick }}</q-item-section>
                 </q-item>
                 <q-item v-ripple>
-                  <q-item-section avatar> 头像： </q-item-section>
+                  <q-item-section avatar> 头像：</q-item-section>
                   <q-item-section>
-                    <q-avatar rounded> <img :src="approvalParams.authorCompany.detailParams.data.avatarUrl" /> </q-avatar>
+                    <q-avatar rounded><img :src="approvalParams.authorCompany.detailParams.data.avatarUrl" /></q-avatar>
                   </q-item-section>
                 </q-item>
                 <q-item v-ripple>
-                  <q-item-section avatar> 描述： </q-item-section>
+                  <q-item-section avatar> 描述：</q-item-section>
                   <q-item-section>{{ approvalParams.authorCompany.detailParams.data.description }}</q-item-section>
                 </q-item>
               </q-list>
@@ -121,7 +121,7 @@
               </q-tr>
             </template>
             <template v-slot:header-cell-action="props">
-              <q-th :props="props"> </q-th>
+              <q-th :props="props"></q-th>
             </template>
             <template v-slot:body="props">
               <q-tr :props="props">
@@ -132,8 +132,14 @@
                     <!-- authorId -->
                     <div v-if="col.name === 'name'" class="row items-center">
                       <span class="q-mr-md">用户名：{{ props.row.name }}</span>
-                      <div class="q-mr-md">头像：<q-img :src="props.row.avatarUrl" spinner-color="primary" spinner-size="12px" width="40px" height="40px" /></div>
-                      <div>背景图：<q-img :src="props.row.coverUrl" spinner-color="primary" spinner-size="12px" width="200px" /></div>
+                      <div class="q-mr-md">
+                        头像：
+                        <q-img :src="props.row.avatarUrl" spinner-color="primary" spinner-size="12px" width="40px" height="40px" />
+                      </div>
+                      <div>
+                        背景图：
+                        <q-img :src="props.row.coverUrl" spinner-color="primary" spinner-size="12px" width="200px" />
+                      </div>
                     </div>
                     <!-- status -->
                     <div v-if="col.name === 'status'">
@@ -167,7 +173,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component, Vue } from 'vue-facing-decorator';
 import { defaultFill } from 'src/utils/tools';
 import { getCurrentInstance } from 'vue';
 import { AuditModule } from 'src/store/modules/audit';
@@ -176,10 +182,12 @@ import { AuditModule } from 'src/store/modules/audit';
 export default class MyAuthorCompanyComponent extends Vue {
   /**instance */
   declare $refs: any;
+
   mounted() {
     this.getDataAuthorCompany();
     this.getDataAuthorNormal();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public approvalParams = {
@@ -317,15 +325,18 @@ export default class MyAuthorCompanyComponent extends Vue {
       },
     },
   };
+
   /* event */
   public paginationInputAuthorCompany(data: any) {
     this.approvalParams.authorCompany.tableParams.pagination = data;
     this.getDataAuthorCompany();
   }
+
   public paginationInputAuthorNormal(data: any) {
     this.approvalParams.authorNormal.tableParams.pagination = data;
     this.getDataAuthorNormal();
   }
+
   /* http */
   public async getDataAuthorCompany() {
     try {
@@ -348,6 +359,7 @@ export default class MyAuthorCompanyComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getAuthorCompanyDetail(id: any) {
     try {
       this.$q.loading.show();
@@ -385,6 +397,7 @@ export default class MyAuthorCompanyComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async handlerClickPassAuthorCompany(item: any) {
     try {
       this.$q.loading.show();
@@ -400,6 +413,7 @@ export default class MyAuthorCompanyComponent extends Vue {
     } catch (error) {}
     this.$q.loading.hide();
   }
+
   public async handlerClickPassAuthorNormal(item: any) {
     try {
       this.$q.loading.show();
@@ -414,6 +428,7 @@ export default class MyAuthorCompanyComponent extends Vue {
     } catch (error) {}
     this.$q.loading.hide();
   }
+
   public async handlerClickRejectAuthorCompany(item: any) {
     this.$q
       .dialog({
@@ -445,6 +460,7 @@ export default class MyAuthorCompanyComponent extends Vue {
         this.$q.loading.hide();
       });
   }
+
   public async handlerClickRejectAuthorNormal(item: any) {
     this.$q
       .dialog({

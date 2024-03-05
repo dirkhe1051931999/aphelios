@@ -145,7 +145,7 @@
       @before-hide="dialogUploadBeforeHideEvent"
     >
       <div class="dialog-upload-form">
-        <q-img :src="dialogUpload.imgBase64" class="h-200" v-if="dialogUpload.imgBase64" fit="contain"></q-img>
+        <q-img :src="dialogUpload.imgBase64" class="h-200" v-if="dialogUpload.imgBase64" fit="contain" spinner-size="12px" spinner-color="primary" />
         <input type="file" class="hide" :ref="dialogUpload.fileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
         <div class="text-center q-pa-md" v-if="dialogUpload.dialogType === 'add'">
           <q-btn color="primary" icon="add" label="点击上传" outline class="q-mb-md" @click="handleClickUploadFile" />

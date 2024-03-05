@@ -4,7 +4,8 @@
       <div class="left">
         <div class="q-mb-md">
           <p class="q-mb-sm row items-center">
-            * 标题 <q-badge class="q-ml-sm" :color="dialogEditorParams.params.status === 'OFFLINE' ? 'negative' : 'primary'" v-if="!isAddPost">{{ postStatus(dialogEditorParams.params) }}</q-badge>
+            * 标题
+            <q-badge class="q-ml-sm" :color="dialogEditorParams.params.status === 'OFFLINE' ? 'negative' : 'primary'" v-if="!isAddPost">{{ postStatus(dialogEditorParams.params) }}</q-badge>
           </p>
           <q-input
             v-model.trim="dialogEditorParams.params.title"
@@ -45,11 +46,14 @@
               <q-item v-bind="scope.itemProps">
                 <q-item-section avatar>
                   <q-avatar color="primary" text-color="white">
-                    <q-img :src="scope.opt.avatarUrl"> </q-img>
+                    <q-img :src="scope.opt.avatarUrl" spinner-size="12px" spinner-color="primary" />
                   </q-avatar>
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                  <q-item-label
+                    >{{ scope.opt.name }}
+                    <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon>
+                  </q-item-label>
                   <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                 </q-item-section>
               </q-item>
@@ -201,11 +205,12 @@
 <script lang="ts">
 import { commonPost } from 'src/mixins/post';
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component, Watch } from 'vue-facing-decorator';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import PostAlbumComponent from './album.vue';
 import { cloneDeep } from 'lodash';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS } from '../utils';
+import { COMMON_POST_PARAMS, POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS } from '../utils';
+
 let registerEditorAction = false;
 const CONST_PARAMS = {
   add_or_edit: {
@@ -222,15 +227,19 @@ const CONST_PARAMS = {
 })
 export default class myBlogEditorPostDialogComponent extends commonPost {
   $refs: any;
+
   get blogEditorPostVisiable() {
     return BlogPostModule.blogEditorPostVisiable;
   }
+
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategory;
   }
+
   get isAddPost() {
     return BlogPostModule.postAddOrUpdate === 'add';
   }
+
   @Watch('blogEditorPostVisiable')
   onBlogEditorPostVisiableChanged(val: boolean, oldVal: boolean) {
     const initForm = () => {
@@ -318,12 +327,14 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
       }
     });
   }
+
   mounted() {
     if (!registerEditorAction) {
       this.registerEditorAction();
       registerEditorAction = true;
     }
   }
+
   public editCutomeAction = {
     active: false,
     editorInstance: null,
@@ -371,13 +382,16 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
   public editor: any;
   // 创建 toolbar
   public toolbar: any;
+
   /* event */
   hideDialog() {
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE(false);
   }
+
   public handleOpenUploadPosterContainer() {
     this.$refs.PostAlbumComponentRef.init();
   }
+
   public pickSuccess(data: any) {
     if (this.editCutomeAction.active && this.editCutomeAction.editorInstance) {
       (this.editCutomeAction.editorInstance as any).dangerouslyInsertHtml(`<img src="${data.source}" />`);
@@ -387,10 +401,12 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
     }
     this.dialogEditorParams.params.poster = data.source;
   }
+
   public postAlbumComponentHide() {
     this.editCutomeAction.active = false;
     this.editCutomeAction.editorInstance = null;
   }
+
   public registerEditorAction() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
@@ -402,21 +418,26 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
           title: string;
           tag: string;
           iconSvg: string;
+
           constructor() {
             this.title = '图片上传';
             this.iconSvg =
               '<svg viewBox="0 0 1024 1024"><path d="M959.877 128l0.123 0.123v767.775l-0.123 0.122H64.102l-0.122-0.122V128.123l0.122-0.123h895.775zM960 64H64C28.795 64 0 92.795 0 128v768c0 35.205 28.795 64 64 64h896c35.205 0 64-28.795 64-64V128c0-35.205-28.795-64-64-64zM832 288.01c0 53.023-42.988 96.01-96.01 96.01s-96.01-42.987-96.01-96.01S682.967 192 735.99 192 832 234.988 832 288.01zM896 832H128V704l224.01-384 256 320h64l224.01-192z"></path></svg>';
             this.tag = 'button';
           }
+
           getValue(editor: any) {
             return '';
           }
+
           isActive(editor: any) {
             return false; // or true
           }
+
           isDisabled(editor: any) {
             return false; // or true
           }
+
           exec(editor: any, value: any) {
             // do something
             that.editCutomeAction.active = true;
@@ -424,10 +445,12 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
             that.$refs.PostAlbumComponentRef.init();
           }
         }
+
         return new AlbumCover();
       },
     });
   }
+
   /* http */
   public async dialogAddUpdateConfirmEvent() {
     const validations = cloneDeep(this.commonValidations);
@@ -503,67 +526,85 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
   .w-e-bar {
     background: #000000 !important;
   }
+
   .w-e-bar-item button {
     color: #f5f5f5 !important;
   }
+
   .w-e-bar svg {
     fill: #f5f5f5 !important;
   }
+
   .w-e-text-container {
     background-color: #000000 !important;
     color: #f5f5f5 !important;
     border: solid 1px rgba(255, 255, 255, 0.6);
   }
+
   .w-e-bar-item button:hover {
     background: $dark !important;
   }
+
   .w-e-drop-panel {
     background: $dark !important;
   }
+
   .w-e-bar-item-menus-container {
     background: $dark !important;
   }
+
   .w-e-bar-item .active {
     background: $dark !important;
   }
+
   .w-e-text-container [data-slate-editor] table th {
     background: $dark !important;
   }
+
   .w-e-panel-content-table {
     background: #000000 !important;
   }
+
   .category-select {
     &.q-btn--outline:before {
       border: solid 1px rgba(255, 255, 255, 0.6) !important;
     }
+
     .q-btn__content {
       color: rgba(255, 255, 255, 0.541);
     }
   }
 }
+
 .body--light {
   .w-e-text-container {
     border: solid 1px rgba(0, 0, 0, 0.24);
   }
+
   .category-select {
     &.q-btn--outline:before {
       border: solid 1px rgba(0, 0, 0, 0.24) !important;
     }
+
     .q-btn__content {
       color: rgba(0, 0, 0, 0.541);
     }
   }
 }
+
 .w-e-hover-bar {
   z-index: 99999;
 }
+
 .w-e-text-container {
   min-height: 500px;
   border-radius: 8px;
 }
+
 .w-e-bar {
   border-radius: 8px;
 }
+
 .w-e-scroll {
   overflow: auto !important;
   max-height: 500px;
@@ -576,28 +617,34 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
       background: $dark;
     }
   }
+
   #editor-toolbar {
     border: solid 1px rgba(255, 255, 255, 0.6);
   }
+
   .poster {
     background: #000000;
     border: solid 1px rgba(255, 255, 255, 0.6);
   }
 }
+
 .body--light {
   .editor-wrap {
     .editor-content {
       background: #ffffff;
     }
   }
+
   #editor-toolbar {
     border: solid 1px rgba(0, 0, 0, 0.24);
     background: #ffffff;
   }
+
   .poster {
     border: solid 1px rgba(0, 0, 0, 0.24);
   }
 }
+
 .editor-wrap {
   position: fixed;
   width: 100%;
@@ -610,6 +657,7 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
   background: rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   transform: translateY(-100vh);
+
   .editor-content {
     height: 100%;
     display: flex;
@@ -619,25 +667,31 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
     transform: translate(-50%, -50%);
     padding: 16px 32px 32px;
     justify-content: space-between;
+
     .tags-autocomplete {
       width: 100%;
       max-width: 100%;
       border-radius: 8px;
+
       :deep(.ti-input) {
         height: 40px;
         border-radius: 8px;
       }
     }
+
     .left {
       width: 50%;
     }
+
     .right {
       width: 48%;
     }
   }
+
   .poster {
     border-radius: 8px;
     box-sizing: border-box;
+
     img {
       height: 300px;
       border-radius: 8px;
@@ -645,6 +699,7 @@ export default class myBlogEditorPostDialogComponent extends commonPost {
       display: inline-block;
     }
   }
+
   #editor-toolbar {
     border-radius: 8px;
     margin-bottom: 8px;

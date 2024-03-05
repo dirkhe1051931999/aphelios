@@ -108,11 +108,14 @@
                 <q-item v-bind="scope.itemProps">
                   <q-item-section avatar>
                     <q-avatar color="primary" text-color="white">
-                      <q-img :src="scope.opt.avatarUrl"> </q-img>
+                      <q-img :src="scope.opt.avatarUrl" spinner-size="12px" spinner-color="primary" />
                     </q-avatar>
                   </q-item-section>
                   <q-item-section>
-                    <q-item-label>{{ scope.opt.name }} <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon></q-item-label>
+                    <q-item-label
+                      >{{ scope.opt.name }}
+                      <q-icon name="verified" size="14px" color="primary" v-if="scope.opt.status === 4"></q-icon>
+                    </q-item-label>
                     <q-item-label caption>{{ scope.opt.description }}</q-item-label>
                   </q-item-section>
                 </q-item>
@@ -194,7 +197,10 @@
         </div>
         <div class="right-content">
           <div class="q-mb-md">
-            <p class="q-mb-sm">* 视频 <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense /></p>
+            <p class="q-mb-sm">
+              * 视频
+              <q-btn color="primary" icon="o_add" label="选择视频" @click="handleClickUploadVideo" class="q-ml-sm" dense />
+            </p>
             <div class="border-all h-300 row items-center justify-center b-r-6">
               <div v-if="!dialogEditorParams.params.videoUrl">上传视频</div>
               <video
@@ -227,12 +233,12 @@
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostVideoComponent from './video.vue';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
+import { COMMON_POST_PARAMS, onBeforeEditorDone, onEditorVisiableShow, POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS } from '../utils';
 
 const CONST_PARAMS = {
   add_or_edit: {
@@ -252,15 +258,19 @@ export default class myEditorPostVideoComponent extends commonPost {
   declare $refs: {
     PostVideoComponentRef: PostVideoComponent;
   };
+
   get isAddPost() {
     return BlogPostModule.postAddOrUpdateVideo === 'add';
   }
+
   get blogEditorPostVisiableVideo() {
     return BlogPostModule.blogEditorPostVisiableVideo;
   }
+
   get disableSelectCategory() {
     return BlogPostModule.disableSelectCategoryVideo;
   }
+
   @Watch('blogEditorPostVisiableVideo')
   watchBlogEditorPostVisiableVideo(val: boolean) {
     if (val) {
@@ -268,6 +278,7 @@ export default class myEditorPostVideoComponent extends commonPost {
       this.dialogEditorParams.model = true;
     }
   }
+
   public dialogEditorParams: any = {
     model: false,
     title: '新增',
@@ -275,24 +286,29 @@ export default class myEditorPostVideoComponent extends commonPost {
     checkedOptions: cloneDeep(POST_CHECKBOX_OPTIONS),
     radioOptions: cloneDeep(POST_RADIO_OPTIONS),
   };
+
   /* event */
   public hide() {
     this.dialogEditorParams.model = false;
     this.dialogEditorParams.params = cloneDeep(CONST_PARAMS.add_or_edit);
     BlogPostModule.SET_EDITOR_BLOG_POST_VISIABLE_VIDEO(false);
   }
+
   public handleClickUploadVideo() {
     this.$refs.PostVideoComponentRef.init();
   }
+
   public pickVideoSuccess(data: any) {
     this.dialogEditorParams.params.videoUrl = data.source;
     this.dialogEditorParams.params.videoPoster = data.poster || '';
   }
+
   /* http */
   public async getContent(id: string) {
     const data = await BlogPostModule.getPostContentById({ id: id });
     return Promise.resolve(data);
   }
+
   public async handleConfirmAddOrUpdate() {
     const validations = cloneDeep(this.commonValidations);
     validations.push(...[{ key: 'videoUrl', message: '请选择视频', check: (value: any) => !!value }]);
@@ -333,16 +349,19 @@ export default class myEditorPostVideoComponent extends commonPost {
     &.q-btn--outline:before {
       border: solid 1px rgba(255, 255, 255, 0.6) !important;
     }
+
     .q-btn__content {
       color: rgba(255, 255, 255, 0.541);
     }
   }
 }
+
 .body--light {
   .category-select {
     &.q-btn--outline:before {
       border: solid 1px rgba(0, 0, 0, 0.24) !important;
     }
+
     .q-btn__content {
       color: rgba(0, 0, 0, 0.541);
     }

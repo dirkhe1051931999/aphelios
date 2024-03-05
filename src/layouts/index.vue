@@ -2,10 +2,10 @@
   <div :class="classObj" class="app-wrapper">
     <div v-if="classObj.mobile && classObj.openSidebar" class="drawer-bg" @click="handleClickOutside" />
     <Sidebar class="sidebar-container" />
-    <div :class="{ hasTagsView: showTagsView }" class="main-container">
-      <div :class="{ 'fixed-header': fixedHeader }">
+    <div class="hasTagsViewmain-container">
+      <div class="fixed-header">
         <NavigationBar @toggleThemeChange="toggleThemeChange" />
-        <TagsView v-if="showTagsView" />
+        <TagsView />
       </div>
       <AppMain />
     </div>
@@ -23,7 +23,6 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-facing-decorator';
 import { AppModule, DeviceType } from 'src/store/modules/app';
-import { SettingModule } from 'src/store/modules/setting';
 import UseResize from './hooks/useResize';
 import Sidebar from './components/Sidebar/index.vue';
 import NavigationBar from './components/NavigationBar/index.vue';
@@ -36,6 +35,7 @@ import BlogEditorPostQuestionDialog from 'src/pages/blog-post/components/editor-
 import BlogEditorPostVideoEmbedDialog from 'src/pages/blog-post/components/editor-post-embed-video.vue';
 import BlogEditorPostNormalDialog from 'src/pages/blog-post/components/editor-post-normal.vue';
 import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
+
 @Component({
   name: 'LayoutIndexComponents',
   components: {
@@ -55,15 +55,7 @@ import BlogCommentDialog from 'src/pages/blog-post/components/comment.vue';
 })
 export default class LayoutIndexComponents extends Vue {
   $refs: any;
-  get showSettings() {
-    return SettingModule.showSettings;
-  }
-  get showTagsView() {
-    return SettingModule.showTagsView;
-  }
-  get fixedHeader() {
-    return SettingModule.fixedHeader;
-  }
+
   get classObj() {
     return {
       hideSidebar: !AppModule.sidebar.opened,
@@ -72,9 +64,11 @@ export default class LayoutIndexComponents extends Vue {
       mobile: AppModule.device === DeviceType.Mobile,
     };
   }
+
   public handleClickOutside() {
     AppModule.CLOSE_SIDEBAR(false);
   }
+
   public toggleThemeChange() {
     if (!this.$q.dark.isActive) {
       this.$refs.sun.classList.add('down');
@@ -91,11 +85,13 @@ export default class LayoutIndexComponents extends Vue {
     box-shadow: 0px 6px 16px -1px rgba($color: #ffffff, $alpha: 0.05);
   }
 }
+
 .body--light {
   .sidebar-container {
     box-shadow: 0px 6px 16px -1px rgba($color: #000000, $alpha: 0.05);
   }
 }
+
 @mixin clearfix {
   &:after {
     content: '';
@@ -154,14 +150,17 @@ export default class LayoutIndexComponents extends Vue {
   .main-container {
     margin-left: var(--v3-sidebar-hide-width);
   }
+
   .sidebar-container {
     width: var(--v3-sidebar-hide-width) !important;
   }
+
   .tags-view-container {
     width: calc(100% - var(--v3-sidebar-hide-width));
     left: var(--v3-sidebar-hide-width);
   }
 }
+
 .hideSidebar.mobile {
   .tags-view-container {
     width: 100%;
@@ -172,16 +171,19 @@ export default class LayoutIndexComponents extends Vue {
 // for mobile response 适配移动端
 .mobile {
   .main-container {
-    margin-left: 0px;
+    margin-left: 0;
   }
+
   .sidebar-container {
     transition: transform 0.28s;
     width: var(--v3-sidebar-width) !important;
   }
+
   &.openSidebar {
     position: fixed;
     top: 0;
   }
+
   &.hideSidebar {
     .sidebar-container {
       pointer-events: none;
@@ -213,9 +215,11 @@ export default class LayoutIndexComponents extends Vue {
   transform: translateY(-1300px);
   background-color: #fdd835;
   box-shadow: 0px 0px 15px #fdd835, 0px 0px 25px #fdd835, 0px 0px 50px #fdd835, 0px 0px 100px #fdd835;
+
   &.up {
     animation: sunRise 4s forwards;
   }
+
   &.down {
     animation: sunDown 4s forwards;
   }
@@ -231,6 +235,7 @@ export default class LayoutIndexComponents extends Vue {
     opacity: 1;
   }
 }
+
 @keyframes sunDown {
   from {
     transform: translateY(300px);

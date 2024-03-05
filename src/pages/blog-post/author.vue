@@ -2,7 +2,7 @@
   <div>
     <ul class="row items-start">
       <q-card class="thin-shadow w-340 q-mr-md q-mb-md" v-for="item in postAuthorParams.data" :key="item.id">
-        <q-img :src="item.coverUrl" height="200px" fit="contain" />
+        <q-img :src="item.coverUrl" height="200px" fit="contain" spinner-size="12px" spinner-color="primary" />
         <div class="q-px-md text-right" style="margin-top: -24px">
           <q-avatar size="48px">
             <img :src="item.avatarUrl" />
@@ -204,7 +204,7 @@
                 @click="handleClickUploadFile"
               ></q-btn>
               <div v-if="this.dialogAddUpdateParams.upload.params.avatar" class="q-pa-xs b-r-8 thin-shadow">
-                <q-img :src="this.dialogAddUpdateParams.upload.params.avatar" fit="contain" width="32px"></q-img>
+                <q-img :src="this.dialogAddUpdateParams.upload.params.avatar" fit="contain" width="32px" spinner-size="12px" spinner-color="primary" />
               </div>
             </div>
           </div>
@@ -213,7 +213,7 @@
               <span class="m-r-6">{{ item.label }}</span>
             </p>
             <div v-if="this.dialogAddUpdateParams.upload.params.cover" class="q-pa-xs b-r-8 q-mb-md thin-shadow">
-              <q-img :src="this.dialogAddUpdateParams.upload.params.cover" fit="contain" width="100%" height="300px"></q-img>
+              <q-img :src="this.dialogAddUpdateParams.upload.params.cover" fit="contain" width="100%" height="300px" spinner-size="12px" spinner-color="primary" />
             </div>
             <div class="row">
               <input type="file" class="hide" :ref="dialogAddUpdateParams.upload.coverID" :accept="dialogAddUpdateParams.upload.accept" :draggable="false" @change="uploadFileSuccessForCover" />
@@ -336,7 +336,7 @@
             </q-stepper-navigation>
           </template>
           <template v-slot:message>
-            <q-banner v-if="dialogVerifyParams.step === 1" class="bg-primary text-white q-px-lg"> 填写下面信息完成认证 </q-banner>
+            <q-banner v-if="dialogVerifyParams.step === 1" class="bg-primary text-white q-px-lg"> 填写下面信息完成认证</q-banner>
           </template>
         </q-stepper>
       </q-card>
@@ -352,7 +352,8 @@ import { cloneDeep } from 'lodash';
 import { isValidSimplePassword } from 'src/utils/validate';
 import setting from 'src/setting.json';
 import { enCrypty } from 'src/utils/tools';
-import { getAuthorLevelName, getAuthorLevel, companyType } from './utils';
+import { companyType, getAuthorLevel, getAuthorLevelName } from './utils';
+
 const CONST_PARAMS: any = {
   dialog_add_update: { name: '', nick: '', id: '', type: '1', avatarUrl: '', description: '', coverUrl: '', managementPassword: '', appPassword: '' },
   verify: { companyName: '', companyType: '', companyCode: '', companyLicense: '', id: '' },
@@ -363,6 +364,7 @@ const CONST_PARAMS: any = {
 })
 export default class BlogPostAuthorComponent extends Vue {
   $refs: any;
+
   get canStepBack() {
     // 如果是新增，第一步可以返回，第二步不可以返回
     if (this.dialogVerifyParams.type === 'add' && this.dialogVerifyParams.step === 2) {
@@ -374,9 +376,11 @@ export default class BlogPostAuthorComponent extends Vue {
     }
     return false;
   }
+
   mounted() {
     this.getAllPostAuthor();
   }
+
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public postAuthorParams = {
     data: [],
@@ -554,6 +558,7 @@ export default class BlogPostAuthorComponent extends Vue {
       },
     ],
   };
+
   /* event */
   public handleClickAdd() {
     const nameIndex = this.dialogAddUpdateParams.input.findIndex((item: any) => item.model === 'name');
@@ -568,6 +573,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
+
   public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.params.nick = row.nick;
     this.dialogAddUpdateParams.params.name = row.name;
@@ -588,6 +594,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogAddUpdateParams.title = 'Update';
     this.dialogAddUpdateParams.visiable = true;
   }
+
   public handlerClickVerify(item: any) {
     this.dialogVerifyParams.step = 1;
     this.dialogVerifyParams.result = 0;
@@ -596,6 +603,7 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogVerifyParams.visiable = true;
     this.dialogVerifyParams.params.id = item.id;
   }
+
   public handleClickStepPrevious() {
     if (this.dialogVerifyParams.step === 2) {
       this.dialogVerifyParams.step = 1;
@@ -604,6 +612,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.dialogVerifyParams.step = 2;
     }
   }
+
   public handleClickUploadFile() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.avatarID][0].type = 'text';
@@ -616,6 +625,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
+
   public handleClickUploadFileForCover() {
     this.$nextTick(() => {
       this.$refs[this.dialogAddUpdateParams.upload.coverID][0].type = 'text';
@@ -628,6 +638,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
+
   public handleClickUploadFileForPDF() {
     this.$nextTick(() => {
       this.$refs[this.dialogVerifyParams.upload.id][0].type = 'text';
@@ -641,6 +652,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }, 100);
     });
   }
+
   public uploadFileSuccess() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.avatarID][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -673,6 +685,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
+
   public uploadFileSuccessForCover() {
     const files = this.$refs[this.dialogAddUpdateParams.upload.coverID][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -705,6 +718,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
+
   public async uploadFileSuccessForPDF() {
     const files = this.$refs[this.dialogVerifyParams.upload.id][0].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -737,10 +751,12 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     });
   }
+
   /* 关闭dialog */
   public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
+
   /* 新增或编辑dialog隐藏时 */
   public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
@@ -753,6 +769,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.dialogAddUpdateParams.upload.params.coverName = '';
     }
   }
+
   /* 认证dialog隐藏时 */
   public dialogVerifyParamsHide() {
     this.dialogVerifyParams.step = 1;
@@ -763,7 +780,9 @@ export default class BlogPostAuthorComponent extends Vue {
     this.dialogVerifyParams.upload.params.pdfName = '';
     this.dialogVerifyParams.params = cloneDeep(CONST_PARAMS.verify);
   }
+
   /* http */
+
   /* 获取所有用户 */
   public async getAllPostAuthor() {
     try {
@@ -779,6 +798,7 @@ export default class BlogPostAuthorComponent extends Vue {
     } catch (error) {}
     this.$q.loading.hide();
   }
+
   /* 确定新增或更新用户 */
   public async dialogAddUpdateConfirmEvent() {
     if (!this.dialogAddUpdateParams.upload.params.avatar) {
@@ -840,6 +860,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.getAllPostAuthor();
     } catch (error) {}
   }
+
   /* 删除用户 */
   public async handlerClickDelete(row: any) {
     try {
@@ -861,6 +882,7 @@ export default class BlogPostAuthorComponent extends Vue {
       }
     } catch (error) {}
   }
+
   /* 提交认证信息或执行下一步 */
   public async handleClickStepNextButton() {
     if (this.dialogVerifyParams.step === 1) {
@@ -898,6 +920,7 @@ export default class BlogPostAuthorComponent extends Vue {
       this.$refs.stepper.next();
     }
   }
+
   /* 查看认证详情 */
   public async handlerClickViewVerify(item: any) {
     this.$q.loading.show();
@@ -927,6 +950,7 @@ export default class BlogPostAuthorComponent extends Vue {
     }
     this.$q.loading.hide();
   }
+
   /* 移除认证 */
   public async handlerClickRemoveVerify(item: any) {
     const result = await this.$globalConfirm.show({
@@ -955,6 +979,7 @@ export default class BlogPostAuthorComponent extends Vue {
 .process-verify {
   filter: grayscale(100%);
 }
+
 .not-verify {
   filter: grayscale(100%);
 }

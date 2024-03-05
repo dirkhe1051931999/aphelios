@@ -84,7 +84,6 @@ import Breadcrumb from '../Breadcrumb/index.vue';
 import Hamburger from '../Hamburger/index.vue';
 import { UserModule } from 'src/store/modules/user';
 import setting from 'src/setting.json';
-import { SettingModule } from 'src/store/modules/setting';
 import { setDarkTheme } from 'src/utils/localStorage';
 import Shepherd from 'shepherd.js';
 @Component({

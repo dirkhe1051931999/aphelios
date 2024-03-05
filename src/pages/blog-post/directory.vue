@@ -83,7 +83,7 @@
                     </div>
                     <span class="text-grey fs-12">{{ item.description }}</span>
                   </div>
-                  <q-img :src="item.cover" fit="contain" width="24px" v-if="item.cover"></q-img>
+                  <q-img :src="item.cover" fit="contain" width="24px" v-if="item.cover" spinner-size="12px" spinner-color="primary"></q-img>
                 </div>
               </q-slide-item>
             </q-tab>
@@ -345,7 +345,7 @@
                 @click="handleClickUploadFile"
               ></q-btn>
               <div v-if="this.dialogAddUpdateParams.upload.params.file" class="q-pa-xs b-r-8 thin-shadow">
-                <q-img :src="this.dialogAddUpdateParams.upload.params.file" fit="contain" width="32px"></q-img>
+                <q-img :src="this.dialogAddUpdateParams.upload.params.file" fit="contain" width="32px" spinner-size="12px" spinner-color="primary"></q-img>
               </div>
             </div>
           </div>

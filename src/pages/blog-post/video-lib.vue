@@ -92,7 +92,7 @@
     <MyPagination :paginationParams="tableParams.pagination" v-if="tableParams.pagination.rowsNumber > 0" @pagination="paginationInput"></MyPagination>
     <q-dialog v-model="categoryParams.model" position="top" transition-show="jump-up" transition-hide="jump-down">
       <q-card style="max-width: 50vw; width: 40vw">
-        <q-card-section> 分类 </q-card-section>
+        <q-card-section> 分类</q-card-section>
         <div class="split-line h-1"></div>
         <q-card-section class="scroll" style="max-height: 200px">
           <ul class="categoryList">
@@ -141,16 +141,20 @@
       <div class="dialog-upload-form">
         <div>
           <div class="row items-center justify-between">
-            <div class="text-center w-p-50 q-py-sm">封面 <q-btn color="primary" icon="add" label="点击上传封面" flat @click="handleClickUploadPoster" dense class="q-ml-sm" /></div>
             <div class="text-center w-p-50 q-py-sm">
-              视频 <q-btn color="primary" icon="add" label="点击上传视频" flat @click="handleClickUploadVideo" dense class="q-ml-sm" v-if="dialogUpload.dialogType === 'add'" />
+              封面
+              <q-btn color="primary" icon="add" label="点击上传封面" flat @click="handleClickUploadPoster" dense class="q-ml-sm" />
+            </div>
+            <div class="text-center w-p-50 q-py-sm">
+              视频
+              <q-btn color="primary" icon="add" label="点击上传视频" flat @click="handleClickUploadVideo" dense class="q-ml-sm" v-if="dialogUpload.dialogType === 'add'" />
             </div>
           </div>
           <div class="split-line h-1"></div>
         </div>
         <div class="row items-center justify-between q-my-md">
           <input type="file" class="hide" :ref="dialogUpload.videoFileID" :accept="dialogUpload.accept" :draggable="false" @change="uploadFileSuccess" />
-          <q-img :src="dialogUpload.params.poster" v-if="dialogUpload.params.poster" class="w-p-49 h-200 border-all" fit="contain" />
+          <q-img :src="dialogUpload.params.poster" v-if="dialogUpload.params.poster" class="w-p-49 h-200 border-all" fit="contain" spinner-size="12px" spinner-color="primary" />
           <div class="h-200 row items-center justify-center w-p-49 border-all q-my-md b-r-6 bg-grey-2" v-else>上传封面</div>
           <video :src="dialogUpload.videoBase64" controls class="w-p-50 h-200 border-all" autoplay v-if="dialogUpload.videoBase64"></video>
           <div class="h-200 row items-center justify-center w-p-50 border-all b-r-6 q-my-md bg-grey-2" v-else>上传视频格式为：{{ dialogUpload.accept.split(',').join(' ,') }}</div>
@@ -203,16 +207,19 @@ import PostAlbumComponent from './components/album.vue';
 })
 export default class myBlogPostVideoLib extends Vue {
   $refs: any;
+
   get getCategoryName() {
     return (category: number) => {
       const categoryObj: any = this.categoryParams.data.find((item: any) => item.id === category);
       return categoryObj ? categoryObj.label : '';
     };
   }
+
   mounted() {
     this.getData();
     this.queryCategory();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public videoLib = {
@@ -300,10 +307,12 @@ export default class myBlogPostVideoLib extends Vue {
   public handleClickQuery() {
     this.getData();
   }
+
   public paginationInput(pagination: any) {
     this.tableParams.pagination = pagination;
     this.getData();
   }
+
   public handleClickAdd() {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = 'Upload';
@@ -319,6 +328,7 @@ export default class myBlogPostVideoLib extends Vue {
       }, 100);
     });
   }
+
   public handleClickBatchUpload() {
     this.$nextTick(() => {
       this.$refs.batchUpload.type = 'text';
@@ -329,9 +339,11 @@ export default class myBlogPostVideoLib extends Vue {
       }, 100);
     });
   }
+
   public handleEditCategory() {
     this.categoryParams.model = true;
   }
+
   public newCategory() {
     (this.categoryParams.data as any).push({
       label: '',
@@ -339,6 +351,7 @@ export default class myBlogPostVideoLib extends Vue {
       default: 0,
     });
   }
+
   public onUpdate(row: any) {
     this.dialogUpload.visiable = true;
     this.dialogUpload.title = 'Update';
@@ -351,9 +364,11 @@ export default class myBlogPostVideoLib extends Vue {
     this.dialogUpload.params.video = row.source;
     this.dialogUpload.videoBase64 = row.source;
   }
+
   public handleClickUploadPoster() {
     this.$refs.PostAlbumComponentRef.init();
   }
+
   public handleClickUploadVideo() {
     this.$refs[this.dialogUpload.videoFileID].type = 'text';
     this.dialogUpload.params.videoName = '';
@@ -365,6 +380,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.$refs[this.dialogUpload.videoFileID].click();
     }, 100);
   }
+
   public uploadFileSuccess() {
     const files = this.$refs[this.dialogUpload.videoFileID].files;
     let postFiles = Array.prototype.slice.call(files);
@@ -379,17 +395,21 @@ export default class myBlogPostVideoLib extends Vue {
       this.dialogUpload.params.video = rawFile;
     });
   }
+
   public dialogUploadCloseEvent(data: { type: string }) {
     this.dialogUpload.visiable = false;
   }
+
   public dialogUploadBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogUpload.params = data.params;
     }
   }
+
   public pickSuccess(data: any) {
     this.dialogUpload.params.poster = data.source;
   }
+
   /* http */
   public async getData() {
     const { pageData, total } = await BlogPostModule.getAllVideo({
@@ -405,6 +425,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.tableParams.pagination.rowsNumber = 0;
     }
   }
+
   public uploadZipFileSuccess() {
     const files = this.$refs.batchUpload.files;
     let postFiles = Array.prototype.slice.call(files);
@@ -422,6 +443,7 @@ export default class myBlogPostVideoLib extends Vue {
       }
     });
   }
+
   public async queryCategory() {
     const result = await BlogPostModule.queryVideoCategory({});
     if (result && result.length) {
@@ -431,6 +453,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.dialogUpload.input[index].inputSelectOption = result.map((item: any) => ({ value: item.id, ...item }));
     }
   }
+
   public async hanleClickUploadConfirm() {
     try {
       if (!this.dialogUpload.params.video) {
@@ -486,6 +509,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.dialogUpload.clickLoading = false;
     }
   }
+
   public async confirmAddCategory(scope: any, item: any) {
     try {
       scope.set();
@@ -500,6 +524,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.queryCategory();
     } catch (error) {}
   }
+
   public async handleClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -520,6 +545,7 @@ export default class myBlogPostVideoLib extends Vue {
       }
     } catch (error) {}
   }
+
   public async handleClickBatchDelete() {
     const result = await this.$globalConfirm.show({
       title: '友情提示',
@@ -539,6 +565,7 @@ export default class myBlogPostVideoLib extends Vue {
       this.tableParams.selected = [];
     }
   }
+
   public async removeCategory(item: any) {
     try {
       await BlogPostModule.deleteVideoCategory({

@@ -75,7 +75,7 @@
           </q-tr>
         </template>
         <template v-slot:header-cell-action="props">
-          <q-th :props="props"> </q-th>
+          <q-th :props="props"></q-th>
         </template>
         <template v-slot:body="props">
           <q-tr :props="props">
@@ -99,7 +99,7 @@
                 </div>
                 <!-- avatar -->
                 <div v-if="col.name === 'avatar'">
-                  <q-img :src="props.row.avatar" style="height: 32px; width: 32px; border-radius: 50%" v-if="props.row.avatar">
+                  <q-img :src="props.row.avatar" style="height: 32px; width: 32px; border-radius: 50%" v-if="props.row.avatar" spinner-size="12px" spinner-color="primary">
                     <template v-slot:error>
                       <div class="absolute-full flex flex-center bg-grey text-white w-32 h-32 b-r-16">Cannot load image</div>
                     </template>
@@ -287,6 +287,7 @@ import { defaultFill } from 'src/utils/tools';
 import { AccountModule } from 'src/store/modules/account';
 import { getCurrentInstance } from 'vue';
 import { isValidEmail, isValidPassword } from 'src/utils/validate';
+
 const CONST_PARAMS: any = {
   query: { userName: '' },
   dialog_add_update: { id: '', userName: '', avatar: '', role: '', email: '', province: '', city: '', description: '' },
@@ -298,49 +299,59 @@ const CONST_PARAMS: any = {
 export default class AccountUserComponent extends Vue {
   /**instance */
   declare $refs: any;
+
   get canDelete() {
     return (row: any) => {
       return row.userType === 1;
     };
   }
+
   get canUpdate() {
     return (row: any) => {
       return row.userType === 1;
     };
   }
+
   get canDisable() {
     return (row: any) => {
       return (row.userStatus === 1 || row.userStatus === 0) && row.userType !== 0;
     };
   }
+
   get canEnable() {
     return (row: any) => {
       return row.userStatus === 2;
     };
   }
+
   get canChangePassword() {
     return (row: any) => {
       return (row.userType === 1 || row.userType === 0) && row.userName !== UserModule.username;
     };
   }
+
   get canUnlock() {
     return (row: any) => {
       return row.userStatus === 3;
     };
   }
+
   get canReSendUrl() {
     return (row: any) => {
       return row.userStatus === 4 && row.userType === 1;
     };
   }
+
   @Watch('dialogChangePasswordParams.params.password', { deep: true })
   onChangePasswordChange() {
     this.$refs[`${this.dialogChangePasswordParams.id}-input-rePassword`][0].validForm();
   }
+
   @Watch('dialogChangePasswordParams.params.rePassword', { deep: true })
   onChangeRePasswordChange() {
     this.$refs[`${this.dialogChangePasswordParams.id}-input-password`][0].validForm();
   }
+
   /**params */
   public globals = getCurrentInstance()!.appContext.config.globalProperties;
   public avatarParams = {
@@ -361,11 +372,13 @@ export default class AccountUserComponent extends Vue {
       },
     ],
   };
+
   async created() {
     this.getData();
     this.getAllAvatar();
     this.getAllRole();
   }
+
   public tableParams = {
     loading: false,
     data: [],
@@ -605,17 +618,20 @@ export default class AccountUserComponent extends Vue {
       },
     ],
   };
+
   /**event */
   public paginationInput(data: any) {
     this.tableParams.pagination = data;
     this.getData();
   }
+
   public async handleQuery() {
     this.queryParams.queryLoading = true;
     this.tableParams.pagination.page = 1;
     await this.getData();
     this.queryParams.queryLoading = false;
   }
+
   public async handleResetQuery() {
     this.queryParams.resetLoading = true;
     this.queryParams.params = cloneDeep(CONST_PARAMS.query);
@@ -623,11 +639,13 @@ export default class AccountUserComponent extends Vue {
     await this.getData();
     this.queryParams.resetLoading = false;
   }
+
   public handleClickAdd() {
     this.dialogAddUpdateParams.visiable = true;
     this.dialogAddUpdateParams.dialogType = 'add';
     this.dialogAddUpdateParams.title = 'Add';
   }
+
   public handlerClickUpdate(row: any) {
     this.dialogAddUpdateParams.params.id = row.id;
     this.dialogAddUpdateParams.params.userName = row.userName;
@@ -645,11 +663,13 @@ export default class AccountUserComponent extends Vue {
     this.dialogAddUpdateParams.dialogType = 'update';
     this.dialogAddUpdateParams.title = 'Update';
   }
+
   public async handlerClickChangePassword(row: any) {
     this.dialogChangePasswordParams.visiable = true;
     this.dialogChangePasswordParams.params.userName = row.userName;
     this.dialogChangePasswordParams.title = '修改密码';
   }
+
   public handlerClickDetail(row: any) {
     const getValue = (row: any, key: string): string => {
       switch (key) {
@@ -679,9 +699,11 @@ export default class AccountUserComponent extends Vue {
     this.dialogDetailParams.params = arr;
     this.dialogDetailParams.visiable = true;
   }
+
   public dialogAddUpdateCloseEvent(data: { type: string }) {
     this.dialogAddUpdateParams.visiable = false;
   }
+
   public dialogAddUpdateBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
@@ -692,22 +714,27 @@ export default class AccountUserComponent extends Vue {
       this.dialogAddUpdateParams.input[userNameIndex].readonly = false;
     }
   }
+
   public dialogDetailCloseEvent(data: { type: string }) {
     this.dialogDetailParams.visiable = false;
   }
+
   public dialogDetailBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogAddUpdateParams.params = data.params;
     }
   }
+
   public dialogChangePasswordCloseEvent(data: { type: string }) {
     this.dialogChangePasswordParams.visiable = false;
   }
+
   public dialogChangePasswordBeforeHideEvent(data: { type: string; params: any }) {
     if (data.params) {
       this.dialogChangePasswordParams.params = data.params;
     }
   }
+
   /* http */
   public async getData() {
     try {
@@ -731,6 +758,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getAllRole() {
     try {
       const { pageData } = await AccountModule.getAllRole({});
@@ -749,6 +777,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async getAllAvatar() {
     try {
       const { pageData } = await AccountModule.getAllAvatar({});
@@ -768,6 +797,7 @@ export default class AccountUserComponent extends Vue {
       return Promise.resolve();
     }
   }
+
   public async dialogAddUpdateConfirmEvent() {
     try {
       this.dialogAddUpdateParams.clickLoading = true;
@@ -810,6 +840,7 @@ export default class AccountUserComponent extends Vue {
       this.dialogAddUpdateParams.clickLoading = false;
     }
   }
+
   public async dialogChangePasswordConfirmEvent() {
     try {
       this.dialogChangePasswordParams.clickLoading = true;
@@ -830,6 +861,7 @@ export default class AccountUserComponent extends Vue {
       this.dialogChangePasswordParams.clickLoading = false;
     }
   }
+
   public async updateUserStatus(row: any, userStatus: number) {
     try {
       this.tableParams.loading = true;
@@ -847,6 +879,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
+
   public async unLockUser(row: any, userStatus: number) {
     try {
       this.tableParams.loading = true;
@@ -863,6 +896,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
+
   public async reSendUrl(row: any) {
     try {
       this.tableParams.loading = true;
@@ -879,6 +913,7 @@ export default class AccountUserComponent extends Vue {
       this.tableParams.loading = false;
     }
   }
+
   public async handlerClickDelete(row: any) {
     try {
       const result = await this.$globalConfirm.show({
@@ -906,6 +941,7 @@ export default class AccountUserComponent extends Vue {
 .avatar-list {
   display: flex;
   flex-wrap: wrap;
+
   .avatar-item {
     margin-right: 8px;
     padding: 2px;
@@ -914,12 +950,14 @@ export default class AccountUserComponent extends Vue {
     height: 56px;
     box-sizing: border-box;
     border: 2px solid transparent;
+
     img {
       width: 48px;
       height: 48px;
       border-radius: 6px;
       cursor: pointer;
     }
+
     &.active {
       border: 2px solid $primary;
     }

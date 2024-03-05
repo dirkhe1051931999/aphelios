@@ -29,7 +29,7 @@
       <q-card-section style="max-height: 500px" class="scroll">
         <ul class="album-list">
           <li v-for="(item, index) in albumParams.data" :key="index" @click="pickAlbum(item)" :class="{ active: isPicked(item.id) }">
-            <q-img :src="item.source" :alt="item.title" fit="contain" class="img">
+            <q-img :src="item.source" :alt="item.title" fit="contain" class="img" spinner-size="12px" spinner-color="primary">
               <q-badge v-for="(directoryId, categoryIndex) in item.category" :key="categoryIndex" color="primary" :label="categoryName(directoryId)" class="q-ml-md" floating />
             </q-img>
             <div class="banner">
@@ -62,12 +62,14 @@ import { uniqBy } from 'lodash';
 export default class myPostAlbumComponent extends Vue {
   @Prop({ type: Boolean, default: false }) public readonly multiple!: boolean;
   @Prop({ type: Number, default: 8 }) public readonly 'maxMultiple'!: number;
+
   get categoryName() {
     return (id: any) => {
       const item: any = this.albumParams.category.find((item: any) => item.id === id);
       return item ? item.label : '';
     };
   }
+
   get isPicked() {
     return (id: any) => {
       if (!this.albumParams.currentPick) return false;
@@ -78,6 +80,7 @@ export default class myPostAlbumComponent extends Vue {
       }
     };
   }
+
   public albumParams = {
     model: false,
     data: [],
@@ -93,22 +96,27 @@ export default class myPostAlbumComponent extends Vue {
       category: [],
     },
   };
+
   /* event */
   public paginationInput(data: any) {
     this.albumParams.pagination = data;
     this.getData();
   }
+
   public handleClickQuery() {
     this.albumParams.pagination.page = 1;
     this.getData();
   }
+
   public show() {
     this.albumParams.model = true;
   }
+
   public hide() {
     this.albumParams.model = false;
     this.$emit('hide');
   }
+
   public confirmPick() {
     if (!this.multiple) {
       const item = this.albumParams.allData.find((item: any) => item.id === this.albumParams.currentPick);
@@ -123,6 +131,7 @@ export default class myPostAlbumComponent extends Vue {
     }
     this.$emit('hide');
   }
+
   public pickAlbum(item: any) {
     if (!this.multiple) {
       if (this.albumParams.currentPick === item.id) {
@@ -145,6 +154,7 @@ export default class myPostAlbumComponent extends Vue {
       this.albumParams.currentPick?.push(item.id);
     }
   }
+
   public init() {
     this.show();
     this.albumParams.data = [];
@@ -155,6 +165,7 @@ export default class myPostAlbumComponent extends Vue {
     this.getData();
     this.getAlbumCategory();
   }
+
   /* http */
   public async getData() {
     try {
@@ -174,6 +185,7 @@ export default class myPostAlbumComponent extends Vue {
       }
     } catch (error) {}
   }
+
   public async getAlbumCategory() {
     try {
       this.albumParams.category = [];
@@ -198,19 +210,23 @@ export default class myPostAlbumComponent extends Vue {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   grid-gap: 10px;
+
   li {
     border: solid 1px #eeeeee;
     border-radius: 8px;
     position: relative;
     cursor: pointer;
+
     &.active {
       border: solid 2px $primary;
     }
+
     .img {
       width: 100%;
       height: 100%;
       border-radius: 8px !important;
     }
+
     .banner {
       position: absolute;
       width: 100%;

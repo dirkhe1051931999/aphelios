@@ -44,7 +44,7 @@
               <q-avatar color="primary" text-color="white" v-if="!item.poster">
                 {{ index + 1 }}
               </q-avatar>
-              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" />
+              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" spinner-color="primary" />
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ item.title }}</q-item-label>
@@ -70,7 +70,7 @@
               <q-avatar color="primary" text-color="white" v-if="!item.poster">
                 {{ index + 1 }}
               </q-avatar>
-              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" />
+              <q-img :src="item.poster" :ratio="16 / 9" v-else spinner-size="12px" spinner-color="primary" />
             </q-item-section>
             <q-item-section>
               <q-item-label>{{ item.title }}</q-item-label>
@@ -116,7 +116,7 @@
                 {{ index + 1 }}
               </q-avatar>
               <q-avatar v-else>
-                <q-img :src="item.cover" spinner-size="12px"></q-img>
+                <q-img :src="item.cover" spinner-size="12px" spinner-color="primary"></q-img>
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -135,7 +135,7 @@
           <q-item v-for="item in channelSheetUserAuthor.userData" :key="item.id" class="q-my-sm b-bottom" clickable v-ripple>
             <q-item-section avatar>
               <q-avatar color="primary" text-color="white">
-                <q-img :src="item.avatarUrl" spinner-size="12px"></q-img>
+                <q-img :src="item.avatarUrl" spinner-size="12px" spinner-color="primary" />
               </q-avatar>
             </q-item-section>
             <q-item-section>
@@ -155,7 +155,7 @@
           <q-item v-for="item in channelSheetUserAuthor.authorData" :key="item.id" class="q-my-sm b-bottom" clickable v-ripple>
             <q-item-section avatar>
               <q-avatar color="primary" text-color="white">
-                <q-img :src="item.avatarUrl" spinner-size="12px"></q-img>
+                <q-img :src="item.avatarUrl" spinner-size="12px" spinner-color="primary" />
               </q-avatar>
             </q-item-section>
             <q-item-section>

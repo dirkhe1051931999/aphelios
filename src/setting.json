@@ -26,15 +26,5 @@
   "simplePasswordRules": [
     "包含10 - 20个字符",
     "不能包含空格、中文和中文特殊字符"
-  ],
-  "pagePermissionId": [],
-  "layoutSetting": {
-    "showSettings": true,
-    "showTagsView": true,
-    "fixedHeader": true,
-    "showSidebarLogo": true,
-    "showNotify": true,
-    "showThemeSwitch": true,
-    "showScreenfull": true
-  }
+  ]
 }

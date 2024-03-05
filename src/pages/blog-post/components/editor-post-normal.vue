@@ -109,7 +109,7 @@
                   <q-item v-bind="scope.itemProps">
                     <q-item-section avatar>
                       <q-avatar color="primary" text-color="white">
-                        <q-img :src="scope.opt.avatarUrl"></q-img>
+                        <q-img :src="scope.opt.avatarUrl" spinner-size="12px" spinner-color="primary" />
                       </q-avatar>
                     </q-item-section>
                     <q-item-section>
@@ -234,13 +234,13 @@
 
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component, Watch } from 'vue-facing-decorator';
 import { cloneDeep } from 'lodash';
 import VueTagsInput from '@sipec/vue3-tags-input';
 import { commonPost } from 'src/mixins/post';
 import PostAlbumComponent from './album.vue';
 import PostVideoComponent from './video.vue';
-import { POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS, COMMON_POST_PARAMS, onEditorVisiableShow, onBeforeEditorDone } from '../utils';
+import { COMMON_POST_PARAMS, onBeforeEditorDone, onEditorVisiableShow, POST_CHECKBOX_OPTIONS, POST_RADIO_OPTIONS } from '../utils';
 import { QEditor } from 'quasar';
 import { getCurrentInstance } from 'vue';
 

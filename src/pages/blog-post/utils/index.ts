@@ -1,5 +1,6 @@
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { date } from 'quasar';
+import setting from 'src/setting.json';
 
 export function getAuthorLevelName(score: number) {
   if (score < 1000) {
@@ -55,7 +56,7 @@ export const TEST_ACCOUNT = {
   address: '陕西省;西安市;鄠邑区;草堂街道&宋西村479号',
   nickname: '何健的账号',
   username: 'hejian_test',
-  avatarUrl: 'http://localhost:3000/cdn/avatar/Malphite.png',
+  avatarUrl: `${process.env.NODE_ENV === 'production' ? setting.pro : setting.ip}/cdn/avatar/Malphite.png`,
   fansCount: 0,
   loginTime: null,
   createTime: 1686205313376,
@@ -188,7 +189,6 @@ export const onEditorVisiableShow = (context: any, row: any, type: string) => {
   }
 };
 export const onBeforeEditorDone = (context: any, type: string) => {
-  // 用正则把content 的<img alt="" src='http://192.168.124.40:9000/blog-service-oss/20240130/f35ad04770194d15941721de0aa1b158.jpg' /> 的 src='' 单引号 改成双引号
   const content = context.dialogEditorParams.params.content.replace(/src='([^']*)'/g, (match: any, p1: any) => {
     return `src="${p1}"`;
   });

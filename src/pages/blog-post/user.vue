@@ -139,7 +139,7 @@
                 @click="dialogDetailParams.params.avatarUrl = item"
               >
                 <q-avatar size="40px">
-                  <q-img :src="item" />
+                  <q-img :src="item" spinner-size="12px" spinner-color="primary" />
                 </q-avatar>
               </li>
             </ul>
@@ -263,7 +263,7 @@
 <script lang="ts">
 import { BlogPostModule } from 'src/store/modules/blog-post';
 import { cloneDeep } from 'lodash';
-import { Component, Vue, Watch } from 'vue-facing-decorator';
+import { Component, Vue } from 'vue-facing-decorator';
 import { getCurrentInstance } from 'vue';
 import { isValidEmail, isValidUsername } from 'src/utils/validate';
 import setting from 'src/setting.json';
@@ -299,7 +299,7 @@ export default class BlogPostUserComponent extends Vue {
 
   get calacAavatar() {
     return (path: string) => {
-      if (isCdnUrl(path)) return setting.ip + path;
+      if (isCdnUrl(path)) return `${process.env.NODE_ENV === 'production' ? setting.pro : setting.ip}${path}`;
       return `${setting.minio}${path}`;
     };
   }

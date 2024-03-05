@@ -319,9 +319,9 @@
               <div class="split-line h-1 q-my-md"></div>
               <div class="q-mb-md text-center">选择以下方式登录</div>
               <div class="text-center">
-                <q-img src="~assets/oauth/github.png" width="36px" class="q-mr-md cursor-pointer" @click="clickGithubLogin"></q-img>
-                <q-img src="~assets/oauth/qq.png" width="28px" class="cursor-pointer"></q-img>
-                <q-img src="~assets/oauth/wechat.png" width="72px" class="cursor-pointer"></q-img>
+                <q-img src="~assets/oauth/github.png" width="36px" class="q-mr-md cursor-pointer" @click="clickGithubLogin" spinner-size="12px" spinner-color="primary" />
+                <q-img src="~assets/oauth/qq.png" width="28px" class="cursor-pointer" spinner-size="12px" spinner-color="primary" />
+                <q-img src="~assets/oauth/wechat.png" width="72px" class="cursor-pointer" spinner-size="12px" spinner-color="primary" />
               </div>
             </q-form>
           </div>
@@ -331,7 +331,7 @@
       <div class="col-md-6 col-lg-6 col-xl-6 full-height relative-position q-pa-md" :class="$q.screen.xs || $q.screen.sm ? 'hidden' : ''">
         <div class="cover row column">
           <div class="img">
-            <q-img src="~assets/500.png" alt="chat-img" fit="fit" />
+            <q-img src="~assets/500.png" alt="chat-img" spinner-size="12px" spinner-color="primary" />
           </div>
           <div class="intro">
             <h4 class="f-bold lh-48" style="font-size: 2.5em">“{{ $t('login.illustrationDescription') }}”</h4>
